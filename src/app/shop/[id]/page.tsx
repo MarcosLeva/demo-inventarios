@@ -270,8 +270,19 @@ export default function ShopPage() {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <aside className="lg:col-span-1 space-y-6">
+       <main className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
+            {canEditShop && (
+              <AddProductModal onProductAdd={handleProductAdd}>
+                  <Button>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Agregar Producto
+                  </Button>
+              </AddProductModal>
+            )}
+          </div>
+          
            <ProductFilters
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
@@ -283,20 +294,6 @@ export default function ShopPage() {
                 setPriceRange={setPriceRange}
                 maxPrice={maxPrice}
             />
-        </aside>
-
-        <main className="lg:col-span-3">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
-            {canEditShop && (
-              <AddProductModal onProductAdd={handleProductAdd}>
-                  <Button>
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      Agregar Producto
-                  </Button>
-              </AddProductModal>
-            )}
-          </div>
 
           <Card>
               <Table>
@@ -360,7 +357,6 @@ export default function ShopPage() {
             </div>
           )}
         </main>
-      </div>
     </div>
   );
 }
@@ -390,16 +386,12 @@ function ShopPageSkeleton() {
                  </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                <aside className="lg:col-span-1">
-                    <Skeleton className="h-[400px] w-full" />
-                </aside>
-                <main className="lg:col-span-3">
-                    <div className="mb-4">
-                        <Skeleton className="h-10 w-48" />
-                    </div>
-                    <Skeleton className="h-[600px] w-full" />
-                </main>
+            <div className="space-y-6">
+                 <div className="mb-4">
+                    <Skeleton className="h-10 w-48" />
+                </div>
+                 <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-[600px] w-full" />
             </div>
         </div>
     )
