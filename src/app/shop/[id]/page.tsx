@@ -1,11 +1,15 @@
 
+'use client';
+
+import { useState, useMemo } from 'react';
 import { getShopById } from '@/lib/data';
 import type { Product } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Tag } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Tag, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -18,10 +22,20 @@ import {
 
 export default function ShopPage({ params }: { params: { id: string } }) {
   const shop = getShopById(params.id);
+  const [searchTerm, setSearchTerm] = useState('');
 
   if (!shop) {
     notFound();
   }
+
+  const filteredInventory = useMemo(() => {
+    if (!searchTerm) {
+      return shop.inventory;
+    }
+    return shop.inventory.filter((product) =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [shop.inventory, searchTerm]);
 
   const Icon = shop.icon;
 
@@ -60,7 +74,19 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       
-      <h2 className="text-3xl font-bold font-headline mb-8">Inventario</h2>
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold font-headline">Inventario</h2>
+        <div className="relative w-full max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Buscar en el inventario..."
+            className="pl-10 w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
 
       <Card>
           <Table>
@@ -73,14 +99,14 @@ export default function ShopPage({ params }: { params: { id: string } }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {shop.inventory.length > 0 ? (
-                shop.inventory.map((product) => (
+              {filteredInventory.length > 0 ? (
+                filteredInventory.map((product) => (
                   <ProductRow key={product.id} product={product} />
                 ))
               ) : (
                 <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                        El inventario de esta tienda está actualmente vacío.
+                        No se encontraron productos que coincidan con tu búsqueda.
                     </TableCell>
                 </TableRow>
               )}
