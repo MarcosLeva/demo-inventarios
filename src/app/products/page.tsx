@@ -20,12 +20,14 @@ import { Search, Package, Tag, PackageCheck, PackageX } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedShop, setSelectedShop] = useState('all');
   const { user } = useAuth();
 
   useEffect(() => {
@@ -43,10 +45,12 @@ export default function ProductsPage() {
   }
 
   const filteredProducts = useMemo(() => {
-    return products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [products, searchTerm]);
+    return products.filter(product => {
+      const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesShop = selectedShop === 'all' || product.shopId === selectedShop;
+      return matchesSearchTerm && matchesShop;
+    });
+  }, [products, searchTerm, selectedShop]);
 
   const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -64,15 +68,30 @@ export default function ProductsPage() {
       
       <Card>
         <CardHeader>
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    type="text"
-                    placeholder="Buscar por nombre de producto..."
-                    className="pl-10 w-full max-w-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                        type="text"
+                        placeholder="Buscar por nombre de producto..."
+                        className="pl-10 w-full"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <Select value={selectedShop} onValueChange={setSelectedShop}>
+                    <SelectTrigger className="w-full sm:w-[240px]">
+                        <SelectValue placeholder="Filtrar por tienda" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todas las tiendas</SelectItem>
+                        {shops.map(shop => (
+                        <SelectItem key={shop.id} value={shop.id}>
+                            {shop.name}
+                        </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
         </CardHeader>
         <CardContent>
