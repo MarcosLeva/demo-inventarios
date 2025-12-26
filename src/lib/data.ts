@@ -451,10 +451,10 @@ const users: AppUser[] = [
 
 // In-memory data store
 let shopsStore: Shop[] = JSON.parse(JSON.stringify(shops));
-let usersStore: AppUser[] = [...users];
+let usersStore: AppUser[] = JSON.parse(JSON.stringify(users));
 
 export function getShops() {
-  return shopsStore;
+  return JSON.parse(JSON.stringify(shopsStore));
 }
 
 export function getShopById(id: string | number) {
@@ -479,8 +479,28 @@ export function getAllProducts() {
 }
 
 export function getUsers() {
-    return usersStore;
+    return JSON.parse(JSON.stringify(usersStore));
 }
+
+export function addUser(user: Omit<AppUser, 'id'>) {
+    const newUser: AppUser = {
+        ...user,
+        id: `user-${Date.now()}`,
+    }
+    usersStore.unshift(newUser);
+}
+
+export function updateUser(updatedUser: AppUser) {
+    const index = usersStore.findIndex(user => user.id === updatedUser.id);
+    if (index !== -1) {
+        usersStore[index] = updatedUser;
+    }
+}
+
+export function deleteUser(userId: string) {
+    usersStore = usersStore.filter(user => user.id !== userId);
+}
+
 
 export function addShop(shop: Omit<Shop, 'id'|'inventory'>) {
     const newShop: Shop = {
@@ -528,5 +548,3 @@ export function deleteProduct(shopId: string, productId: string) {
         shop.inventory = shop.inventory.filter(p => p.id !== productId);
     }
 }
-
-    

@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { getUsers } from '@/lib/data';
+import { getUsers, addUser, updateUser, deleteUser } from '@/lib/data';
 import type { AppUser } from '@/lib/data';
 import {
   Table,
@@ -15,9 +15,41 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Search, PlusCircle, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -25,15 +57,21 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = () => {
+    setLoading(true);
     setTimeout(() => {
       setUsers(getUsers());
       setLoading(false);
     }, 500);
-  }, []);
+  };
   
   const getInitials = (name: string) => {
+    if (!name) return 'U';
     const names = name.split(' ');
-    if (names.length > 1) {
+    if (names.length > 1 && names[0] && names[names.length - 1]) {
         return names[0][0] + names[names.length - 1][0];
     }
     return name.substring(0, 2);
@@ -46,13 +84,37 @@ export default function UsersPage() {
     );
   }, [users, searchTerm]);
 
+  const handleAddUser = (newUser: Omit<AppUser, 'id'>) => {
+    addUser(newUser);
+    fetchUsers();
+  };
+
+  const handleUpdateUser = (updatedUser: AppUser) => {
+    updateUser(updatedUser);
+    fetchUsers();
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    deleteUser(userId);
+    fetchUsers();
+  };
+
+
   return (
     <div className="flex flex-col gap-4">
-      <header>
-        <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
-        <p className="text-muted-foreground">
-          Gestiona los usuarios y sus permisos en el sistema.
-        </p>
+      <header className="flex items-center justify-between">
+        <div>
+            <h1 className="text-3xl font-bold tracking-tight">Usuarios</h1>
+            <p className="text-muted-foreground">
+              Gestiona los usuarios y sus permisos en el sistema.
+            </p>
+        </div>
+         <AddUserModal onUserAdd={handleAddUser}>
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Agregar Usuario
+          </Button>
+        </AddUserModal>
       </header>
       
       <Card>
@@ -75,6 +137,7 @@ export default function UsersPage() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Rol</TableHead>
                 <TableHead>Estatus</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -92,6 +155,7 @@ export default function UsersPage() {
                         </TableCell>
                         <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                     </TableRow>
                 ))
               ) : filteredUsers.length > 0 ? (
@@ -115,11 +179,18 @@ export default function UsersPage() {
                         {user.status}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                        <UserActionsCell 
+                            user={user} 
+                            onUserUpdate={handleUpdateUser} 
+                            onUserDelete={handleDeleteUser} 
+                        />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
+                  <TableCell colSpan={4} className="h-24 text-center">
                     No se encontraron usuarios.
                   </TableCell>
                 </TableRow>
@@ -130,4 +201,208 @@ export default function UsersPage() {
       </Card>
     </div>
   );
+}
+
+
+function UserActionsCell({ user, onUserUpdate, onUserDelete }: { user: AppUser, onUserUpdate: (user: AppUser) => void, onUserDelete: (userId: string) => void }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Abrir menú</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <EditUserModal user={user} onUserUpdate={onUserUpdate}>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Edit className="mr-2 h-4 w-4" />
+                <span>Editar</span>
+            </DropdownMenuItem>
+        </EditUserModal>
+        <DeleteUserAlert userId={user.id} onUserDelete={onUserDelete}>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>Eliminar</span>
+            </DropdownMenuItem>
+        </DeleteUserAlert>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function AddUserModal({ onUserAdd, children }: { onUserAdd: (user: Omit<AppUser, 'id'>) => void, children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [role, setRole] = useState<AppUser['role']>('Viewer');
+    const [status, setStatus] = useState<AppUser['status']>('activo');
+
+    const handleSave = () => {
+        if (!name || !email || !role) {
+            alert('Por favor completa todos los campos.');
+            return;
+        }
+
+        onUserAdd({ name, email, role, status });
+        setIsOpen(false);
+        // Reset form
+        setName('');
+        setEmail('');
+        setRole('Viewer');
+        setStatus('activo');
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
+                    <DialogDescription>Completa los detalles para crear un nuevo usuario.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="user-name-add" className="text-right">Nombre</Label>
+                        <Input id="user-name-add" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="user-email-add" className="text-right">Email</Label>
+                        <Input id="user-email-add" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="user-role-add" className="text-right">Rol</Label>
+                        <Select value={role} onValueChange={(value: AppUser['role']) => setRole(value)}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecciona un rol" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Admin">Admin</SelectItem>
+                                <SelectItem value="Editor">Editor</SelectItem>
+                                <SelectItem value="Viewer">Viewer</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="user-status-add" className="text-right">Estatus</Label>
+                        <Select value={status} onValueChange={(value: AppUser['status']) => setStatus(value)}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecciona un estatus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleSave}>Guardar Usuario</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function EditUserModal({ user, onUserUpdate, children }: { user: AppUser, onUserUpdate: (user: AppUser) => void, children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [name, setName] = useState(user.name);
+    const [email, setEmail] = useState(user.email);
+    const [role, setRole] = useState<AppUser['role']>(user.role);
+    const [status, setStatus] = useState<AppUser['status']>(user.status);
+
+    useEffect(() => {
+        if(isOpen) {
+            setName(user.name);
+            setEmail(user.email);
+            setRole(user.role);
+            setStatus(user.status);
+        }
+    }, [isOpen, user]);
+
+    const handleSave = () => {
+        onUserUpdate({ ...user, name, email, role, status });
+        setIsOpen(false);
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Editar Usuario</DialogTitle>
+                    <DialogDescription>Realiza cambios en los detalles del usuario.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="user-name-edit" className="text-right">Nombre</Label>
+                        <Input id="user-name-edit" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="user-email-edit" className="text-right">Email</Label>
+                        <Input id="user-email-edit" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="user-role-edit" className="text-right">Rol</Label>
+                        <Select value={role} onValueChange={(value: AppUser['role']) => setRole(value)}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecciona un rol" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Admin">Admin</SelectItem>
+                                <SelectItem value="Editor">Editor</SelectItem>
+                                <SelectItem value="Viewer">Viewer</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="user-status-edit" className="text-right">Estatus</Label>
+                        <Select value={status} onValueChange={(value: AppUser['status']) => setStatus(value)}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecciona un estatus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleSave}>Guardar Cambios</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, onUserDelete: (userId: string) => void, children: React.ReactNode }) {
+    const handleDelete = () => {
+        onUserDelete(userId);
+    }
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
 }
