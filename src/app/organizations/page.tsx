@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import React from 'react';
 import { getOrganizations, addOrganization, updateOrganization, getUsers } from '@/lib/data';
 import type { Organization, AppUser } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
@@ -160,8 +161,8 @@ export default function OrganizationsPage() {
 function OrganizationCard({ org, onOrgUpdate, getUserById }: { org: Organization, onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined }) {
   const [name, setName] = useState(org.name);
 
-  const handleNameUpdate = () => {
-    onOrgUpdate({...org, name});
+  const handleNameUpdate = (newName: string) => {
+    onOrgUpdate({...org, name: newName});
   };
 
   return (
@@ -236,7 +237,7 @@ function EditableOrgName({ name, onUpdate }: { name: string, onUpdate: (newName:
     }
 
     return (
-        <span onClick={() => setIsEditing(true)} className="cursor-pointer hover:bg-muted p-1 rounded-md">
+        <span onClick={() => setIsEditing(true)} className="cursor-pointer hover:bg-muted p-1 rounded-md text-2xl font-semibold leading-none tracking-tight">
             {name}
         </span>
     );
