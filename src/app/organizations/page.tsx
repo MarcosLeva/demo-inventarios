@@ -21,9 +21,6 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { Skeleton } from '@/components/ui/skeleton';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -122,7 +119,7 @@ export default function OrganizationsPage() {
                 Array.from({length: 6}).map((_, i) => <OrganizationCardSkeleton key={i}/>)
             ): (
                 paginatedOrgs.map(org => (
-                    <OrganizationCard key={org.id} org={org} allUsers={allUsers} onOrgUpdate={handleOrgUpdate} getUserById={getUserById} />
+                    <OrganizationCard key={org.id} org={org} onOrgUpdate={handleOrgUpdate} getUserById={getUserById} />
                 ))
             )}
              {!loading && paginatedOrgs.length === 0 && (
@@ -160,18 +157,21 @@ export default function OrganizationsPage() {
   );
 }
 
-function OrganizationCard({ org, allUsers, onOrgUpdate, getUserById }: { org: Organization, allUsers: AppUser[], onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined }) {
+function OrganizationCard({ org, onOrgUpdate, getUserById }: { org: Organization, onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined }) {
+  const [name, setName] = useState(org.name);
+
+  const handleNameUpdate = () => {
+    onOrgUpdate({...org, name});
+  };
+
   return (
     <Card className="flex flex-col group">
       <CardHeader className="flex-grow">
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2">
                   <Building className="text-primary" />
-                  {org.name}
+                   <EditableOrgName name={org.name} onUpdate={handleNameUpdate} />
               </span>
-              <EditOrganizationModal organization={org} allUsers={allUsers} onOrgUpdate={onOrgUpdate}>
-                  <Button variant="ghost" size="icon"><Edit className="h-4 w-4"/></Button>
-              </EditOrganizationModal>
           </CardTitle>
           <CardDescription>{org.userIds.length} miembro(s)</CardDescription>
       </CardHeader>
@@ -189,13 +189,59 @@ function OrganizationCard({ org, allUsers, onOrgUpdate, getUserById }: { org: Or
       <div className="p-6 pt-0 mt-auto">
           <Button asChild variant="outline" className="w-full">
               <Link href={`/organizations/${org.id}`}>
-                  Ver Detalles <ArrowRight className="ml-2 h-4 w-4" />
+                  Gestionar Organización <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
           </Button>
       </div>
     </Card>
   )
 }
+
+function EditableOrgName({ name, onUpdate }: { name: string, onUpdate: (newName: string) => void}) {
+    const [isEditing, setIsEditing] = useState(false);
+    const [currentName, setCurrentName] = useState(name);
+    const inputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleBlur = () => {
+        setIsEditing(false);
+        if (currentName !== name) {
+            onUpdate(currentName);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            inputRef.current?.blur();
+        }
+    };
+    
+    useEffect(() => {
+        if (isEditing) {
+            inputRef.current?.focus();
+            inputRef.current?.select();
+        }
+    }, [isEditing]);
+
+    if (isEditing) {
+        return (
+            <Input
+                ref={inputRef}
+                value={currentName}
+                onChange={(e) => setCurrentName(e.target.value)}
+                onBlur={handleBlur}
+                onKeyDown={handleKeyDown}
+                className="text-2xl font-semibold leading-none tracking-tight h-auto p-0 border-0 focus-visible:ring-0"
+            />
+        );
+    }
+
+    return (
+        <span onClick={() => setIsEditing(true)} className="cursor-pointer hover:bg-muted p-1 rounded-md">
+            {name}
+        </span>
+    );
+}
+
 
 function OrganizationCardSkeleton() {
     return (
@@ -249,93 +295,3 @@ function AddOrganizationModal({onOrgAdd, children}: {onOrgAdd: (name: string) =>
         </Dialog>
     )
 }
-
-function EditOrganizationModal({organization, allUsers, onOrgUpdate, children}: {organization: Organization, allUsers: AppUser[], onOrgUpdate: (org: Organization) => void, children: React.ReactNode}) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [name, setName] = useState(organization.name);
-    const [userIds, setUserIds] = useState(organization.userIds);
-
-    const assignableUsers = useMemo(() => {
-        return allUsers.filter(u => u.role !== 'Admin' && (!u.organizationId || u.organizationId === organization.id));
-    }, [allUsers, organization.id]);
-
-    useEffect(() => {
-        if (isOpen) {
-            setName(organization.name);
-            setUserIds(organization.userIds);
-        }
-    }, [isOpen, organization]);
-
-    const handleSave = () => {
-        onOrgUpdate({...organization, name, userIds});
-        setIsOpen(false);
-    }
-    
-    return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                    <DialogTitle>Editar Organización</DialogTitle>
-                    <DialogDescription>Modifica el nombre y los miembros de la organización.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="org-name-edit" className="text-right">Nombre</Label>
-                        <Input id="org-name-edit" value={name} onChange={e => setName(e.target.value)} className="col-span-3"/>
-                    </div>
-                     <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">Miembros</Label>
-                        <div className="col-span-3">
-                             <UserSelector allUsers={assignableUsers} selectedUserIds={userIds} onChange={setUserIds} />
-                        </div>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
-                    <Button onClick={handleSave}>Guardar Cambios</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    )
-}
-
-function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[], selectedUserIds: string[], onChange: (ids: string[]) => void}) {
-    
-    const handleUserToggle = (userId: string) => {
-        onChange(
-            selectedUserIds.includes(userId)
-                ? selectedUserIds.filter(id => id !== userId)
-                : [...selectedUserIds, userId]
-        );
-    }
-    
-    return (
-         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <Users className="mr-2" />
-                    {selectedUserIds.length > 0 ? `${selectedUserIds.length} usuario(s) seleccionado(s)`: 'Seleccionar usuarios'}
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
-                <DropdownMenuLabel>Usuarios Asignables</DropdownMenuLabel>
-                <ScrollArea className="h-48">
-                    {allUsers.map(user => (
-                        <DropdownMenuItem key={user.id} onSelect={(e) => e.preventDefault()}>
-                            <Checkbox
-                                id={`user-org-${user.id}`}
-                                checked={selectedUserIds.includes(user.id)}
-                                onCheckedChange={() => handleUserToggle(user.id)}
-                                className="mr-2"
-                            />
-                            <Label htmlFor={`user-org-${user.id}`} className="flex-1 cursor-pointer">{user.name} ({user.role})</Label>
-                        </DropdownMenuItem>
-                    ))}
-                    {allUsers.length === 0 && <DropdownMenuItem disabled>No hay usuarios disponibles.</DropdownMenuItem>}
-                </ScrollArea>
-            </DropdownMenuContent>
-        </DropdownMenu>
-    );
-}
-

@@ -227,6 +227,9 @@ export function getShopById(id: string, user?: AppUser | null): Shop | undefined
       return JSON.parse(JSON.stringify(shop));
   }
   if ((user?.role === 'Editor' || user?.role === 'Vendedor') && user.organizationId === shop.organizationId) {
+      if (user.role === 'Vendedor' && !user.shopIds.includes(shop.id)) {
+        return undefined;
+      }
       return JSON.parse(JSON.stringify(shop));
   }
   return undefined;
@@ -406,6 +409,15 @@ export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'>, as
         const user = usersStore.find(u => u.id === userId);
         if (user && !user.shopIds.includes(newShop.id)) {
             user.shopIds.push(newShop.id);
+        }
+    });
+}
+
+export function assignShopToUsers(shopId: string, userIds: string[]) {
+    userIds.forEach(userId => {
+        const user = usersStore.find(u => u.id === userId);
+        if (user && user.role === 'Vendedor' && !user.shopIds.includes(shopId)) {
+            user.shopIds.push(shopId);
         }
     });
 }
