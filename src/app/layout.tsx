@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
@@ -7,8 +8,8 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const metadata: Metadata = {
-  title: 'TiendaLocal',
-  description: 'Encuentra y explora tiendas locales y su inventario.',
+  title: 'Visor de Inventarios',
+  description: 'Un sistema para visualizar el inventario de las tiendas.',
 };
 
 export default function RootLayout({
@@ -29,7 +30,7 @@ export default function RootLayout({
             <div className="flex items-center justify-between h-16">
               <Link href="/" className="flex items-center gap-2 text-2xl font-bold font-headline text-primary transition-opacity hover:opacity-80">
                 <ShoppingCart className="h-7 w-7" />
-                <span>TiendaLocal</span>
+                <span>Visor de Inventarios</span>
               </Link>
               <ThemeToggle />
             </div>
@@ -42,7 +43,7 @@ export default function RootLayout({
 
         <footer className="bg-card/50 border-t border-border mt-auto py-6">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted-foreground text-sm">
-            <p>&copy; {new Date().getFullYear()} TiendaLocal. Todos los derechos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} Visor de Inventarios. Todos los derechos reservados.</p>
           </div>
         </footer>
         <Toaster />
