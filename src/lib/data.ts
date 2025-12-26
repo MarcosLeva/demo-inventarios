@@ -52,7 +52,7 @@ export type Shop = {
   icon: IconName;
   inventory: Product[];
   status: 'activo' | 'inactivo';
-  organizationId?: string;
+  organizationId: string;
 };
 
 export type AppUser = {
@@ -125,8 +125,8 @@ const shops: Shop[] = [
     status: 'inactivo',
     organizationId: 'org-4',
     inventory: [
-      { id: 'p10', name: "El Heredero del Dragón", properties: [{key: 'Autor', value: 'J.R.R. Tolkien'}, {key: 'Género', value: 'Fantasía'}], price: 18.99, imageSrc: 'https://picsum.photos/seed/prod7/400/300', imageHint: 'libro', stock: 40, status: 'activo' },
-      { id: 'p11', name: 'Deriva Cósmica', properties: [{key: 'Autor', value: 'Isaac Asimov'}, {key: 'Género', value: 'Ciencia Ficción'}], price: 16.99, imageSrc: 'https://picsum.photos/seed/prod8/400/300', imageHint: 'libro espacio', stock: 15, status: 'activo' },
+      { id: 'p10', name: "El Heredero del Dragón", properties: [{key: 'Descripción', value: 'Un libro de fantasia.'}, {key: 'Autor', value: 'J.R.R. Tolkien'}, {key: 'Género', value: 'Fantasía'}], price: 18.99, imageSrc: 'https://picsum.photos/seed/prod7/400/300', imageHint: 'libro', stock: 40, status: 'activo' },
+      { id: 'p11', name: 'Deriva Cósmica', properties: [{key: 'Descripción', value: 'Un libro de ciencia ficción.'}, {key: 'Autor', value: 'Isaac Asimov'}, {key: 'Género', value: 'Ciencia Ficción'}], price: 16.99, imageSrc: 'https://picsum.photos/seed/prod8/400/300', imageHint: 'libro espacio', stock: 15, status: 'activo' },
     ],
   },
   {
@@ -177,14 +177,29 @@ let organizationsStore: Organization[] = JSON.parse(JSON.stringify(organizations
 
 // --- Organizations ---
 export function getOrganizations(user?: AppUser | null): Organization[] {
-  if (!user || user.role !== 'Admin') return [];
-  return JSON.parse(JSON.stringify(organizationsStore));
+  if (!user) return [];
+  if (user.role === 'Admin') {
+    return JSON.parse(JSON.stringify(organizationsStore));
+  }
+  if (user.role === 'Editor' && user.organizationId) {
+    const org = organizationsStore.find(o => o.id === user.organizationId);
+    return org ? [JSON.parse(JSON.stringify(org))] : [];
+  }
+  return [];
 }
 
 export function getOrganizationById(id: string, user?: AppUser | null): Organization | undefined {
-  if (!user || user.role !== 'Admin') return undefined;
+  if (!user) return undefined;
   const org = organizationsStore.find(o => o.id === id);
-  return org ? JSON.parse(JSON.stringify(org)) : undefined;
+  if (!org) return undefined;
+
+  if (user.role === 'Admin') {
+    return JSON.parse(JSON.stringify(org));
+  }
+  if (user.role === 'Editor' && user.organizationId === org.id) {
+    return JSON.parse(JSON.stringify(org));
+  }
+  return undefined;
 }
 
 export function addOrganization(name: string) {
@@ -272,12 +287,15 @@ export function getUserByEmail(email: string): AppUser | undefined {
 }
 
 export function addUser(user: Omit<AppUser, 'id'>, currentUser?: AppUser | null) {
+    if (!currentUser) return;
+    
     const newUser: AppUser = {
         ...user,
         id: `user-${Date.now()}`,
     };
 
-    if (currentUser?.role === 'Editor' && newUser.role !== 'Admin') {
+    if (currentUser.role === 'Editor') {
+        if (newUser.role === 'Admin') return; // Editors can't create Admins
         newUser.organizationId = currentUser.organizationId;
     }
 
@@ -331,7 +349,7 @@ export function addShop(shopData: Omit<Shop, 'id'|'inventory'>, currentUser: App
         ...shopData,
         id: `shop-${Date.now()}`,
         inventory: [],
-        organizationId: currentUser.role === 'Editor' ? currentUser.organizationId : shopData.organizationId,
+        organizationId: currentUser.role === 'Editor' ? currentUser.organizationId! : shopData.organizationId,
     };
     shopsStore.unshift(newShop);
 
@@ -381,12 +399,11 @@ export function deleteProduct(shopId: string, productId: string) {
     }
 }
 
-export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'>, assignedUserIds: string[], currentUser: AppUser) {
+export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'|'organizationId'> & { organizationId: string }, assignedUserIds: string[], currentUser: AppUser) {
     const newShop: Shop = {
         ...shopData,
         id: `shop-${Date.now()}`,
         inventory: [],
-        organizationId: currentUser.role === 'Editor' ? currentUser.organizationId : shopData.organizationId,
     };
 
     if (!newShop.organizationId) {
@@ -414,10 +431,21 @@ export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'>, as
 }
 
 export function assignShopToUsers(shopId: string, userIds: string[]) {
+    const shop = shopsStore.find(s => s.id === shopId);
+    if (!shop) return;
+  
+    // Unassign from all vendors in the organization first
+    usersStore.forEach(user => {
+      if (user.organizationId === shop.organizationId && user.role === 'Vendedor') {
+        user.shopIds = user.shopIds.filter(id => id !== shopId);
+      }
+    });
+  
+    // Assign to selected vendors
     userIds.forEach(userId => {
-        const user = usersStore.find(u => u.id === userId);
-        if (user && user.role === 'Vendedor' && !user.shopIds.includes(shopId)) {
-            user.shopIds.push(shopId);
-        }
+      const user = usersStore.find(u => u.id === userId);
+      if (user && user.role === 'Vendedor' && user.organizationId === shop.organizationId && !user.shopIds.includes(shopId)) {
+        user.shopIds.push(shopId);
+      }
     });
 }

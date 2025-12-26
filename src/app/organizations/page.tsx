@@ -38,7 +38,12 @@ export default function OrganizationsPage() {
   const router = useRouter();
 
   useEffect(() => {
-      if (user?.role !== 'Admin') {
+      if (!user) return;
+      if (user.role === 'Editor' && user.organizationId) {
+          router.push(`/organizations/${user.organizationId}`);
+          return;
+      }
+      if (user.role !== 'Admin') {
           router.push('/');
           return;
       }
@@ -80,8 +85,29 @@ export default function OrganizationsPage() {
   const getUserById = (id: string) => allUsers.find(u => u.id === id);
 
 
-  if (!user || user.role !== 'Admin') {
-    return <div className="flex items-center justify-center h-full">Acceso denegado.</div>;
+  if (loading || user?.role !== 'Admin') {
+      return (
+        <div className="flex flex-col gap-4">
+            <header className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Organizaciones</h1>
+                    <p className="text-muted-foreground">
+                        Crea y gestiona las organizaciones y sus usuarios.
+                    </p>
+                </div>
+            </header>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-10 w-full max-w-sm" />
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {Array.from({length: 6}).map((_, i) => <OrganizationCardSkeleton key={i}/>)}
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+      );
   }
 
   return (
@@ -116,14 +142,10 @@ export default function OrganizationsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {loading ? (
-                Array.from({length: 6}).map((_, i) => <OrganizationCardSkeleton key={i}/>)
-            ): (
-                paginatedOrgs.map(org => (
-                    <OrganizationCard key={org.id} org={org} onOrgUpdate={handleOrgUpdate} getUserById={getUserById} />
-                ))
-            )}
-             {!loading && paginatedOrgs.length === 0 && (
+            {paginatedOrgs.map(org => (
+                <OrganizationCard key={org.id} org={org} onOrgUpdate={handleOrgUpdate} getUserById={getUserById} />
+            ))}
+             {paginatedOrgs.length === 0 && (
                 <div className="col-span-full text-center py-10">
                     <p>No se encontraron organizaciones.</p>
                 </div>
@@ -132,7 +154,7 @@ export default function OrganizationsPage() {
         </CardContent>
       </Card>
 
-      {totalPages > 1 && !loading && (
+      {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4 mt-4">
           <Button
             variant="outline"

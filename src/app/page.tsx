@@ -52,6 +52,8 @@ export default function Home() {
       setAllUsers(getUsers(user));
       if (user?.role === 'Admin') {
         setAllOrganizations(getOrganizations(user));
+      } else if (user?.role === 'Editor') {
+        setAllOrganizations(getOrganizations(user));
       }
       setLoading(false);
   }
@@ -90,7 +92,7 @@ export default function Home() {
 
   const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => {
     if (!user) return;
-    addShopAndAssignUsers(newShopData, assignedUserIds, user); 
+    addShopAndAssignUsers(newShopData as Omit<Shop, 'id'|'inventory'|'organizationId'> & { organizationId: string }, assignedUserIds, user); 
     fetchData();
   };
 
@@ -332,8 +334,20 @@ function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUser, chil
     }, [allUsers, organizationId, currentUser]);
 
     useEffect(() => {
-        if (currentUser?.role === 'Editor') {
-            setOrganizationId(currentUser.organizationId);
+        if (isOpen) {
+            // Reset form
+            setName('');
+            setSpecialization('');
+            setLogoSrc('https://picsum.photos/seed/newshop/400/400');
+            setIconName('Shirt');
+            setStatus('activo');
+            setAssignedUserIds([]);
+            
+            if (currentUser?.role === 'Editor') {
+                setOrganizationId(currentUser.organizationId);
+            } else {
+                setOrganizationId(undefined);
+            }
         }
     }, [currentUser, isOpen]);
 
@@ -355,16 +369,6 @@ function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUser, chil
         }, assignedUserIds);
 
         setIsOpen(false);
-        // Reset form
-        setName('');
-        setSpecialization('');
-        setLogoSrc('https://picsum.photos/seed/newshop/400/400');
-        setIconName('Shirt');
-        setStatus('activo');
-        setAssignedUserIds([]);
-        if (currentUser?.role !== 'Editor') {
-          setOrganizationId(undefined);
-        }
     };
 
     const IconPreview = icons[iconName] || null;
@@ -514,4 +518,3 @@ function UserSelector({allUsers, selectedUserIds, onChange, disabled = false}: {
         </DropdownMenu>
     );
 }
-

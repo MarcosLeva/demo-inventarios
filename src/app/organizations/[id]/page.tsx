@@ -32,15 +32,22 @@ export default function OrganizationDetailPage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [canManage, setCanManage] = useState(false);
 
 
   useEffect(() => {
-    if (currentUser?.role !== 'Admin') {
+    if (!currentUser) return;
+    
+    const canAccess = currentUser.role === 'Admin' || (currentUser.role === 'Editor' && currentUser.organizationId === params.id);
+
+    if (!canAccess) {
       router.push('/');
       return;
     }
+    
+    setCanManage(canAccess);
     fetchData();
-  }, [currentUser, params.id]);
+  }, [currentUser, params.id, router]);
 
   const fetchData = () => {
     setLoading(true);
@@ -51,12 +58,12 @@ export default function OrganizationDetailPage() {
         return;
       }
       const allUsersData = getUsers(currentUser);
-      const allShops = getShops(currentUser);
+      const allShopsData = getShops(currentUser);
 
       setOrganization(org);
       setAllUsers(allUsersData);
       setMembers(allUsersData.filter(u => org.userIds.includes(u.id)));
-      setShops(allShops.filter(s => s.organizationId === org.id));
+      setShops(allShopsData.filter(s => s.organizationId === org.id));
       setLoading(false);
     }, 500);
   };
@@ -70,7 +77,7 @@ export default function OrganizationDetailPage() {
 
   const handleAssignShop = (shopId: string, userIds: string[]) => {
     assignShopToUsers(shopId, userIds);
-    fetchData(); // This might not be enough if user objects need to be re-fetched with new shops
+    fetchData(); 
   }
 
   if (loading) {
@@ -91,7 +98,15 @@ export default function OrganizationDetailPage() {
     return name.substring(0, 2);
   }
   
-  const assignableUsersForOrg = allUsers.filter(u => u.role !== 'Admin' && (!u.organizationId || u.organizationId === organization.id));
+  const assignableUsersForOrg = allUsers.filter(u => {
+      if (currentUser?.role === 'Admin') {
+         return u.role !== 'Admin' && (!u.organizationId || u.organizationId === organization.id);
+      }
+      if (currentUser?.role === 'Editor') {
+         return u.organizationId === currentUser.organizationId && u.role !== 'Admin';
+      }
+      return false;
+  });
 
   return (
     <div className="flex flex-col gap-8">
@@ -119,14 +134,15 @@ export default function OrganizationDetailPage() {
             organizationId={organization.id} 
             allUsers={assignableUsersForOrg}
             onMembersUpdate={handleMembersUpdate}
+            canManage={canManage}
         />
-        <ShopsTable shops={shops} members={members} onAssignShop={handleAssignShop} />
+        <ShopsTable shops={shops} members={members} onAssignShop={handleAssignShop} canManage={canManage} />
       </div>
     </div>
   );
 }
 
-function UsersTable({ members, getInitials, organizationId, allUsers, onMembersUpdate }: { members: AppUser[], getInitials: (name: string) => string, organizationId: string, allUsers: AppUser[], onMembersUpdate: (userIds: string[]) => void }) {
+function UsersTable({ members, getInitials, organizationId, allUsers, onMembersUpdate, canManage }: { members: AppUser[], getInitials: (name: string) => string, organizationId: string, allUsers: AppUser[], onMembersUpdate: (userIds: string[]) => void, canManage: boolean }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -148,14 +164,16 @@ function UsersTable({ members, getInitials, organizationId, allUsers, onMembersU
                         <CardTitle className="flex items-center gap-2"><Users /> Miembros</CardTitle>
                         <CardDescription>Usuarios que pertenecen a esta organización.</CardDescription>
                     </div>
-                     <ManageMembersModal 
-                        organizationId={organizationId}
-                        allUsers={allUsers}
-                        currentMemberIds={members.map(m => m.id)}
-                        onUpdate={onMembersUpdate}
-                    >
-                        <Button variant="outline"><UserPlus className="mr-2" /> Gestionar</Button>
-                    </ManageMembersModal>
+                     {canManage && (
+                        <ManageMembersModal 
+                            organizationId={organizationId}
+                            allUsers={allUsers}
+                            currentMemberIds={members.map(m => m.id)}
+                            onUpdate={onMembersUpdate}
+                        >
+                            <Button variant="outline"><UserPlus className="mr-2" /> Gestionar</Button>
+                        </ManageMembersModal>
+                     )}
                 </div>
                  <div className="relative pt-2">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -210,7 +228,7 @@ function UsersTable({ members, getInitials, organizationId, allUsers, onMembersU
     );
 }
 
-function ShopsTable({ shops, members, onAssignShop }: { shops: Shop[], members: AppUser[], onAssignShop: (shopId: string, userIds: string[]) => void }) {
+function ShopsTable({ shops, members, onAssignShop, canManage }: { shops: Shop[], members: AppUser[], onAssignShop: (shopId: string, userIds: string[]) => void, canManage: boolean }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -276,11 +294,13 @@ function ShopsTable({ shops, members, onAssignShop }: { shops: Shop[], members: 
                                     <Badge variant={shop.status === 'activo' ? 'secondary' : 'destructive'}>{shop.status}</Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
-                                    <AssignUsersToShopModal shop={shop} members={members} onAssign={onAssignShop}>
-                                        <Button variant="ghost" size="icon">
-                                            <LinkIcon className="h-4 w-4" />
-                                        </Button>
-                                    </AssignUsersToShopModal>
+                                     {canManage && (
+                                        <AssignUsersToShopModal shop={shop} members={members} onAssign={onAssignShop}>
+                                            <Button variant="ghost" size="icon">
+                                                <LinkIcon className="h-4 w-4" />
+                                            </Button>
+                                        </AssignUsersToShopModal>
+                                     )}
                                 </TableCell>
                             </TableRow>
                          )) : (
@@ -372,22 +392,7 @@ function AssignUsersToShopModal({ shop, members, onAssign, children }: { shop: S
     }, [isOpen, shop, vendors]);
 
     const handleSave = () => {
-        onAssign(shop.id, selectedUserIds);
-        // This is a simplified approach. A real app might need to handle un-assignments too.
-        // For now, we only add assignments.
-        
-        // Let's modify the onAssign to re-evaluate.
-        // A better approach would be a dedicated function `setShopAssignments(shopId, userIds)`
-        // that handles both adding and removing. But for this demo, let's keep it simple.
-        
-        // A quick fix for demo purposes:
-        const allVendorsInOrg = vendors.map(v => v.id);
-        const vendorsToUnassign = allVendorsInOrg.filter(id => !selectedUserIds.includes(id));
-        
-        // This is pseudo-code for what should happen
-        // unassignShopFromUsers(shop.id, vendorsToUnassign);
         assignShopToUsers(shop.id, selectedUserIds);
-
         setIsOpen(false);
     }
     

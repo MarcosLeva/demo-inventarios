@@ -79,6 +79,9 @@ export default function UsersPage() {
       setShops(getShops(currentUser));
       if (currentUser?.role === 'Admin') {
         setOrganizations(getOrganizations(currentUser));
+      } else if (currentUser?.role === 'Editor' && currentUser.organizationId) {
+        const org = getOrganizations(currentUser).find(o => o.id === currentUser!.organizationId);
+        setOrganizations(org ? [org] : []);
       }
       setLoading(false);
     }, 500);
@@ -96,7 +99,7 @@ export default function UsersPage() {
   const getOrganizationName = (orgId: string | undefined) => {
     if (!orgId) return 'N/A';
     const org = organizations.find(o => o.id === orgId);
-    return org?.name || 'N/A';
+    return org?.name || 'Desconocida';
   }
 
   const filteredUsers = useMemo(() => {
@@ -168,7 +171,7 @@ export default function UsersPage() {
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Rol</TableHead>
-                {currentUser?.role === 'Admin' && <TableHead>Organización</TableHead>}
+                <TableHead>Organización</TableHead>
                 <TableHead>Tiendas Asignadas</TableHead>
                 <TableHead>Estatus</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
@@ -188,7 +191,7 @@ export default function UsersPage() {
                             </div>
                         </TableCell>
                         <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                        {currentUser?.role === 'Admin' && <TableCell><Skeleton className="h-5 w-24" /></TableCell>}
+                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                         <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
@@ -210,7 +213,7 @@ export default function UsersPage() {
                        </div>
                     </TableCell>
                     <TableCell>{user.role}</TableCell>
-                     {currentUser?.role === 'Admin' && <TableCell>{user.role !== 'Admin' ? getOrganizationName(user.organizationId) : 'N/A'}</TableCell>}
+                     <TableCell>{user.role !== 'Admin' ? getOrganizationName(user.organizationId) : 'N/A'}</TableCell>
                      <TableCell>
                       {user.shopIds.length > 0 ? (
                         <DropdownMenu>
@@ -259,7 +262,7 @@ export default function UsersPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={currentUser?.role === 'Admin' ? 6: 5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     No se encontraron usuarios.
                   </TableCell>
                 </TableRow>
@@ -300,8 +303,10 @@ export default function UsersPage() {
 
 
 function UserActionsCell({ user, allShops, allOrganizations, onUserUpdate, onUserDelete, currentUser }: { user: AppUser, allShops: Shop[], allOrganizations: Organization[], onUserUpdate: (user: AppUser) => void, onUserDelete: (userId: string) => void, currentUser?: AppUser | null }) {
-  if (currentUser?.id === user.id) return null;
-  if (currentUser?.role === 'Editor' && user.role === 'Admin') return null;
+  if (!currentUser) return null;
+  if (currentUser.id === user.id) return null;
+  if (currentUser.role === 'Editor' && user.role === 'Admin') return null;
+  if (currentUser.role === 'Editor' && user.organizationId !== currentUser.organizationId) return null;
 
   return (
     <DropdownMenu>
