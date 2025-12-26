@@ -155,7 +155,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
             alt={`Fondo de ${shop.name}`}
             fill
             className="object-cover opacity-10 dark:opacity-5"
-            style={{ filter: 'blur(24px) saturate(1.2)' }}
+            style={{ filter: 'blur(4px) saturate(1.2)' }}
             data-ai-hint={shop.logoHint}
           />
         </div>
@@ -752,6 +752,9 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
 
 
 
+
+
+    
 
 
     
