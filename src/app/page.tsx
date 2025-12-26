@@ -309,7 +309,7 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
             return;
         }
 
-        const selectedIcon = icons[iconName] as LucideIcon;
+        const selectedIcon = icons[iconName];
 
         if (!selectedIcon) {
             alert('Icono no válido seleccionado.');
