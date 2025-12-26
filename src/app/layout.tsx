@@ -31,10 +31,10 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased bg-background/50 dark:bg-background text-foreground min-h-screen')}>
         <AuthProvider>
-          <div className="relative min-h-screen">
+          <div className="relative min-h-screen md:grid md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
             <Sidebar />
-            <div className="flex flex-col md:pl-[220px] lg:pl-[280px]">
-              <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
+            <div className="flex flex-col">
+              <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30 md:pl-0">
                 <Sheet>
                   <SheetTrigger asChild>
                     <Button

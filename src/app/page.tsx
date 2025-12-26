@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { getShops, getUsers, icons, addShopAndAssignUsers } from '@/lib/data';
+import { getShops, getUsers, addShopAndAssignUsers } from '@/lib/data';
 import type { Shop, IconMap, IconName, AppUser } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from '@/components/ui/label';
+import { icons } from '@/lib/data';
 import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -47,15 +48,16 @@ export default function Home() {
 
   const fetchData = () => {
       setInitialShops(getShops(user));
-      setAllUsers(getUsers());
+      setAllUsers(getUsers(user));
       setLoading(false);
   }
 
   useEffect(() => {
-    // Simulate fetching data
-    setTimeout(() => {
-      fetchData();
-    }, 500); // Simulate 0.5 second loading time
+    if (user) {
+        setTimeout(() => {
+          fetchData();
+        }, 500); 
+    }
   }, [user]);
 
 
@@ -83,7 +85,7 @@ export default function Home() {
   }, [filteredShops, currentPage]);
 
   const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => {
-    addShopAndAssignUsers(newShopData, assignedUserIds); 
+    addShopAndAssignUsers(newShopData, assignedUserIds, user || undefined); 
     fetchData(); // Refreshes shops and users
   };
 
@@ -97,8 +99,8 @@ export default function Home() {
             Explora y gestiona el inventario de las tiendas.
           </p>
         </header>
-        {user?.role === 'Admin' && (
-          <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers}>
+        {user?.role !== 'Vendedor' && (
+          <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers} userRole={user?.role}>
                <Button className="hidden sm:flex">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Agregar Tienda
@@ -139,8 +141,8 @@ export default function Home() {
                 <SelectItem value="inactivo">Inactivas</SelectItem>
             </SelectContent>
         </Select>
-         {user?.role === 'Admin' && (
-            <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers}>
+         {user?.role !== 'Vendedor' && (
+            <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers} userRole={user?.role}>
                <Button className="w-full sm:hidden">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Agregar Tienda
@@ -306,7 +308,7 @@ function ImageUploader({ value, onChange }: { value: string, onChange: (value: s
     );
 }
 
-function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], children: React.ReactNode }) {
+function AddShopModal({ onShopAdd, allUsers, userRole, children }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], userRole?: AppUser['role'], children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [specialization, setSpecialization] = useState('');
@@ -315,7 +317,7 @@ function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omi
     const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
     const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
 
-    const sellerUsers = useMemo(() => allUsers.filter(u => u.role === 'Vendedor'), [allUsers]);
+    const assignableUsers = useMemo(() => allUsers.filter(u => u.role === 'Vendedor' || (userRole === 'Editor' && u.role === 'Editor' && u.id === allUsers.find(editor => editor.role === 'Editor')?.id)), [allUsers, userRole]);
 
     const handleSave = () => {
         if (!name || !specialization || !iconName) {
@@ -418,9 +420,9 @@ function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omi
                         </div>
                     )}
                     <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">Asignar Vendedores</Label>
+                        <Label className="text-right pt-2">Asignar Usuarios</Label>
                         <div className="col-span-3">
-                            <UserSelector allUsers={sellerUsers} selectedUserIds={assignedUserIds} onChange={setAssignedUserIds} />
+                            <UserSelector allUsers={assignableUsers} selectedUserIds={assignedUserIds} onChange={setAssignedUserIds} />
                         </div>
                     </div>
                 </div>
@@ -450,7 +452,7 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full justify-start text-left font-normal">
                     <Store className="mr-2" />
-                    {selectedUserIds.length > 0 ? `${selectedUserIds.length} vendedor(es) seleccionado(s)`: 'Seleccionar vendedores'}
+                    {selectedUserIds.length > 0 ? `${selectedUserIds.length} usuario(s) seleccionado(s)`: 'Seleccionar usuarios'}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
@@ -463,16 +465,12 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
                                 onCheckedChange={() => handleUserToggle(user.id)}
                                 className="mr-2"
                             />
-                            <Label htmlFor={`user-${user.id}`} className="flex-1 cursor-pointer">{user.name}</Label>
+                            <Label htmlFor={`user-${user.id}`} className="flex-1 cursor-pointer">{user.name} ({user.role})</Label>
                         </DropdownMenuItem>
                     ))}
-                    {allUsers.length === 0 && <DropdownMenuItem disabled>No hay vendedores disponibles.</DropdownMenuItem>}
+                    {allUsers.length === 0 && <DropdownMenuItem disabled>No hay usuarios disponibles.</DropdownMenuItem>}
                 </ScrollArea>
             </DropdownMenuContent>
         </DropdownMenu>
     );
 }
-    
-
-    
-
