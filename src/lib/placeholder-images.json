@@ -1,3 +1,100 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "shop-1-logo",
+      "description": "Logo for a clothing store",
+      "imageUrl": "https://images.unsplash.com/photo-1555529771-835f59fc5efe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjbG90aGluZyUyMHN0b3JlfGVufDB8fHx8MTc2Njc3Mzc5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "clothing store"
+    },
+    {
+      "id": "shop-2-logo",
+      "description": "Logo for an electronics store",
+      "imageUrl": "https://images.unsplash.com/photo-1697545806136-92d30cb7081e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxlbGVjdHJvbmljcyUyMHN0b3JlfGVufDB8fHx8MTc2NjY2MzA4NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "electronics store"
+    },
+    {
+      "id": "shop-3-logo",
+      "description": "Logo for a bakery",
+      "imageUrl": "https://images.unsplash.com/photo-1711672284661-bd70e38f31b2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxiYWtlcnklMjBzaG9wfGVufDB8fHx8MTc2Njc3Mzc5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "bakery shop"
+    },
+    {
+      "id": "shop-4-logo",
+      "description": "Logo for a bookstore",
+      "imageUrl": "https://images.unsplash.com/photo-1524311583145-d5593bd3502a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxib29rJTIwc3RvcmV8ZW58MHx8fHwxNzY2NzczNzk3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book store"
+    },
+    {
+      "id": "product-1-image",
+      "description": "Image of a t-shirt",
+      "imageUrl": "https://images.unsplash.com/photo-1759572095329-1dcf9522762b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx0LXNoaXJ0fGVufDB8fHx8MTc2NjcyOTA1MHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "t-shirt"
+    },
+    {
+      "id": "product-2-image",
+      "description": "Image of jeans",
+      "imageUrl": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxqZWFuc3xlbnwwfHx8fDE3NjY3MTc2Mjd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "jeans"
+    },
+    {
+      "id": "product-3-image",
+      "description": "Image of a hoodie",
+      "imageUrl": "https://images.unsplash.com/photo-1579572331145-5e53b299c64e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxob29kaWV8ZW58MHx8fHwxNzY2NzcxOTUyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hoodie"
+    },
+    {
+      "id": "product-4-image",
+      "description": "Image of a laptop",
+      "imageUrl": "https://images.unsplash.com/photo-1499914485622-a88fac536970?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxsYXB0b3B8ZW58MHx8fHwxNzY2NjcyOTg1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "laptop"
+    },
+    {
+      "id": "product-5-image",
+      "description": "Image of a smartphone",
+      "imageUrl": "https://images.unsplash.com/photo-1598965402089-897ce52e8355?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzbWFydHBob25lfGVufDB8fHx8MTc2NjY2MTY4Mnww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "smartphone"
+    },
+    {
+      "id": "product-6-image",
+      "description": "Image of wireless earbuds",
+      "imageUrl": "https://images.unsplash.com/photo-1572569511254-d8f925fe2cbb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxlYXJidWRzfGVufDB8fHx8MTc2Njc0ODMyMHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "earbuds"
+    },
+    {
+      "id": "product-7-image",
+      "description": "Image of a croissant",
+      "imageUrl": "https://images.unsplash.com/photo-1530610476181-d83430b64dcd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjcm9pc3NhbnR8ZW58MHx8fHwxNzY2NzA5NDczfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "croissant"
+    },
+    {
+      "id": "product-8-image",
+      "description": "Image of a cupcake",
+      "imageUrl": "https://images.unsplash.com/photo-1607478900766-efe13248b125?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjdXBjYWtlfGVufDB8fHx8MTc2Njc3Mzc5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cupcake"
+    },
+    {
+      "id": "product-9-image",
+      "description": "Image of a sourdough loaf",
+      "imageUrl": "https://images.unsplash.com/photo-1608198093002-ad4e005484ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxicmVhZHxlbnwwfHx8fDE3NjY3MjQyMTN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "bread"
+    },
+    {
+      "id": "product-10-image",
+      "description": "Image of a fantasy novel",
+      "imageUrl": "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxib29rfGVufDB8fHx8MTc2NjcxMTgwNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book"
+    },
+    {
+      "id": "product-11-image",
+      "description": "Image of a science fiction book",
+      "imageUrl": "https://images.unsplash.com/photo-1650315532725-fdc6b5235f1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxib29rJTIwc3BhY2V8ZW58MHx8fHwxNzY2NzYyMjg2fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book space"
+    },
+    {
+      "id": "product-12-image",
+      "description": "Image of a mystery book",
+      "imageUrl": "https://images.unsplash.com/photo-1628024611852-c16492d6dca0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxteXN0ZXJ5JTIwYm9va3xlbnwwfHx8fDE3NjY3NzM3OTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mystery book"
+    }
+  ]
 }
