@@ -191,85 +191,83 @@ export default function ShopPage() {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <div className="lg:col-span-4">
-          <div className="relative mb-12 overflow-hidden rounded-lg">
-            <div className="absolute inset-0 bg-background/80 z-10"></div>
-            <Image
-                src={shop.logoSrc}
-                alt={`${shop.name} background`}
-                fill
-                className="object-cover"
-                style={{filter: 'blur(4px)'}}
-                data-ai-hint={shop.logoHint}
-                sizes="100vw"
-            />
-            <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 p-6 z-20 justify-between">
-                <div className="flex items-center gap-6">
-                    <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
-                        <Image
-                          src={shop.logoSrc}
-                          alt={`${shop.name} logo`}
-                          fill
-                          className="object-cover"
-                          data-ai-hint={shop.logoHint}
-                          sizes="128px"
-                        />
-                    </div>
-                    <div className="relative">
-                        <Badge variant={shop.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize absolute -top-6 left-0">{shop.status}</Badge>
-                        <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
-                            {shop.name}
-                        </h1>
-                         {canEditShop && organization ? (
-                            <Button variant="link" asChild className="p-0 h-auto font-semibold text-base text-muted-foreground hover:text-primary">
-                                <Link href={`/organizations/${organization.id}`} className="flex items-center gap-1.5">
-                                    <Building className="h-4 w-4" /> {organization.name}
-                                </Link>
-                            </Button>
-                         ) : (
-                           <p className="text-lg text-muted-foreground">{shop.specialization}</p>
-                         )}
-                    </div>
+      <div className="relative mb-12 overflow-hidden rounded-lg">
+        <div className="absolute inset-0 bg-background/80 z-10"></div>
+        <Image
+            src={shop.logoSrc}
+            alt={`${shop.name} background`}
+            fill
+            className="object-cover"
+            style={{filter: 'blur(4px)'}}
+            data-ai-hint={shop.logoHint}
+            sizes="100vw"
+        />
+        <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 p-6 z-20 justify-between">
+            <div className="flex items-center gap-6">
+                <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
+                    <Image
+                      src={shop.logoSrc}
+                      alt={`${shop.name} logo`}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={shop.logoHint}
+                      sizes="128px"
+                    />
                 </div>
-                <div className="flex items-center gap-4">
-                  {canEditShop && (
-                    <div className="flex items-center">
-                        <TooltipProvider>
-                          <div className="flex items-center -space-x-2">
-                            {members.map(member => (
-                                <Tooltip key={member.id}>
-                                    <TooltipTrigger asChild>
-                                        <Avatar className="h-9 w-9 border-2 border-background">
-                                            <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${member.name}`} alt={member.name} />
-                                            <AvatarFallback>{member.name.substring(0, 2)}</AvatarFallback>
-                                        </Avatar>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{member.name}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            ))}
-                          </div>
-                        </TooltipProvider>
-                         {members.length > 0 && <span className="text-sm text-muted-foreground ml-3">{members.length} miembro(s)</span>}
-                    </div>
-                  )}
-
-                  {canEditShop && (
-                    <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
-                        <Button variant="outline" size="sm">
-                            <Edit className="h-4 w-4 mr-2" />
-                            Editar Tienda
+                <div className="relative">
+                    <Badge variant={shop.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize absolute -top-6 left-0">{shop.status}</Badge>
+                    <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
+                        {shop.name}
+                    </h1>
+                     {canEditShop && organization ? (
+                        <Button variant="link" asChild className="p-0 h-auto font-semibold text-base text-muted-foreground hover:text-primary">
+                            <Link href={`/organizations/${organization.id}`} className="flex items-center gap-1.5">
+                                <Building className="h-4 w-4" /> {organization.name}
+                            </Link>
                         </Button>
-                    </EditShopModal>
-                  )}
+                     ) : (
+                       <p className="text-lg text-muted-foreground">{shop.specialization}</p>
+                     )}
                 </div>
             </div>
-          </div>
-        </div>
+            <div className="flex items-center gap-4">
+              {canEditShop && (
+                <div className="flex items-center">
+                    <TooltipProvider>
+                      <div className="flex items-center -space-x-2">
+                        {members.map(member => (
+                            <Tooltip key={member.id}>
+                                <TooltipTrigger asChild>
+                                    <Avatar className="h-9 w-9 border-2 border-background">
+                                        <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${member.name}`} alt={member.name} />
+                                        <AvatarFallback>{member.name.substring(0, 2)}</AvatarFallback>
+                                    </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{member.name}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        ))}
+                      </div>
+                    </TooltipProvider>
+                     {members.length > 0 && <span className="text-sm text-muted-foreground ml-3">{members.length} miembro(s)</span>}
+                </div>
+              )}
 
-        <aside className="lg:col-span-1 md:order-first space-y-6">
+              {canEditShop && (
+                <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
+                    <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-2" />
+                        Editar Tienda
+                    </Button>
+                </EditShopModal>
+              )}
+            </div>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <aside className="lg:col-span-1 space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-3">
