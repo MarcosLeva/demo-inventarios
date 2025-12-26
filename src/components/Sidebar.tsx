@@ -11,7 +11,7 @@ const navLinksConfig = [
   { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
   { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
   { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin', 'Editor'], disabled: false },
-  { href: '/organizations', label: 'Organizaciones', icon: Building, roles: ['Admin'], disabled: false },
+  { href: '/organizations', label: 'Organización', icon: Building, roles: ['Admin', 'Editor'], disabled: false },
   { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
   { href: '/connections', label: 'Conexiones', icon: Link2, roles: ['Admin', 'Editor', 'Vendedor'], disabled: true },
 ];
@@ -27,6 +27,11 @@ export default function Sidebar({ isMobile = false }) {
   const navLinks = navLinksConfig.filter(link => link.roles.includes(user.role));
 
   const renderLink = (link: typeof navLinks[0]) => {
+    let href = link.href;
+    if (link.href === '/organizations' && user?.role === 'Editor' && user.organizationId) {
+        href = `/organizations/${user.organizationId}`;
+    }
+
     const isActive = !link.disabled && (link.href === '/' ? pathname === '/' : pathname.startsWith(link.href));
     
     const linkContent = (
@@ -50,7 +55,7 @@ export default function Sidebar({ isMobile = false }) {
     return (
       <Link
         key={link.href}
-        href={link.href}
+        href={href}
         className={linkClasses}
       >
         {linkContent}
