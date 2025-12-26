@@ -9,12 +9,16 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRight, Search } from 'lucide-react';
+import { ArrowRight, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const SHOPS_PER_PAGE = 8;
 
 export default function Home() {
   const shops = getShops();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const specializations = useMemo(() => {
     const allSpecs = shops.map((shop) => shop.specialization);
@@ -22,6 +26,7 @@ export default function Home() {
   }, [shops]);
 
   const filteredShops = useMemo(() => {
+    setCurrentPage(1); // Reset page when filters change
     return shops.filter((shop) => {
       const matchesSearchTerm = shop.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesSpecialization =
@@ -29,6 +34,13 @@ export default function Home() {
       return matchesSearchTerm && matchesSpecialization;
     });
   }, [shops, searchTerm, selectedSpecialization]);
+
+  const totalPages = Math.ceil(filteredShops.length / SHOPS_PER_PAGE);
+  const paginatedShops = useMemo(() => {
+    const startIndex = (currentPage - 1) * SHOPS_PER_PAGE;
+    const endIndex = startIndex + SHOPS_PER_PAGE;
+    return filteredShops.slice(startIndex, endIndex);
+  }, [filteredShops, currentPage]);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -67,15 +79,42 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {filteredShops.map((shop) => (
+        {paginatedShops.map((shop) => (
           <ShopCard key={shop.id} shop={shop} />
         ))}
-         {filteredShops.length === 0 && (
-            <p className="text-muted-foreground col-span-full text-center">
-                No se encontraron tiendas que coincidan con tus criterios.
-            </p>
-        )}
       </div>
+
+      {filteredShops.length === 0 && (
+          <p className="text-muted-foreground col-span-full text-center py-10">
+              No se encontraron tiendas que coincidan con tus criterios.
+          </p>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-12">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Página anterior</span>
+          </Button>
+          <span className="text-sm font-medium">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Página siguiente</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

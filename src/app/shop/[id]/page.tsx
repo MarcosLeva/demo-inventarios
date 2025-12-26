@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -54,6 +54,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
+const ITEMS_PER_PAGE = 10;
 
 export default function ShopPage({ params }: { params: { id: string } }) {
   const shopData = getShopById(params.id);
@@ -62,6 +63,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const maxPrice = useMemo(() => {
     if (!shop || shop.inventory.length === 0) {
@@ -99,8 +101,8 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     });
   }
 
-
   const filteredInventory = useMemo(() => {
+    setCurrentPage(1); // Reset page when filters change
     if (!shop) return [];
     return shop.inventory.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -110,6 +112,15 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       return matchesSearch && matchesPrice && matchesStatus && matchesStock;
     });
   }, [shop, searchTerm, priceRange, statusFilter, hideOutOfStock]);
+
+  const totalPages = Math.ceil(filteredInventory.length / ITEMS_PER_PAGE);
+
+  const paginatedInventory = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredInventory.slice(startIndex, endIndex);
+  }, [filteredInventory, currentPage]);
+
 
   const Icon = shop.icon;
 
@@ -234,8 +245,8 @@ export default function ShopPage({ params }: { params: { id: string } }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredInventory.length > 0 ? (
-                filteredInventory.map((product) => (
+              {paginatedInventory.length > 0 ? (
+                paginatedInventory.map((product) => (
                   <ProductRow 
                     key={product.id} 
                     product={product}
@@ -253,6 +264,32 @@ export default function ShopPage({ params }: { params: { id: string } }) {
             </TableBody>
           </Table>
       </Card>
+
+       {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+             <span className="sr-only">Página anterior</span>
+          </Button>
+          <span className="text-sm font-medium">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+             <span className="sr-only">Página siguiente</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -461,5 +498,3 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
         </AlertDialog>
     );
 }
-
-    
