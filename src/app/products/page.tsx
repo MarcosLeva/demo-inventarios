@@ -99,7 +99,7 @@ export default function ProductsPage() {
   }).format(price);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
       <header>
         <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
         <p className="text-muted-foreground">
@@ -107,130 +107,127 @@ export default function ProductsPage() {
         </p>
       </header>
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        <aside className="lg:col-span-1">
-             <ProductFilters
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                statusFilter={statusFilter}
-                setStatusFilter={setStatusFilter}
-                hideOutOfStock={hideOutOfStock}
-                setHideOutOfStock={setHideOutOfStock}
-                priceRange={priceRange}
-                setPriceRange={setPriceRange}
-                maxPrice={maxPrice}
-                shops={shops}
-                selectedShop={selectedShop}
-                setSelectedShop={setSelectedShop}
-              />
-        </aside>
+      <ProductFilters
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        hideOutOfStock={hideOutOfStock}
+        setHideOutOfStock={setHideOutOfStock}
+        priceRange={priceRange}
+        setPriceRange={setPriceRange}
+        maxPrice={maxPrice}
+        shops={shops}
+        selectedShop={selectedShop}
+        setSelectedShop={setSelectedShop}
+      />
 
-        <main className="lg:col-span-3">
-            <h2 className="text-3xl font-bold font-headline mb-4">Resultados ({filteredProducts.length})</h2>
-            <Card>
-                <CardContent className="p-0">
-                <Table>
-                    <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[80px]">Imagen</TableHead>
-                        <TableHead>Producto</TableHead>
-                        <TableHead>Tienda</TableHead>
-                        <TableHead>Estatus</TableHead>
-                        <TableHead className="text-right">Stock</TableHead>
-                        <TableHead className="text-right">Precio</TableHead>
-                        <TableHead className="text-center">Acciones</TableHead>
-                    </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                    {loading ? (
-                        Array.from({ length: PRODUCTS_PER_PAGE }).map((_, index) => (
-                            <TableRow key={index}>
-                                <TableCell><Skeleton className="h-16 w-16 rounded-md" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-8 mx-auto" /></TableCell>
-                            </TableRow>
-                        ))
-                    ) : paginatedProducts.length > 0 ? (
-                        paginatedProducts.map((product) => (
-                        <TableRow key={product.id}>
-                            <TableCell>
-                            <div className="relative h-16 w-16 rounded-md overflow-hidden">
-                                <Image
-                                src={product.imageSrc}
-                                alt={product.name}
-                                fill
-                                className="object-cover"
-                                sizes="64px"
-                                />
-                            </div>
-                            </TableCell>
-                            <TableCell className="font-medium">{product.name}</TableCell>
-                            <TableCell className="text-muted-foreground">{getShopName(product.shopId)}</TableCell>
-                            <TableCell>
-                            <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
-                                {product.status === 'activo' ? <PackageCheck className="mr-1.5 h-3 w-3" /> : <PackageX className="mr-1.5 h-3 w-3" />}
-                                {product.status}
-                            </Badge>
-                            </TableCell>
-                            <TableCell className={cn("text-right font-semibold", product.stock === 0 ? "text-destructive" : "")}>
-                            {product.stock === 0 ? 'Agotado' : product.stock}
-                            </TableCell>
-                            <TableCell className="text-right font-semibold text-primary">
-                            {formatPrice(product.price)}
-                            </TableCell>
-                            <TableCell className="text-center">
-                                <ViewProductModal product={product} shopName={getShopName(product.shopId)}>
-                                    <Button variant="ghost" size="icon">
-                                        <Eye className="h-4 w-4" />
-                                        <span className="sr-only">Ver Detalles</span>
-                                    </Button>
-                                </ViewProductModal>
-                            </TableCell>
-                        </TableRow>
-                        ))
-                    ) : (
-                        <TableRow>
-                        <TableCell colSpan={7} className="h-24 text-center">
-                            No se encontraron productos.
-                        </TableCell>
-                        </TableRow>
-                    )}
-                    </TableBody>
-                </Table>
-                </CardContent>
-            </Card>
-            
-            {totalPages > 1 && !loading && (
-                <div className="flex items-center justify-center gap-4 mt-4">
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    <ChevronLeft className="h-4 w-4" />
-                    <span className="sr-only">Página anterior</span>
-                </Button>
-                <span className="text-sm font-medium">
-                    Página {currentPage} de {totalPages}
-                </span>
-                <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                >
-                    <ChevronRight className="h-4 w-4" />
-                    <span className="sr-only">Página siguiente</span>
-                </Button>
-                </div>
-            )}
-        </main>
-      </div>
+      <Card>
+          <CardHeader>
+              <CardTitle>Resultados ({filteredProducts.length})</CardTitle>
+              <CardDescription>Esta es la lista de productos que coincide con tu búsqueda y filtros.</CardDescription>
+          </CardHeader>
+          <CardContent className="p-0">
+          <Table>
+              <TableHeader>
+              <TableRow>
+                  <TableHead className="w-[80px]">Imagen</TableHead>
+                  <TableHead>Producto</TableHead>
+                  <TableHead>Tienda</TableHead>
+                  <TableHead>Estatus</TableHead>
+                  <TableHead className="text-right">Stock</TableHead>
+                  <TableHead className="text-right">Precio</TableHead>
+                  <TableHead className="text-center">Acciones</TableHead>
+              </TableRow>
+              </TableHeader>
+              <TableBody>
+              {loading ? (
+                  Array.from({ length: PRODUCTS_PER_PAGE }).map((_, index) => (
+                      <TableRow key={index}>
+                          <TableCell><Skeleton className="h-16 w-16 rounded-md" /></TableCell>
+                          <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                          <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
+                          <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                          <TableCell><Skeleton className="h-8 w-8 mx-auto" /></TableCell>
+                      </TableRow>
+                  ))
+              ) : paginatedProducts.length > 0 ? (
+                  paginatedProducts.map((product) => (
+                  <TableRow key={product.id}>
+                      <TableCell>
+                      <div className="relative h-16 w-16 rounded-md overflow-hidden">
+                          <Image
+                          src={product.imageSrc}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                          sizes="64px"
+                          />
+                      </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell className="text-muted-foreground">{getShopName(product.shopId)}</TableCell>
+                      <TableCell>
+                      <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
+                          {product.status === 'activo' ? <PackageCheck className="mr-1.5 h-3 w-3" /> : <PackageX className="mr-1.5 h-3 w-3" />}
+                          {product.status}
+                      </Badge>
+                      </TableCell>
+                      <TableCell className={cn("text-right font-semibold", product.stock === 0 ? "text-destructive" : "")}>
+                      {product.stock === 0 ? 'Agotado' : product.stock}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-primary">
+                      {formatPrice(product.price)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                          <ViewProductModal product={product} shopName={getShopName(product.shopId)}>
+                              <Button variant="ghost" size="icon">
+                                  <Eye className="h-4 w-4" />
+                                  <span className="sr-only">Ver Detalles</span>
+                              </Button>
+                          </ViewProductModal>
+                      </TableCell>
+                  </TableRow>
+                  ))
+              ) : (
+                  <TableRow>
+                  <TableCell colSpan={7} className="h-24 text-center">
+                      No se encontraron productos.
+                  </TableCell>
+                  </TableRow>
+              )}
+              </TableBody>
+          </Table>
+          </CardContent>
+      </Card>
+      
+      {totalPages > 1 && !loading && (
+          <div className="flex items-center justify-center gap-4 mt-4">
+          <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+          >
+              <ChevronLeft className="h-4 w-4" />
+              <span className="sr-only">Página anterior</span>
+          </Button>
+          <span className="text-sm font-medium">
+              Página {currentPage} de {totalPages}
+          </span>
+          <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+          >
+              <ChevronRight className="h-4 w-4" />
+              <span className="sr-only">Página siguiente</span>
+          </Button>
+          </div>
+      )}
     </div>
   );
 }
@@ -282,5 +279,3 @@ function ViewProductModal({ product, shopName, children }: { product: Product, s
         </Dialog>
     )
 }
-
-    
