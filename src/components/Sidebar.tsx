@@ -73,8 +73,8 @@ export default function Sidebar({ isMobile = false }) {
   );
 
   const content = (
-    <div className="flex-1">
-      <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+    <div className="flex-1 overflow-y-auto">
+      <nav className="grid items-start px-2 text-sm font-medium lg:px-4 py-4">
         {navLinks.map(renderLink)}
       </nav>
     </div>
@@ -92,7 +92,7 @@ export default function Sidebar({ isMobile = false }) {
 
   return (
     <div className="hidden border-r bg-card md:block">
-        <div className="flex h-full max-h-screen flex-col gap-2">
+        <div className="flex h-full max-h-screen flex-col">
             {header}
             {content}
         </div>
