@@ -177,7 +177,7 @@ function ShopCard({ shop }: { shop: Shop }) {
               data-ai-hint={shop.logoHint}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
-             <Badge variant={shop.status === 'activo' ? 'secondary' : 'outline'} className="absolute top-2 right-2 capitalize">
+             <Badge variant={shop.status === 'activo' ? 'secondary' : 'destructive'} className="absolute top-2 right-2 capitalize">
                 {shop.status}
             </Badge>
           </div>
@@ -375,6 +375,7 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
         </Dialog>
     );
 }
+
 
 
 

@@ -342,7 +342,7 @@ function ProductRow({ product, onProductUpdate, onProductDelete }: { product: Pr
       <TableCell className="font-medium">{product.name}</TableCell>
       <TableCell className="text-muted-foreground">{product.description}</TableCell>
       <TableCell className="text-center">
-        <Badge variant={product.status === 'activo' ? 'secondary' : 'outline'} className="capitalize">
+        <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
             {product.status === 'activo' ? <PackageCheck className="mr-1.5" /> : <PackageX className="mr-1.5" />}
             {product.status}
         </Badge>
@@ -738,5 +738,6 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     
 
     
+
 
 
