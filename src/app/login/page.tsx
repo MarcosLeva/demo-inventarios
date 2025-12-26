@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -8,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { LogIn } from 'lucide-react';
+import { getUserByEmail } from '@/lib/data';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -17,12 +19,15 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email && password) {
-      // Demo login: accepts any email/password
-      login({ name: 'Usuario Demo', email });
+    
+    // Demo login: accepts any password for a valid email
+    const user = getUserByEmail(email);
+
+    if (user && password) { // In a real app, you'd verify the password
+      login(user);
       router.push('/');
     } else {
-      alert('Por favor, ingresa un correo y contraseña.');
+      alert('Credenciales inválidas. Por favor, intenta de nuevo.');
     }
   };
 
@@ -52,6 +57,7 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 required
+                placeholder="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />

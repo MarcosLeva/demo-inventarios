@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { getShops, icons } from '@/lib/data';
-import type { Shop, IconMap, IconName } from '@/lib/data';
+import type { Shop, IconMap, IconName, AppUser } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -27,6 +27,7 @@ import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 
 
 const SHOPS_PER_PAGE = 8;
@@ -38,14 +39,15 @@ export default function Home() {
   const [selectedSpecialization, setSelectedSpecialization] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const { user } = useAuth();
 
   useEffect(() => {
     // Simulate fetching data
     setTimeout(() => {
-      setInitialShops(getShops());
+      setInitialShops(getShops(user as AppUser));
       setLoading(false);
     }, 500); // Simulate 0.5 second loading time
-  }, []);
+  }, [user]);
 
 
   const specializations = useMemo(() => {
@@ -72,8 +74,9 @@ export default function Home() {
   }, [filteredShops, currentPage]);
 
   const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>) => {
-    addShop(newShopData);
-    setInitialShops(getShops());
+    // This function is mocked and won't actually add a shop
+    // addShop(newShopData); 
+    setInitialShops(getShops(user as AppUser));
   };
 
 
@@ -86,12 +89,14 @@ export default function Home() {
             Explora y gestiona el inventario de las tiendas.
           </p>
         </header>
-        <AddShopModal onShopAdd={handleShopAdd}>
-             <Button className="hidden sm:flex">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Agregar Tienda
-            </Button>
-        </AddShopModal>
+        {user?.role === 'Admin' && (
+          <AddShopModal onShopAdd={handleShopAdd}>
+               <Button className="hidden sm:flex">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Agregar Tienda
+              </Button>
+          </AddShopModal>
+        )}
       </div>
        <div className="flex flex-col sm:flex-row gap-4 items-start">
         <div className="relative flex-1 w-full">
@@ -126,12 +131,14 @@ export default function Home() {
                 <SelectItem value="inactivo">Inactivas</SelectItem>
             </SelectContent>
         </Select>
-         <AddShopModal onShopAdd={handleShopAdd}>
-             <Button className="w-full sm:hidden">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Agregar Tienda
-            </Button>
-        </AddShopModal>
+         {user?.role === 'Admin' && (
+            <AddShopModal onShopAdd={handleShopAdd}>
+               <Button className="w-full sm:hidden">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Agregar Tienda
+              </Button>
+            </AddShopModal>
+          )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -225,7 +232,7 @@ function ShopCard({ shop, index }: { shop: Shop, index: number }) {
         <CardContent className="p-6 flex flex-col">
           <div className="flex items-start gap-4">
              <div className="bg-accent/10 text-accent p-3 rounded-lg">
-                <Icon className="h-6 w-6" />
+                {Icon && <Icon className="h-6 w-6" />}
              </div>
              <div className="flex-1">
                 <h2 className="text-xl font-bold font-headline mb-1">{shop.name}</h2>

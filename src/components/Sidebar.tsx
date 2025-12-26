@@ -6,17 +6,21 @@ import { usePathname } from 'next/navigation';
 import { Home, Package, Upload, Link2, Users, ShoppingCart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/use-auth';
 
-const navLinks = [
-  { href: '/', label: 'Tiendas', icon: Home },
-  { href: '/products', label: 'Productos', icon: Package },
-  { href: '/import', label: 'Importar', icon: Upload },
-  { href: '/connections', label: 'Conexión', icon: Link2, disabled: true },
-  { href: '/users', label: 'Usuarios', icon: Users },
+const allNavLinks = [
+  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Viewer', 'Vendedor'] },
+  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Viewer'] },
+  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'] },
+  { href: '/connections', label: 'Conexión', icon: Link2, disabled: true, roles: ['Admin'] },
+  { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin'] },
 ];
 
 export default function Sidebar({ isMobile = false }) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  
+  const navLinks = allNavLinks.filter(link => user && link.roles.includes(user.role));
 
   const renderLink = (link: typeof navLinks[0]) => {
     const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);

@@ -47,8 +47,9 @@ export type AppUser = {
   id: string;
   name: string;
   email: string;
-  role: 'Admin' | 'Editor' | 'Viewer';
+  role: 'Admin' | 'Editor' | 'Viewer' | 'Vendedor';
   status: 'activo' | 'inactivo';
+  shopIds: string[];
 }
 
 export const shops: Shop[] = [
@@ -442,18 +443,22 @@ export const shops: Shop[] = [
 ];
 
 const users: AppUser[] = [
-    { id: 'user-1', name: 'Admin', email: 'admin@example.com', role: 'Admin', status: 'activo' },
-    { id: 'user-2', name: 'Carlos Gomez', email: 'carlos.gomez@example.com', role: 'Editor', status: 'activo' },
-    { id: 'user-3', name: 'Luisa Fernandez', email: 'luisa.fernandez@example.com', role: 'Viewer', status: 'inactivo' },
-    { id: 'user-4', name: 'Javier Rodriguez', email: 'javier.rodriguez@example.com', role: 'Editor', status: 'activo' },
-    { id: 'user-5', name: 'Maria Lopez', email: 'maria.lopez@example.com', role: 'Viewer', status: 'activo' },
+    { id: 'user-1', name: 'Admin', email: 'admin@example.com', role: 'Admin', status: 'activo', shopIds: [] },
+    { id: 'user-2', name: 'Carlos Gomez', email: 'carlos.gomez@example.com', role: 'Editor', status: 'activo', shopIds: ['1', '2', '3'] },
+    { id: 'user-3', name: 'Luisa Fernandez', email: 'luisa.fernandez@example.com', role: 'Viewer', status: 'inactivo', shopIds: ['4'] },
+    { id: 'user-4', name: 'Javier Rodriguez', email: 'javier.rodriguez@example.com', role: 'Editor', status: 'activo', shopIds: [] },
+    { id: 'user-5', name: 'Maria Lopez', email: 'maria.lopez@example.com', role: 'Viewer', status: 'activo', shopIds: ['5','6'] },
+    { id: 'user-6', name: 'Vendedor', email: 'vendedor@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '7'] },
 ];
 
 // In-memory data store
 let shopsStore: Shop[] = JSON.parse(JSON.stringify(shops));
 let usersStore: AppUser[] = JSON.parse(JSON.stringify(users));
 
-export function getShops() {
+export function getShops(user?: AppUser) {
+  if (user?.role === 'Vendedor' && user.shopIds.length > 0) {
+    return JSON.parse(JSON.stringify(shopsStore.filter(shop => user.shopIds.includes(shop.id))));
+  }
   return JSON.parse(JSON.stringify(shopsStore));
 }
 
@@ -480,6 +485,12 @@ export function getAllProducts() {
 
 export function getUsers() {
     return JSON.parse(JSON.stringify(usersStore));
+}
+
+export function getUserByEmail(email: string): AppUser | undefined {
+    const user = usersStore.find(user => user.email === email);
+    if (!user) return undefined;
+    return JSON.parse(JSON.stringify(user));
 }
 
 export function addUser(user: Omit<AppUser, 'id'>) {

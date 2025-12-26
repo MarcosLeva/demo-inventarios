@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { getUsers, addUser, updateUser, deleteUser } from '@/lib/data';
-import type { AppUser } from '@/lib/data';
+import { getUsers, addUser, updateUser, deleteUser, getShops } from '@/lib/data';
+import type { AppUser, Shop } from '@/lib/data';
 import {
   Table,
   TableBody,
@@ -13,10 +13,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, PlusCircle, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Search, PlusCircle, MoreHorizontal, Edit, Trash2, Store } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -50,20 +50,25 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
+  const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    fetchUsers();
+    fetchData();
   }, []);
 
-  const fetchUsers = () => {
+  const fetchData = () => {
     setLoading(true);
     setTimeout(() => {
       setUsers(getUsers());
+      setShops(getShops());
       setLoading(false);
     }, 500);
   };
@@ -86,17 +91,17 @@ export default function UsersPage() {
 
   const handleAddUser = (newUser: Omit<AppUser, 'id'>) => {
     addUser(newUser);
-    fetchUsers();
+    fetchData();
   };
 
   const handleUpdateUser = (updatedUser: AppUser) => {
     updateUser(updatedUser);
-    fetchUsers();
+    fetchData();
   };
 
   const handleDeleteUser = (userId: string) => {
     deleteUser(userId);
-    fetchUsers();
+    fetchData();
   };
 
 
@@ -109,7 +114,7 @@ export default function UsersPage() {
               Gestiona los usuarios y sus permisos en el sistema.
             </p>
         </div>
-         <AddUserModal onUserAdd={handleAddUser}>
+         <AddUserModal onUserAdd={handleAddUser} allShops={shops}>
           <Button>
             <PlusCircle className="mr-2 h-4 w-4" />
             Agregar Usuario
@@ -136,6 +141,7 @@ export default function UsersPage() {
               <TableRow>
                 <TableHead>Nombre</TableHead>
                 <TableHead>Rol</TableHead>
+                <TableHead>Tiendas Asignadas</TableHead>
                 <TableHead>Estatus</TableHead>
                 <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
@@ -154,6 +160,7 @@ export default function UsersPage() {
                             </div>
                         </TableCell>
                         <TableCell><Skeleton className="h-5 w-16" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                         <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                     </TableRow>
@@ -174,6 +181,25 @@ export default function UsersPage() {
                        </div>
                     </TableCell>
                     <TableCell>{user.role}</TableCell>
+                     <TableCell>
+                      {user.shopIds.length > 0 ? (
+                         <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Badge variant="outline">
+                                <Store className="mr-1.5 h-3 w-3" />
+                                {user.shopIds.length}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{user.shopIds.map(id => shops.find(s => s.id === id)?.name).join(', ')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Ninguna</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={user.status === 'activo' ? 'secondary' : 'destructive'}>
                         {user.status}
@@ -182,6 +208,7 @@ export default function UsersPage() {
                     <TableCell className="text-right">
                         <UserActionsCell 
                             user={user} 
+                            allShops={shops}
                             onUserUpdate={handleUpdateUser} 
                             onUserDelete={handleDeleteUser} 
                         />
@@ -190,7 +217,7 @@ export default function UsersPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No se encontraron usuarios.
                   </TableCell>
                 </TableRow>
@@ -204,7 +231,7 @@ export default function UsersPage() {
 }
 
 
-function UserActionsCell({ user, onUserUpdate, onUserDelete }: { user: AppUser, onUserUpdate: (user: AppUser) => void, onUserDelete: (userId: string) => void }) {
+function UserActionsCell({ user, allShops, onUserUpdate, onUserDelete }: { user: AppUser, allShops: Shop[], onUserUpdate: (user: AppUser) => void, onUserDelete: (userId: string) => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -216,7 +243,7 @@ function UserActionsCell({ user, onUserUpdate, onUserDelete }: { user: AppUser, 
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <EditUserModal user={user} onUserUpdate={onUserUpdate}>
+        <EditUserModal user={user} allShops={allShops} onUserUpdate={onUserUpdate}>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <Edit className="mr-2 h-4 w-4" />
                 <span>Editar</span>
@@ -233,12 +260,13 @@ function UserActionsCell({ user, onUserUpdate, onUserDelete }: { user: AppUser, 
   );
 }
 
-function AddUserModal({ onUserAdd, children }: { onUserAdd: (user: Omit<AppUser, 'id'>) => void, children: React.ReactNode }) {
+function AddUserModal({ onUserAdd, allShops, children }: { onUserAdd: (user: Omit<AppUser, 'id'>) => void, allShops: Shop[], children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [role, setRole] = useState<AppUser['role']>('Viewer');
     const [status, setStatus] = useState<AppUser['status']>('activo');
+    const [selectedShopIds, setSelectedShopIds] = useState<string[]>([]);
 
     const handleSave = () => {
         if (!name || !email || !role) {
@@ -246,13 +274,14 @@ function AddUserModal({ onUserAdd, children }: { onUserAdd: (user: Omit<AppUser,
             return;
         }
 
-        onUserAdd({ name, email, role, status });
+        onUserAdd({ name, email, role, status, shopIds: selectedShopIds });
         setIsOpen(false);
         // Reset form
         setName('');
         setEmail('');
         setRole('Viewer');
         setStatus('activo');
+        setSelectedShopIds([]);
     };
 
     return (
@@ -282,9 +311,16 @@ function AddUserModal({ onUserAdd, children }: { onUserAdd: (user: Omit<AppUser,
                                 <SelectItem value="Admin">Admin</SelectItem>
                                 <SelectItem value="Editor">Editor</SelectItem>
                                 <SelectItem value="Viewer">Viewer</SelectItem>
+                                <SelectItem value="Vendedor">Vendedor</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
+                     {role === 'Vendedor' && (
+                       <div className="grid grid-cols-4 items-start gap-4">
+                          <Label className="text-right pt-2">Tiendas</Label>
+                          <ShopSelector allShops={allShops} selectedShopIds={selectedShopIds} onChange={setSelectedShopIds} />
+                        </div>
+                    )}
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="user-status-add" className="text-right">Estatus</Label>
                         <Select value={status} onValueChange={(value: AppUser['status']) => setStatus(value)}>
@@ -309,12 +345,13 @@ function AddUserModal({ onUserAdd, children }: { onUserAdd: (user: Omit<AppUser,
     );
 }
 
-function EditUserModal({ user, onUserUpdate, children }: { user: AppUser, onUserUpdate: (user: AppUser) => void, children: React.ReactNode }) {
+function EditUserModal({ user, allShops, onUserUpdate, children }: { user: AppUser, allShops: Shop[], onUserUpdate: (user: AppUser) => void, children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState(user.name);
     const [email, setEmail] = useState(user.email);
     const [role, setRole] = useState<AppUser['role']>(user.role);
     const [status, setStatus] = useState<AppUser['status']>(user.status);
+    const [selectedShopIds, setSelectedShopIds] = useState<string[]>(user.shopIds);
 
     useEffect(() => {
         if(isOpen) {
@@ -322,11 +359,12 @@ function EditUserModal({ user, onUserUpdate, children }: { user: AppUser, onUser
             setEmail(user.email);
             setRole(user.role);
             setStatus(user.status);
+            setSelectedShopIds(user.shopIds);
         }
     }, [isOpen, user]);
 
     const handleSave = () => {
-        onUserUpdate({ ...user, name, email, role, status });
+        onUserUpdate({ ...user, name, email, role, status, shopIds: role === 'Vendedor' ? selectedShopIds : [] });
         setIsOpen(false);
     }
 
@@ -357,9 +395,16 @@ function EditUserModal({ user, onUserUpdate, children }: { user: AppUser, onUser
                                 <SelectItem value="Admin">Admin</SelectItem>
                                 <SelectItem value="Editor">Editor</SelectItem>
                                 <SelectItem value="Viewer">Viewer</SelectItem>
+                                <SelectItem value="Vendedor">Vendedor</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
+                     {role === 'Vendedor' && (
+                       <div className="grid grid-cols-4 items-start gap-4">
+                          <Label className="text-right pt-2">Tiendas</Label>
+                          <ShopSelector allShops={allShops} selectedShopIds={selectedShopIds} onChange={setSelectedShopIds} />
+                        </div>
+                    )}
                      <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="user-status-edit" className="text-right">Estatus</Label>
                         <Select value={status} onValueChange={(value: AppUser['status']) => setStatus(value)}>
@@ -381,6 +426,42 @@ function EditUserModal({ user, onUserUpdate, children }: { user: AppUser, onUser
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+    );
+}
+
+function ShopSelector({allShops, selectedShopIds, onChange}: {allShops: Shop[], selectedShopIds: string[], onChange: (ids: string[]) => void}) {
+    
+    const handleShopToggle = (shopId: string) => {
+        onChange(
+            selectedShopIds.includes(shopId)
+                ? selectedShopIds.filter(id => id !== shopId)
+                : [...selectedShopIds, shopId]
+        );
+    }
+    
+    return (
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="col-span-3">
+                    {selectedShopIds.length > 0 ? `${selectedShopIds.length} tienda(s) seleccionada(s)`: 'Seleccionar tiendas'}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                <ScrollArea className="h-48">
+                    {allShops.map(shop => (
+                        <DropdownMenuItem key={shop.id} onSelect={(e) => e.preventDefault()}>
+                            <Checkbox
+                                id={`shop-${shop.id}`}
+                                checked={selectedShopIds.includes(shop.id)}
+                                onCheckedChange={() => handleShopToggle(shop.id)}
+                                className="mr-2"
+                            />
+                            <Label htmlFor={`shop-${shop.id}`} className="flex-1 cursor-pointer">{shop.name}</Label>
+                        </DropdownMenuItem>
+                    ))}
+                </ScrollArea>
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 }
 

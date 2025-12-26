@@ -1,16 +1,13 @@
+
 'use client';
 
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-
-interface User {
-  name: string;
-  email: string;
-}
+import type { AppUser } from '@/lib/data';
 
 interface AuthContextType {
-  user: User | null;
-  login: (user: User) => void;
+  user: AppUser | null;
+  login: (user: AppUser) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -18,7 +15,7 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
@@ -43,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isLoading, pathname, router]);
 
-  const login = (userData: User) => {
+  const login = (userData: AppUser) => {
     localStorage.setItem('user', JSON.stringify(userData));
     setUser(userData);
   };
