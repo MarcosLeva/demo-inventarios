@@ -460,6 +460,8 @@ const users: AppUser[] = [
     { id: 'user-10', name: 'Miguel Ángel', email: 'miguel.angel@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['1', '2', '3', '4'] },
     { id: 'user-11', name: 'Patricia Moreno', email: 'patricia.moreno@example.com', role: 'Vendedor', status: 'activo', shopIds: ['6'] },
     { id: 'user-12', name: 'David Navarro', email: 'david.navarro@example.com', role: 'Admin', status: 'activo', shopIds: [] },
+    { id: 'user-13', name: 'Marina Torres', email: 'marina.torres@example.com', role: 'Vendedor', status: 'activo', shopIds: [] },
+    { id: 'user-14', name: 'Javier Ramos', email: 'javier.ramos@example.com', role: 'Vendedor', status: 'activo', shopIds: [] },
 ];
 
 // In-memory data store
@@ -526,13 +528,21 @@ export function deleteUser(userId: string) {
 }
 
 
-export function addShop(shop: Omit<Shop, 'id'|'inventory'>) {
+export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'>, assignedUserIds: string[]) {
     const newShop: Shop = {
-        ...shop,
+        ...shopData,
         id: `shop-${Date.now()}`,
         inventory: []
     }
     shopsStore.unshift(newShop);
+
+    // Assign the new shop to the selected users
+    assignedUserIds.forEach(userId => {
+        const user = usersStore.find(u => u.id === userId);
+        if (user && user.role === 'Vendedor' && !user.shopIds.includes(newShop.id)) {
+            user.shopIds.push(newShop.id);
+        }
+    });
 }
 
 export function updateShop(updatedShop: Shop) {
@@ -576,4 +586,5 @@ export function deleteProduct(shopId: string, productId: string) {
     
 
     
+
 
