@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -615,6 +615,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState(shop.name);
     const [specialization, setSpecialization] = useState(shop.specialization);
+    const [logoSrc, setLogoSrc] = useState(shop.logoSrc);
 
     const handleSave = () => {
         if (!name || !specialization) {
@@ -625,6 +626,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             ...shop,
             name,
             specialization,
+            logoSrc,
         });
         setIsOpen(false);
     }
@@ -646,6 +648,23 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
                         <Label htmlFor="shop-specialization" className="text-right">Especialización</Label>
                         <Input id="shop-specialization" value={specialization} onChange={(e) => setSpecialization(e.target.value)} className="col-span-3" />
                     </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-image" className="text-right">URL de la Imagen</Label>
+                        <div className="col-span-3 flex items-center gap-2">
+                           <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                           <Input id="shop-image" value={logoSrc} onChange={(e) => setLogoSrc(e.target.value)} placeholder="https://ejemplo.com/logo.png" />
+                        </div>
+                    </div>
+                    {logoSrc && (
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Previsualización</Label>
+                            <div className="col-span-3">
+                                <div className="relative h-24 w-24 rounded-md overflow-hidden border">
+                                    <Image src={logoSrc} alt="Previsualización del logo" fill className="object-cover" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
@@ -657,4 +676,6 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
+    
+
     
