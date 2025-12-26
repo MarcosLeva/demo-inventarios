@@ -84,7 +84,7 @@ export default function Sidebar({ isMobile = false }) {
   }
 
   return (
-    <div className="hidden border-r bg-card md:fixed md:inset-y-0 md:flex md:w-[220px] md:flex-col lg:w-[280px]">
+    <div className="hidden border-r bg-card md:block">
         <div className="flex h-full max-h-screen flex-col gap-2">
             {header}
             {content}
