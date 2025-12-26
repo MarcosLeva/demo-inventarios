@@ -69,12 +69,10 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
   const [priceRange, setPriceRange] = useState([0, 100]);
 
-  const { id } = params;
-
   useEffect(() => {
     // Simulate fetching shop data
     setTimeout(() => {
-      const fetchedShop = getShopById(id);
+      const fetchedShop = getShopById(params.id);
       if (fetchedShop) {
         setShop(fetchedShop);
         const maxPrice = fetchedShop.inventory.length > 0
@@ -86,7 +84,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       }
       setLoading(false);
     }, 500); // Simulate 0.5 second load time
-  }, [id]);
+  }, [params.id]);
 
 
   if (loading) {
@@ -108,17 +106,17 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   }
 
   const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => {
-    addProductToData(shop.id, newProduct);
+    addProductToData(params.id, newProduct);
     setShop(getShopById(params.id));
   }
 
   const handleProductUpdate = (updatedProduct: Product) => {
-    updateProductInData(shop.id, updatedProduct);
+    updateProductInData(params.id, updatedProduct);
     setShop(getShopById(params.id));
   }
 
   const handleProductDelete = (productId: string) => {
-    deleteProductFromData(shop.id, productId);
+    deleteProductFromData(params.id, productId);
     setShop(getShopById(params.id));
   }
 
@@ -754,7 +752,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             setName(shop.name);
             setSpecialization(shop.specialization);
             setLogoSrc(shop.logoSrc);
-            setStatus(shop.status);
+setStatus(shop.status);
         }
     }, [isOpen, shop]);
 
@@ -829,5 +827,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
+
+    
 
     
