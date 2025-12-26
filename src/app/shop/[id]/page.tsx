@@ -191,9 +191,9 @@ export default function ShopPage() {
         </Button>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        <div className="md:col-span-3 lg:col-span-4">
-          <div className="relative mb-12 overflow-hidden rounded-lg border shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="lg:col-span-4">
+          <div className="relative mb-12 overflow-hidden rounded-lg">
             <div className="absolute inset-0 bg-background/80 z-10"></div>
             <Image
                 src={shop.logoSrc}
@@ -204,67 +204,43 @@ export default function ShopPage() {
                 data-ai-hint={shop.logoHint}
                 sizes="100vw"
             />
-            <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6 z-20">
-                <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
-                    <Image
-                      src={shop.logoSrc}
-                      alt={`${shop.name} logo`}
-                      fill
-                      className="object-cover"
-                      data-ai-hint={shop.logoHint}
-                      sizes="128px"
-                    />
-                </div>
-                <div className="relative">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="bg-accent/10 text-accent p-3 rounded-lg">
-                            <Icon className="h-8 w-8" />
-                        </div>
+            <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 p-6 z-20 justify-between">
+                <div className="flex items-center gap-6">
+                    <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
+                        <Image
+                          src={shop.logoSrc}
+                          alt={`${shop.name} logo`}
+                          fill
+                          className="object-cover"
+                          data-ai-hint={shop.logoHint}
+                          sizes="128px"
+                        />
+                    </div>
+                    <div className="relative">
+                        <Badge variant={shop.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize absolute -top-6 left-0">{shop.status}</Badge>
                         <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
                             {shop.name}
                         </h1>
-                        {canEditShop && (
-                          <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
-                              <Button variant="outline" size="icon" className="shrink-0">
-                                  <Edit className="h-4 w-4" />
-                                  <span className="sr-only">Editar Tienda</span>
-                              </Button>
-                          </EditShopModal>
-                        )}
+                         {canEditShop && organization ? (
+                            <Button variant="link" asChild className="p-0 h-auto font-semibold text-base text-muted-foreground hover:text-primary">
+                                <Link href={`/organizations/${organization.id}`} className="flex items-center gap-1.5">
+                                    <Building className="h-4 w-4" /> {organization.name}
+                                </Link>
+                            </Button>
+                         ) : (
+                           <p className="text-lg text-muted-foreground">{shop.specialization}</p>
+                         )}
                     </div>
-                  <p className="text-lg text-muted-foreground ml-1">{shop.specialization}</p>
                 </div>
-            </div>
-          </div>
-        </div>
-
-        <aside className="md:col-span-1 lg:col-span-1 md:order-first space-y-6">
-           {canEditShop && organization && (
-              <Card>
-                  <CardHeader>
-                      <CardTitle className="flex items-center gap-2"><Building /> Organización</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                      <Button variant="link" asChild className="p-0 h-auto font-semibold text-base">
-                          <Link href={`/organizations/${organization.id}`}>{organization.name}</Link>
-                      </Button>
-                  </CardContent>
-              </Card>
-           )}
-           {canEditShop && (
-             <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><UsersIcon /> Miembros Asignados</CardTitle>
-                    <CardDescription>{members.length} miembro(s) en esta tienda.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {members.length > 0 ? (
-                        <div className="flex flex-wrap gap-2">
-                            <TooltipProvider>
+                <div className="flex items-center gap-4">
+                  {canEditShop && (
+                    <div className="flex items-center">
+                        <TooltipProvider>
+                          <div className="flex items-center -space-x-2">
                             {members.map(member => (
                                 <Tooltip key={member.id}>
                                     <TooltipTrigger asChild>
-                                        <Avatar className="h-10 w-10 border-2 border-background">
+                                        <Avatar className="h-9 w-9 border-2 border-background">
                                             <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${member.name}`} alt={member.name} />
                                             <AvatarFallback>{member.name.substring(0, 2)}</AvatarFallback>
                                         </Avatar>
@@ -274,83 +250,97 @@ export default function ShopPage() {
                                     </TooltipContent>
                                 </Tooltip>
                             ))}
-                            </TooltipProvider>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-muted-foreground">No hay miembros asignados.</p>
-                    )}
-                </CardContent>
-             </Card>
-           )}
-        </aside>
+                          </div>
+                        </TooltipProvider>
+                         {members.length > 0 && <span className="text-sm text-muted-foreground ml-3">{members.length} miembro(s)</span>}
+                    </div>
+                  )}
 
-        <main className="md:col-span-2 lg:col-span-3">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-6 mb-8 p-6 bg-card rounded-lg border">
-            <div className="lg:col-span-4">
-                <h3 className="text-lg font-medium">Filtros de Inventario</h3>
-                <p className="text-sm text-muted-foreground">Refina la lista de productos.</p>
-            </div>
-
-            <div className="lg:col-span-2">
-                <Label htmlFor="search-inventory">Buscar producto</Label>
-                <div className="relative mt-2">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                      id="search-inventory"
-                      type="text"
-                      placeholder="Buscar por nombre..."
-                      className="pl-10 w-full"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                  {canEditShop && (
+                    <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
+                        <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar Tienda
+                        </Button>
+                    </EditShopModal>
+                  )}
                 </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label>Estatus</Label>
-                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Filtrar por estatus" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estatus</SelectItem>
-                    <SelectItem value="activo">Activo</SelectItem>
-                    <SelectItem value="inactivo">Inactivo</SelectItem>
-                  </SelectContent>
-                </Select>
-            </div>
-            
-            <div className="flex items-end pb-2">
-                 <div className="flex items-center gap-2">
-                    <Checkbox
-                        id="hide-out-of-stock"
-                        checked={hideOutOfStock}
-                        onCheckedChange={(checked) => setHideOutOfStock(Boolean(checked))}
-                    />
-                    <Label htmlFor="hide-out-of-stock" className="text-sm">
-                        Ocultar agotados
-                    </Label>
-                </div>
-            </div>
-
-            <div className="lg:col-span-4">
-                <div className="flex justify-between items-center mb-2">
-                    <Label>Rango de precios</Label>
-                    <span className="text-sm text-muted-foreground font-medium">
-                        {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                    </span>
-                </div>
-                <Slider
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    min={0}
-                    max={maxPrice}
-                    step={1}
-                />
             </div>
           </div>
+        </div>
 
+        <aside className="lg:col-span-1 md:order-first space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                  <div className="bg-accent/10 text-accent p-3 rounded-lg">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  Filtros
+                </CardTitle>
+                <CardDescription>Refina la lista de productos.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                  <div>
+                      <Label htmlFor="search-inventory">Buscar producto</Label>
+                      <div className="relative mt-2">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                          <Input
+                            id="search-inventory"
+                            type="text"
+                            placeholder="Nombre del producto..."
+                            className="pl-10 w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                      </div>
+                  </div>
 
+                  <div className="space-y-2">
+                      <Label>Estatus</Label>
+                      <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Filtrar por estatus" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Todos los estatus</SelectItem>
+                          <SelectItem value="activo">Activo</SelectItem>
+                          <SelectItem value="inactivo">Inactivo</SelectItem>
+                        </SelectContent>
+                      </Select>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 pt-2">
+                      <Checkbox
+                          id="hide-out-of-stock"
+                          checked={hideOutOfStock}
+                          onCheckedChange={(checked) => setHideOutOfStock(Boolean(checked))}
+                      />
+                      <Label htmlFor="hide-out-of-stock" className="text-sm">
+                          Ocultar agotados
+                      </Label>
+                  </div>
+
+                  <div className="pt-2">
+                      <div className="flex justify-between items-center mb-2">
+                          <Label>Rango de precios</Label>
+                          <span className="text-sm text-muted-foreground font-medium">
+                              {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                          </span>
+                      </div>
+                      <Slider
+                          value={priceRange}
+                          onValueChange={setPriceRange}
+                          min={0}
+                          max={maxPrice}
+                          step={1}
+                      />
+                  </div>
+              </CardContent>
+            </Card>
+        </aside>
+
+        <main className="lg:col-span-3">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
             {canEditShop && (
@@ -438,48 +428,34 @@ function ShopPageSkeleton() {
                 <Skeleton className="h-8 w-48" />
             </div>
 
-            <div className="relative mb-12 overflow-hidden rounded-lg border h-[180px] md:h-auto">
-                 <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6">
-                    <Skeleton className="h-32 w-32 rounded-full shrink-0" />
-                    <div className="space-y-3">
-                        <Skeleton className="h-12 w-64" />
-                        <Skeleton className="h-6 w-48" />
+            <div className="relative mb-12 overflow-hidden rounded-lg h-[220px] md:h-auto">
+                 <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 p-6 justify-between">
+                    <div className="flex items-center gap-6">
+                        <Skeleton className="h-32 w-32 rounded-full shrink-0" />
+                        <div className="space-y-3">
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-12 w-64" />
+                            <Skeleton className="h-6 w-48" />
+                        </div>
+                    </div>
+                     <div className="flex items-center gap-4">
+                        <Skeleton className="h-10 w-32" />
+                        <Skeleton className="h-10 w-32" />
                     </div>
                  </div>
             </div>
-
-            <div className="mb-8">
-                 <Skeleton className="h-10 w-40" />
-            </div>
             
-            <Card>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                             <TableHead className="w-[100px]"><Skeleton className="h-5 w-full" /></TableHead>
-                            <TableHead><Skeleton className="h-5 w-full" /></TableHead>
-                            <TableHead><Skeleton className="h-5 w-full" /></TableHead>
-                            <TableHead className="text-center"><Skeleton className="h-5 w-full" /></TableHead>
-                            <TableHead className="text-right"><Skeleton className="h-5 w-full" /></TableHead>
-                            <TableHead className="text-right"><Skeleton className="h-5 w-full" /></TableHead>
-                            <TableHead className="text-right"><Skeleton className="h-5 w-full" /></TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {Array.from({ length: 5 }).map((_, index) => (
-                             <TableRow key={index}>
-                                <TableCell><Skeleton className="h-16 w-16 rounded-md" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
-                                <TableCell><Skeleton className="h-6 w-20 mx-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
-                                <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
-                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <aside className="lg:col-span-1">
+                    <Skeleton className="h-[400px] w-full" />
+                </aside>
+                <main className="lg:col-span-3">
+                    <div className="mb-4">
+                        <Skeleton className="h-10 w-48" />
+                    </div>
+                    <Skeleton className="h-[600px] w-full" />
+                </main>
+            </div>
         </div>
     )
 }
