@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, use } from 'react';
 import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData } from '@/lib/data';
 import type { Product, Shop } from '@/lib/data';
 import { notFound } from 'next/navigation';
@@ -60,6 +60,7 @@ import { cn } from '@/lib/utils';
 const ITEMS_PER_PAGE = 10;
 
 export default function ShopPage({ params }: { params: { id: string } }) {
+  const resolvedParams = use(Promise.resolve(params));
   const [shop, setShop] = useState<Shop | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,7 +73,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     // Simulate fetching shop data
     setTimeout(() => {
-      const fetchedShop = getShopById(params.id);
+      const fetchedShop = getShopById(resolvedParams.id);
       if (fetchedShop) {
         setShop(fetchedShop);
         const maxPrice = fetchedShop.inventory.length > 0
@@ -84,7 +85,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       }
       setLoading(false);
     }, 500); // Simulate 0.5 second load time
-  }, [params.id]);
+  }, [resolvedParams.id]);
 
 
   if (loading) {
@@ -102,22 +103,22 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   
   const handleShopUpdate = (updatedShopData: Shop) => {
     updateShopInData(updatedShopData);
-    setShop(getShopById(params.id));
+    setShop(getShopById(resolvedParams.id));
   }
 
   const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => {
-    addProductToData(params.id, newProduct);
-    setShop(getShopById(params.id));
+    addProductToData(resolvedParams.id, newProduct);
+    setShop(getShopById(resolvedParams.id));
   }
 
   const handleProductUpdate = (updatedProduct: Product) => {
-    updateProductInData(params.id, updatedProduct);
-    setShop(getShopById(params.id));
+    updateProductInData(resolvedParams.id, updatedProduct);
+    setShop(getShopById(resolvedParams.id));
   }
 
   const handleProductDelete = (productId: string) => {
-    deleteProductFromData(params.id, productId);
-    setShop(getShopById(params.id));
+    deleteProductFromData(resolvedParams.id, productId);
+    setShop(getShopById(resolvedParams.id));
   }
 
   const filteredInventory = useMemo(() => {
