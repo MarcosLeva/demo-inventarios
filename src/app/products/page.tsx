@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { getAllProducts, getShops } from '@/lib/data';
-import type { Product, Shop, AppUser } from '@/lib/data';
+import type { Product, Shop, AppUser, ProductProperty } from '@/lib/data';
 import {
   Table,
   TableBody,
@@ -16,12 +16,22 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Package, Tag, PackageCheck, PackageX, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Package, Tag, PackageCheck, PackageX, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Label } from '@/components/ui/label';
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -118,6 +128,7 @@ export default function ProductsPage() {
                 <TableHead>Estatus</TableHead>
                 <TableHead className="text-right">Stock</TableHead>
                 <TableHead className="text-right">Precio</TableHead>
+                <TableHead className="text-center">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -130,6 +141,7 @@ export default function ProductsPage() {
                         <TableCell><Skeleton className="h-6 w-20" /></TableCell>
                         <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
                         <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                        <TableCell><Skeleton className="h-8 w-8 mx-auto" /></TableCell>
                     </TableRow>
                 ))
               ) : paginatedProducts.length > 0 ? (
@@ -160,11 +172,19 @@ export default function ProductsPage() {
                     <TableCell className="text-right font-semibold text-primary">
                       {formatPrice(product.price)}
                     </TableCell>
+                    <TableCell className="text-center">
+                        <ViewProductModal product={product} shopName={getShopName(product.shopId)}>
+                            <Button variant="ghost" size="icon">
+                                <Eye className="h-4 w-4" />
+                                <span className="sr-only">Ver Detalles</span>
+                            </Button>
+                        </ViewProductModal>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     No se encontraron productos.
                   </TableCell>
                 </TableRow>
@@ -201,4 +221,52 @@ export default function ProductsPage() {
       )}
     </div>
   );
+}
+
+
+function ViewProductModal({ product, shopName, children }: { product: Product, shopName: string, children: React.ReactNode }) {
+    const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: 'EUR',
+    }).format(price);
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>{product.name}</DialogTitle>
+                    <DialogDescription>Detalles completos del producto.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-6 py-4">
+                   <div className="relative h-48 w-full rounded-lg overflow-hidden border">
+                       <Image src={product.imageSrc} alt={product.name} fill className="object-cover" sizes="100%"/>
+                   </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="font-semibold">Tienda:</div><div>{shopName}</div>
+                        <div className="font-semibold">Precio:</div><div>{formatPrice(product.price)}</div>
+                        <div className="font-semibold">Stock:</div><div>{product.stock > 0 ? product.stock : 'Agotado'}</div>
+                        <div className="font-semibold">Estatus:</div><div><Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">{product.status}</Badge></div>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-2 text-sm">Propiedades Adicionales</h4>
+                        <Card>
+                            <CardContent className="p-0">
+                                <Table>
+                                    <TableBody>
+                                        {product.properties.map((prop, index) => (
+                                            <TableRow key={index} className="text-sm">
+                                                <TableCell className="font-medium w-1/3">{prop.key}</TableCell>
+                                                <TableCell>{prop.value}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
 }

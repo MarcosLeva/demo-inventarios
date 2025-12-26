@@ -1,15 +1,16 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef, use } from 'react';
 import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons } from '@/lib/data';
-import type { Product, Shop } from '@/lib/data';
+import type { Product, Shop, ProductProperty } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Upload } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Upload, Eye, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -56,6 +57,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -286,7 +288,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
               <TableRow>
                 <TableHead className="w-[100px]">Imagen</TableHead>
                 <TableHead>Producto</TableHead>
-                <TableHead>Descripción</TableHead>
+                <TableHead>Descripción Corta</TableHead>
                 <TableHead className="text-center">Estatus</TableHead>
                 <TableHead className="text-right">Stock</TableHead>
                 <TableHead className="text-right">Precio</TableHead>
@@ -405,6 +407,7 @@ function ProductRow({ product, onProductUpdate, onProductDelete, index }: { prod
   }).format(product.price);
   
   const isOutOfStock = product.stock === 0;
+  const description = product.properties.find(p => p.key.toLowerCase() === 'descripción')?.value || 'Sin descripción';
 
   return (
     <TableRow 
@@ -427,7 +430,7 @@ function ProductRow({ product, onProductUpdate, onProductDelete, index }: { prod
         </div>
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell className="text-muted-foreground">{product.description}</TableCell>
+      <TableCell className="text-muted-foreground truncate max-w-xs">{description}</TableCell>
       <TableCell className="text-center">
         <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
             {product.status === 'activo' ? <PackageCheck className="mr-1.5" /> : <PackageX className="mr-1.5" />}
@@ -464,6 +467,12 @@ function ProductActionsCell({ product, onProductUpdate, onProductDelete }: { pro
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+        <ViewProductModal product={product}>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Eye className="mr-2 h-4 w-4" />
+                <span>Ver Detalles</span>
+            </DropdownMenuItem>
+        </ViewProductModal>
         <DropdownMenuSeparator />
         <EditProductModal product={product} onProductUpdate={onProductUpdate}>
             <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -492,20 +501,19 @@ function ProductActionsCell({ product, onProductUpdate, onProductDelete }: { pro
 function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => void, children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
+    const [properties, setProperties] = useState<ProductProperty[]>([{ key: 'Descripción', value: '' }]);
     const [price, setPrice] = useState(0);
     const [stock, setStock] = useState(0);
     const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
 
     const handleSave = () => {
         if (!name || price <= 0 || stock < 0) {
-            // Basic validation
             alert('Por favor completa los campos requeridos (Nombre, Precio > 0, Stock >= 0)');
             return;
         }
         onProductAdd({
             name,
-            description,
+            properties,
             price,
             stock,
             status,
@@ -513,7 +521,7 @@ function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: O
         setIsOpen(false);
         // Reset form
         setName('');
-        setDescription('');
+        setProperties([{ key: 'Descripción', value: '' }]);
         setPrice(0);
         setStock(0);
         setStatus('activo');
@@ -522,21 +530,17 @@ function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: O
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Agregar Nuevo Producto</DialogTitle>
                     <DialogDescription>Completa los detalles para agregar un nuevo producto al inventario.</DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
+                <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="name-add" className="text-right">Nombre</Label>
                         <Input id="name-add" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="description-add" className="text-right">Descripción</Label>
-                        <Input id="description-add" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
+                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="price-add" className="text-right">Precio (€)</Label>
                         <Input id="price-add" type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="col-span-3" />
                     </div>
@@ -556,6 +560,12 @@ function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: O
                             </SelectContent>
                         </Select>
                     </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Propiedades</Label>
+                         <div className="col-span-3">
+                             <DynamicPropertiesEditor properties={properties} setProperties={setProperties} />
+                         </div>
+                    </div>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
@@ -571,15 +581,24 @@ function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: O
 function EditProductModal({ product, onProductUpdate, children }: { product: Product, onProductUpdate: (product: Product) => void, children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState(product.name);
-    const [description, setDescription] = useState(product.description);
+    const [properties, setProperties] = useState<ProductProperty[]>(product.properties);
     const [price, setPrice] = useState(product.price);
     const [status, setStatus] = useState(product.status);
 
+    useEffect(() => {
+      if (isOpen) {
+        setName(product.name);
+        setPrice(product.price);
+        setStatus(product.status);
+        setProperties(product.properties);
+      }
+    }, [isOpen, product])
+    
     const handleSave = () => {
         onProductUpdate({
             ...product,
             name,
-            description,
+            properties,
             price,
             status,
         });
@@ -589,19 +608,15 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Editar Producto</DialogTitle>
                     <DialogDescription>Realiza cambios en los detalles del producto.</DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
+                <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="name" className="text-right">Nombre</Label>
                         <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="description" className="text-right">Descripción</Label>
-                        <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="price" className="text-right">Precio (€)</Label>
@@ -618,6 +633,12 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
                                 <SelectItem value="inactivo">Inactivo</SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+                     <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Propiedades</Label>
+                         <div className="col-span-3">
+                             <DynamicPropertiesEditor properties={properties} setProperties={setProperties} />
+                         </div>
                     </div>
                 </div>
                 <DialogFooter>
@@ -823,4 +844,102 @@ setStatus(shop.status);
     );
 }
 
+function ViewProductModal({ product, children }: { product: Product, children: React.ReactNode }) {
+    const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
+        style: 'currency',
+        currency: 'EUR',
+    }).format(price);
+
+    return (
+        <Dialog>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                    <DialogTitle>{product.name}</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-6 py-4">
+                   <div className="relative h-48 w-full rounded-lg overflow-hidden border">
+                       <Image src={product.imageSrc} alt={product.name} fill className="object-cover" sizes="100%"/>
+                   </div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="font-semibold">Precio:</div><div>{formatPrice(product.price)}</div>
+                        <div className="font-semibold">Stock:</div><div>{product.stock > 0 ? product.stock : 'Agotado'}</div>
+                        <div className="font-semibold">Estatus:</div><div><Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">{product.status}</Badge></div>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-2 text-sm">Propiedades</h4>
+                        <Card>
+                            <CardContent className="p-0">
+                                <Table>
+                                    <TableBody>
+                                        {product.properties.map((prop, index) => (
+                                            <TableRow key={index} className="text-sm">
+                                                <TableCell className="font-medium w-1/3">{prop.key}</TableCell>
+                                                <TableCell>{prop.value}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
+function DynamicPropertiesEditor({ properties, setProperties }: { properties: ProductProperty[], setProperties: (properties: ProductProperty[]) => void }) {
+    
+    const handleKeyChange = (index: number, newKey: string) => {
+        const newProps = [...properties];
+        newProps[index].key = newKey;
+        setProperties(newProps);
+    };
+
+    const handleValueChange = (index: number, newValue: string) => {
+        const newProps = [...properties];
+        newProps[index].value = newValue;
+        setProperties(newProps);
+    };
+    
+    const addProperty = () => {
+        setProperties([...properties, { key: '', value: '' }]);
+    };
+
+    const removeProperty = (index: number) => {
+        const newProps = properties.filter((_, i) => i !== index);
+        setProperties(newProps);
+    };
+
+    return (
+        <div className="space-y-4">
+            {properties.map((prop, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                    <Input
+                        placeholder="Nombre (ej. Talla)"
+                        value={prop.key}
+                        onChange={(e) => handleKeyChange(index, e.target.value)}
+                        className="flex-1"
+                        disabled={prop.key === 'Descripción'}
+                    />
+                    <Textarea
+                        placeholder="Valor (ej. M)"
+                        value={prop.value}
+                        onChange={(e) => handleValueChange(index, e.target.value)}
+                        className="flex-1"
+                        rows={1}
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => removeProperty(index)} disabled={prop.key === 'Descripción'}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={addProperty}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Agregar Propiedad
+            </Button>
+        </div>
+    );
+}
     
