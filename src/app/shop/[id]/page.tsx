@@ -1,11 +1,10 @@
 
-
 'use client';
 
-import { useState, useMemo, useEffect, useRef, use } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons } from '@/lib/data';
 import type { Product, Shop, ProductProperty } from '@/lib/data';
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
@@ -58,11 +57,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/hooks/use-auth';
 
 const ITEMS_PER_PAGE = 10;
 
-export default function ShopPage({ params }: { params: { id: string } }) {
-  const resolvedParams = use(params);
+export default function ShopPage() {
+  const params = useParams<{ id: string }>();
+  const { user } = useAuth();
   const [shop, setShop] = useState<Shop | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -72,24 +73,22 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   const [priceRange, setPriceRange] = useState([0, 100]);
 
   useEffect(() => {
-    // Simulate fetching shop data
+    if (!user) return;
     setTimeout(() => {
-      const fetchedShop = getShopById(resolvedParams.id);
+      const fetchedShop = getShopById(params.id, user);
       if (fetchedShop) {
         setShop(fetchedShop);
         const initialMaxPrice = fetchedShop.inventory.length > 0
           ? Math.ceil(Math.max(...fetchedShop.inventory.map((p) => p.price)))
           : 100;
         setPriceRange([0, initialMaxPrice]);
-      } else {
-        // This will trigger the not-found page
       }
       setLoading(false);
-    }, 500); // Simulate 0.5 second load time
-  }, [resolvedParams.id]);
+    }, 500);
+  }, [params.id, user]);
   
   const filteredInventory = useMemo(() => {
-    setCurrentPage(1); // Reset page when filters change
+    setCurrentPage(1);
     if (!shop) return([]);
     return shop.inventory.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -127,22 +126,22 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   
   const handleShopUpdate = (updatedShopData: Shop) => {
     updateShopInData(updatedShopData);
-    setShop(getShopById(resolvedParams.id));
+    setShop(getShopById(params.id, user));
   }
 
   const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => {
-    addProductToData(resolvedParams.id, newProduct);
-    setShop(getShopById(resolvedParams.id));
+    addProductToData(params.id, newProduct);
+    setShop(getShopById(params.id, user));
   }
 
   const handleProductUpdate = (updatedProduct: Product) => {
-    updateProductInData(resolvedParams.id, updatedProduct);
-    setShop(getShopById(resolvedParams.id));
+    updateProductInData(params.id, updatedProduct);
+    setShop(getShopById(params.id, user));
   }
 
   const handleProductDelete = (productId: string) => {
-    deleteProductFromData(resolvedParams.id, productId);
-    setShop(getShopById(resolvedParams.id));
+    deleteProductFromData(params.id, productId);
+    setShop(getShopById(params.id, user));
   }
 
   const Icon = icons[shop.icon];
@@ -152,6 +151,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     currency: 'EUR',
   }).format(price);
 
+  const canEditShop = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop.organizationId);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -194,12 +194,14 @@ export default function ShopPage({ params }: { params: { id: string } }) {
                     <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
                         {shop.name}
                     </h1>
-                    <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
-                        <Button variant="outline" size="icon" className="shrink-0">
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Editar Tienda</span>
-                        </Button>
-                    </EditShopModal>
+                    {canEditShop && (
+                      <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
+                          <Button variant="outline" size="icon" className="shrink-0">
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">Editar Tienda</span>
+                          </Button>
+                      </EditShopModal>
+                    )}
                 </div>
               <p className="text-lg text-muted-foreground ml-1">{shop.specialization}</p>
             </div>
@@ -274,12 +276,14 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
-        <AddProductModal onProductAdd={handleProductAdd}>
-            <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Agregar Producto
-            </Button>
-        </AddProductModal>
+        {canEditShop && (
+          <AddProductModal onProductAdd={handleProductAdd}>
+              <Button>
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  Agregar Producto
+              </Button>
+          </AddProductModal>
+        )}
       </div>
 
       <Card>
@@ -301,6 +305,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
                   <ProductRow 
                     key={product.id} 
                     product={product}
+                    canEdit={canEditShop}
                     onProductUpdate={handleProductUpdate}
                     onProductDelete={handleProductDelete}
                     index={index}
@@ -400,7 +405,7 @@ function ShopPageSkeleton() {
     )
 }
 
-function ProductRow({ product, onProductUpdate, onProductDelete, index }: { product: Product, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void, index: number }) {
+function ProductRow({ product, canEdit, onProductUpdate, onProductDelete, index }: { product: Product, canEdit: boolean, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void, index: number }) {
   const formatPrice = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -450,13 +455,13 @@ function ProductRow({ product, onProductUpdate, onProductDelete, index }: { prod
           </div>
       </TableCell>
       <TableCell className="text-right">
-        <ProductActionsCell product={product} onProductUpdate={onProductUpdate} onProductDelete={onProductDelete} />
+        <ProductActionsCell product={product} canEdit={canEdit} onProductUpdate={onProductUpdate} onProductDelete={onProductDelete} />
       </TableCell>
     </TableRow>
   );
 }
 
-function ProductActionsCell({ product, onProductUpdate, onProductDelete }: { product: Product, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void }) {
+function ProductActionsCell({ product, canEdit, onProductUpdate, onProductDelete }: { product: Product, canEdit: boolean, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -473,26 +478,30 @@ function ProductActionsCell({ product, onProductUpdate, onProductDelete }: { pro
                 <span>Ver Detalles</span>
             </DropdownMenuItem>
         </ViewProductModal>
-        <DropdownMenuSeparator />
-        <EditProductModal product={product} onProductUpdate={onProductUpdate}>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Edit className="mr-2 h-4 w-4" />
-                <span>Editar</span>
-            </DropdownMenuItem>
-        </EditProductModal>
-        <UpdateStockModal product={product} onProductUpdate={onProductUpdate}>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                <span>Actualizar Stock</span>
-            </DropdownMenuItem>
-        </UpdateStockModal>
-        <DropdownMenuSeparator />
-        <DeleteProductAlert productId={product.id} onProductDelete={onProductDelete}>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Eliminar</span>
-            </DropdownMenuItem>
-        </DeleteProductAlert>
+        {canEdit && (
+            <>
+                <DropdownMenuSeparator />
+                <EditProductModal product={product} onProductUpdate={onProductUpdate}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        <span>Editar</span>
+                    </DropdownMenuItem>
+                </EditProductModal>
+                <UpdateStockModal product={product} onProductUpdate={onProductUpdate}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        <span>Actualizar Stock</span>
+                    </DropdownMenuItem>
+                </UpdateStockModal>
+                <DropdownMenuSeparator />
+                <DeleteProductAlert productId={product.id} onProductDelete={onProductDelete}>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        <span>Eliminar</span>
+                    </DropdownMenuItem>
+                </DeleteProductAlert>
+            </>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -768,7 +777,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             setName(shop.name);
             setSpecialization(shop.specialization);
             setLogoSrc(shop.logoSrc);
-setStatus(shop.status);
+            setStatus(shop.status);
         }
     }, [isOpen, shop]);
 
@@ -942,4 +951,3 @@ function DynamicPropertiesEditor({ properties, setProperties }: { properties: Pr
         </div>
     );
 }
-    

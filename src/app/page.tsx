@@ -2,14 +2,14 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { getShops, getUsers, addShopAndAssignUsers } from '@/lib/data';
-import type { Shop, IconMap, IconName, AppUser } from '@/lib/data';
+import { getShops, getUsers, addShopAndAssignUsers, getOrganizations } from '@/lib/data';
+import type { Shop, IconMap, IconName, AppUser, Organization } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRight, Search, ChevronLeft, ChevronRight, PlusCircle, Image as ImageIcon, Upload, Store } from 'lucide-react';
+import { ArrowRight, Search, ChevronLeft, ChevronRight, PlusCircle, Image as ImageIcon, Upload, Store, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -45,10 +45,14 @@ export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useAuth();
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [allOrganizations, setAllOrganizations] = useState<Organization[]>([]);
 
   const fetchData = () => {
       setInitialShops(getShops(user));
       setAllUsers(getUsers(user));
+      if (user?.role === 'Admin') {
+        setAllOrganizations(getOrganizations(user));
+      }
       setLoading(false);
   }
 
@@ -85,9 +89,12 @@ export default function Home() {
   }, [filteredShops, currentPage]);
 
   const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => {
-    addShopAndAssignUsers(newShopData, assignedUserIds); 
-    fetchData(); // Refreshes shops and users
+    if (!user) return;
+    addShopAndAssignUsers(newShopData, assignedUserIds, user); 
+    fetchData();
   };
+
+  const canAddShop = user?.role === 'Admin' || user?.role === 'Editor';
 
 
   return (
@@ -99,8 +106,8 @@ export default function Home() {
             Explora y gestiona el inventario de las tiendas.
           </p>
         </header>
-        {user?.role === 'Admin' && (
-          <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers}>
+        {canAddShop && (
+          <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers} allOrganizations={allOrganizations} currentUser={user}>
                <Button className="hidden sm:flex">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Agregar Tienda
@@ -141,8 +148,8 @@ export default function Home() {
                 <SelectItem value="inactivo">Inactivas</SelectItem>
             </SelectContent>
         </Select>
-         {user?.role === 'Admin' && (
-            <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers}>
+         {canAddShop && (
+            <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers} allOrganizations={allOrganizations} currentUser={user}>
                <Button className="w-full sm:hidden">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Agregar Tienda
@@ -308,7 +315,7 @@ function ImageUploader({ value, onChange }: { value: string, onChange: (value: s
     );
 }
 
-function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], children: React.ReactNode }) {
+function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUser, children }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], allOrganizations: Organization[], currentUser: AppUser | null, children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [specialization, setSpecialization] = useState('');
@@ -316,12 +323,24 @@ function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omi
     const [iconName, setIconName] = useState<IconName>('Shirt');
     const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
     const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
+    const [organizationId, setOrganizationId] = useState<string | undefined>(currentUser?.role === 'Editor' ? currentUser.organizationId : undefined);
 
-    const assignableUsers = useMemo(() => allUsers.filter(u => u.role === 'Vendedor'), [allUsers]);
+    const assignableUsers = useMemo(() => {
+      const orgId = currentUser?.role === 'Editor' ? currentUser.organizationId : organizationId;
+      if (!orgId) return [];
+      return allUsers.filter(u => u.role === 'Vendedor' && u.organizationId === orgId);
+    }, [allUsers, organizationId, currentUser]);
+
+    useEffect(() => {
+        if (currentUser?.role === 'Editor') {
+            setOrganizationId(currentUser.organizationId);
+        }
+    }, [currentUser, isOpen]);
+
 
     const handleSave = () => {
-        if (!name || !specialization || !iconName) {
-            alert('Por favor completa todos los campos.');
+        if (!name || !specialization || !iconName || !organizationId) {
+            alert('Por favor completa todos los campos requeridos, incluyendo la organización.');
             return;
         }
 
@@ -332,6 +351,7 @@ function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omi
             logoHint: `${name} ${specialization}`,
             icon: iconName,
             status,
+            organizationId,
         }, assignedUserIds);
 
         setIsOpen(false);
@@ -342,6 +362,9 @@ function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omi
         setIconName('Shirt');
         setStatus('activo');
         setAssignedUserIds([]);
+        if (currentUser?.role !== 'Editor') {
+          setOrganizationId(undefined);
+        }
     };
 
     const IconPreview = icons[iconName] || null;
@@ -355,6 +378,23 @@ function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omi
                     <DialogDescription>Completa los detalles para crear una nueva tienda.</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
+                    {currentUser?.role === 'Admin' && (
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="shop-organization" className="text-right">Organización</Label>
+                             <Select value={organizationId} onValueChange={(value) => setOrganizationId(value)}>
+                                <SelectTrigger className="col-span-3">
+                                    <SelectValue placeholder="Selecciona una organización" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {allOrganizations.map(org => (
+                                        <SelectItem key={org.id} value={org.id}>
+                                            {org.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    )}
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="shop-name" className="text-right">Nombre</Label>
                         <Input id="shop-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
@@ -422,7 +462,7 @@ function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omi
                     <div className="grid grid-cols-4 items-start gap-4">
                         <Label className="text-right pt-2">Asignar Vendedores</Label>
                         <div className="col-span-3">
-                            <UserSelector allUsers={assignableUsers} selectedUserIds={assignedUserIds} onChange={setAssignedUserIds} />
+                            <UserSelector allUsers={assignableUsers} selectedUserIds={assignedUserIds} onChange={setAssignedUserIds} disabled={!organizationId} />
                         </div>
                     </div>
                 </div>
@@ -437,7 +477,7 @@ function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omi
     );
 }
 
-function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[], selectedUserIds: string[], onChange: (ids: string[]) => void}) {
+function UserSelector({allUsers, selectedUserIds, onChange, disabled = false}: {allUsers: AppUser[], selectedUserIds: string[], onChange: (ids: string[]) => void, disabled?: boolean}) {
     
     const handleUserToggle = (userId: string) => {
         onChange(
@@ -450,8 +490,8 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
     return (
          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-start text-left font-normal">
-                    <Store className="mr-2" />
+                <Button variant="outline" className="w-full justify-start text-left font-normal" disabled={disabled}>
+                    <Users className="mr-2" />
                     {selectedUserIds.length > 0 ? `${selectedUserIds.length} usuario(s) seleccionado(s)`: 'Seleccionar usuarios'}
                 </Button>
             </DropdownMenuTrigger>
@@ -460,12 +500,12 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
                     {allUsers.map(user => (
                         <DropdownMenuItem key={user.id} onSelect={(e) => e.preventDefault()}>
                             <Checkbox
-                                id={`user-${user.id}`}
+                                id={`user-selector-${user.id}`}
                                 checked={selectedUserIds.includes(user.id)}
                                 onCheckedChange={() => handleUserToggle(user.id)}
                                 className="mr-2"
                             />
-                            <Label htmlFor={`user-${user.id}`} className="flex-1 cursor-pointer">{user.name} ({user.role})</Label>
+                            <Label htmlFor={`user-selector-${user.id}`} className="flex-1 cursor-pointer">{user.name} ({user.role})</Label>
                         </DropdownMenuItem>
                     ))}
                     {allUsers.length === 0 && <DropdownMenuItem disabled>No hay usuarios disponibles.</DropdownMenuItem>}
@@ -475,4 +515,3 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
     );
 }
 
-    

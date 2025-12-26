@@ -3,16 +3,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Package, Upload, Users, ShoppingCart, Link2 } from 'lucide-react';
+import { Home, Package, Upload, Users, ShoppingCart, Link2, Building } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 
 const navLinksConfig = [
-  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Vendedor'], disabled: false },
-  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Vendedor'], disabled: false },
-  { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin'], disabled: false },
-  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Vendedor'], disabled: false },
-  { href: '/connections', label: 'Conexiones', icon: Link2, roles: ['Admin', 'Vendedor'], disabled: true },
+  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+  { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin', 'Editor'], disabled: false },
+  { href: '/organizations', label: 'Organizaciones', icon: Building, roles: ['Admin'], disabled: false },
+  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+  { href: '/connections', label: 'Conexiones', icon: Link2, roles: ['Admin', 'Editor', 'Vendedor'], disabled: true },
 ];
 
 export default function Sidebar({ isMobile = false }) {
@@ -57,14 +58,6 @@ export default function Sidebar({ isMobile = false }) {
     );
   };
   
-  const content = (
-      <div className="flex-1 overflow-auto py-2">
-        <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-          {navLinks.map(renderLink)}
-        </nav>
-      </div>
-  );
-  
   const header = (
      <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold">
@@ -73,6 +66,15 @@ export default function Sidebar({ isMobile = false }) {
         </Link>
     </div>
   );
+
+  const content = (
+    <div className="flex-1">
+      <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+        {navLinks.map(renderLink)}
+      </nav>
+    </div>
+  );
+
 
   if (isMobile) {
     return (
@@ -92,5 +94,3 @@ export default function Sidebar({ isMobile = false }) {
     </div>
   );
 }
-
-    
