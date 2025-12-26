@@ -158,7 +158,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
             data-ai-hint={shop.logoHint}
             sizes="100vw"
         />
-        <div className="absolute inset-0 bg-background/50"></div>
+        <div className="absolute inset-0 bg-background/80"></div>
         <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6">
             <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
                 <Image
@@ -765,3 +765,6 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
 
 
 
+
+
+    
