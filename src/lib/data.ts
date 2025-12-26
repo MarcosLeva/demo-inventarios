@@ -22,6 +22,24 @@ export type Shop = {
   inventory: Product[];
 };
 
+export const icons = {
+    Shirt,
+    Laptop,
+    Cookie,
+    BookOpen,
+    ToyBrick,
+    Sprout,
+    Dumbbell,
+    Guitar,
+    Wrench,
+    Dog,
+    Coffee,
+    Pill
+};
+
+export type IconMap = typeof icons;
+
+
 export const shops: Shop[] = [
   {
     id: '1',
@@ -400,10 +418,54 @@ export const shops: Shop[] = [
   }
 ];
 
+// In-memory data store
+let shopsStore: Shop[] = [...shops];
+
 export function getShops() {
-  return shops;
+  return shopsStore;
 }
 
 export function getShopById(id: string | number) {
-  return shops.find((shop) => shop.id === String(id));
+  return shopsStore.find((shop) => shop.id === String(id));
+}
+
+export function addShop(shop: Shop) {
+    shopsStore.unshift(shop);
+}
+
+export function updateShop(updatedShop: Shop) {
+    const index = shopsStore.findIndex(shop => shop.id === updatedShop.id);
+    if (index !== -1) {
+        shopsStore[index] = updatedShop;
+    }
+}
+
+export function addProduct(shopId: string, product: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) {
+    const shop = getShopById(shopId);
+    if (shop) {
+        const newProduct: Product = {
+            ...product,
+            id: `p${Date.now()}`,
+            imageSrc: `https://picsum.photos/seed/new${Date.now()}/400/300`,
+            imageHint: 'nuevo producto',
+        };
+        shop.inventory.unshift(newProduct);
+    }
+}
+
+export function updateProduct(shopId: string, updatedProduct: Product) {
+    const shop = getShopById(shopId);
+    if (shop) {
+        const index = shop.inventory.findIndex(p => p.id === updatedProduct.id);
+        if (index !== -1) {
+            shop.inventory[index] = updatedProduct;
+        }
+    }
+}
+
+export function deleteProduct(shopId: string, productId: string) {
+    const shop = getShopById(shopId);
+    if (shop) {
+        shop.inventory = shop.inventory.filter(p => p.id !== productId);
+    }
 }

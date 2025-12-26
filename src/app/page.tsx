@@ -1,39 +1,53 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
-import { getShops } from '@/lib/data';
-import type { Shop } from '@/lib/data';
+import { useState, useMemo, useRef } from 'react';
+import { getShops, icons } from '@/lib/data';
+import type { Shop, IconMap } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRight, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Search, ChevronLeft, ChevronRight, PlusCircle, Image as ImageIcon, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Label } from '@/components/ui/label';
+import type { LucideIcon } from 'lucide-react';
+
 
 const SHOPS_PER_PAGE = 8;
 
 export default function Home() {
-  const shops = getShops();
+  const [initialShops, setInitialShops] = useState(getShops());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
 
   const specializations = useMemo(() => {
-    const allSpecs = shops.map((shop) => shop.specialization);
+    const allSpecs = initialShops.map((shop) => shop.specialization);
     return ['all', ...Array.from(new Set(allSpecs))];
-  }, [shops]);
+  }, [initialShops]);
 
   const filteredShops = useMemo(() => {
     setCurrentPage(1); // Reset page when filters change
-    return shops.filter((shop) => {
+    return initialShops.filter((shop) => {
       const matchesSearchTerm = shop.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesSpecialization =
         selectedSpecialization === 'all' || shop.specialization === selectedSpecialization;
       return matchesSearchTerm && matchesSpecialization;
-    });
-  }, [shops, searchTerm, selectedSpecialization]);
+    }).sort((a, b) => a.name.localeCompare(b.name));
+  }, [initialShops, searchTerm, selectedSpecialization]);
 
   const totalPages = Math.ceil(filteredShops.length / SHOPS_PER_PAGE);
   const paginatedShops = useMemo(() => {
@@ -42,9 +56,19 @@ export default function Home() {
     return filteredShops.slice(startIndex, endIndex);
   }, [filteredShops, currentPage]);
 
+  const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>) => {
+    const newShop: Shop = {
+      ...newShopData,
+      id: `shop-${Date.now()}`,
+      inventory: [],
+    };
+    setInitialShops(prevShops => [newShop, ...prevShops]);
+  };
+
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <div className="text-center mb-12">
+      <div className="text-center mb-8">
         <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl lg:text-6xl">
           Explora el Inventario de las Tiendas
         </h1>
@@ -53,8 +77,8 @@ export default function Home() {
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        <div className="relative flex-1">
+       <div className="flex flex-col sm:flex-row gap-4 mb-8 items-start">
+        <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
@@ -76,6 +100,12 @@ export default function Home() {
             ))}
           </SelectContent>
         </Select>
+        <AddShopModal onShopAdd={handleShopAdd}>
+             <Button className="w-full sm:w-auto">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Agregar Tienda
+            </Button>
+        </AddShopModal>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
@@ -156,3 +186,162 @@ function ShopCard({ shop }: { shop: Shop }) {
     </Link>
   );
 }
+
+
+function ImageUploader({ value, onChange }: { value: string, onChange: (value: string) => void }) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                onChange(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleButtonClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    return (
+        <Tabs defaultValue="url" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="url">URL</TabsTrigger>
+                <TabsTrigger value="upload">Subir</TabsTrigger>
+            </TabsList>
+            <TabsContent value="url">
+                <div className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                    <Input id="shop-image-url" value={value.startsWith('data:') ? '' : value} onChange={(e) => onChange(e.target.value)} placeholder="https://ejemplo.com/logo.png" />
+                </div>
+            </TabsContent>
+            <TabsContent value="upload">
+                <Input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept="image/*"
+                />
+                <Button variant="outline" className="w-full" onClick={handleButtonClick}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Seleccionar Archivo
+                </Button>
+            </TabsContent>
+        </Tabs>
+    );
+}
+
+function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'>) => void, children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [name, setName] = useState('');
+    const [specialization, setSpecialization] = useState('');
+    const [logoSrc, setLogoSrc] = useState('https://picsum.photos/seed/newshop/400/400');
+    const [iconName, setIconName] = useState<keyof IconMap>('Shirt');
+
+    const handleSave = () => {
+        if (!name || !specialization || !iconName) {
+            alert('Por favor completa todos los campos.');
+            return;
+        }
+
+        const selectedIcon = icons[iconName] as LucideIcon;
+
+        if (!selectedIcon) {
+            alert('Icono no válido seleccionado.');
+            return;
+        }
+
+        onShopAdd({
+            name,
+            specialization,
+            logoSrc,
+            logoHint: `${name} ${specialization}`,
+            icon: selectedIcon
+        });
+        setIsOpen(false);
+        // Reset form
+        setName('');
+        setSpecialization('');
+        setLogoSrc('https://picsum.photos/seed/newshop/400/400');
+        setIconName('Shirt');
+    };
+
+    const IconPreview = icons[iconName] || null;
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Agregar Nueva Tienda</DialogTitle>
+                    <DialogDescription>Completa los detalles para crear una nueva tienda.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-name" className="text-right">Nombre</Label>
+                        <Input id="shop-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-specialization" className="text-right">Especialización</Label>
+                        <Input id="shop-specialization" value={specialization} onChange={(e) => setSpecialization(e.target.value)} className="col-span-3" />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-icon" className="text-right">Icono</Label>
+                        <div className="col-span-3 flex items-center gap-2">
+                             <Select value={iconName} onValueChange={(value: keyof IconMap) => setIconName(value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona un icono" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.keys(icons).map(key => {
+                                        const Icon = icons[key as keyof IconMap];
+                                        return (
+                                            <SelectItem key={key} value={key}>
+                                               <div className="flex items-center gap-2">
+                                                 <Icon className="h-4 w-4" />
+                                                 <span>{key}</span>
+                                               </div>
+                                            </SelectItem>
+                                        )
+                                    })}
+                                </SelectContent>
+                            </Select>
+                            {IconPreview && (
+                                <div className="bg-accent/10 text-accent p-2 rounded-md">
+                                    <IconPreview className="h-6 w-6" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4 pt-2">
+                        <Label className="text-right pt-2">Logo</Label>
+                        <div className="col-span-3">
+                            <ImageUploader value={logoSrc} onChange={setLogoSrc} />
+                        </div>
+                    </div>
+                    {logoSrc && (
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Previsualización</Label>
+                            <div className="col-span-3">
+                                <div className="relative h-24 w-24 rounded-md overflow-hidden border">
+                                    <Image src={logoSrc} alt="Previsualización del logo" fill className="object-cover" sizes="96px" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleSave}>Guardar Tienda</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+

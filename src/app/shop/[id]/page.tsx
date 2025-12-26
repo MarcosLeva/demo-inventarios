@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { getShopById } from '@/lib/data';
+import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData } from '@/lib/data';
 import type { Product, Shop } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -58,9 +58,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 const ITEMS_PER_PAGE = 10;
 
 export default function ShopPage({ params }: { params: { id: string } }) {
-  const shopData = getShopById(params.id);
-
-  const [shop, setShop] = useState<Shop | undefined>(shopData);
+  const [shop, setShop] = useState<Shop | undefined>(() => getShopById(params.id));
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
@@ -83,41 +81,32 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
 
   if (!shop) {
-    notFound();
+    // This will be caught by notFound in production builds. 
+    // In dev, it might show an error before redirecting.
+    useEffect(() => {
+        notFound();
+    }, []);
+    return null;
   }
   
-  const handleShopUpdate = (updatedShop: Shop) => {
-    setShop(updatedShop);
+  const handleShopUpdate = (updatedShopData: Shop) => {
+    updateShopInData(updatedShopData);
+    setShop(getShopById(params.id));
   }
 
   const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => {
-    setShop(prevShop => {
-        if (!prevShop) return prevShop;
-        const productToAdd: Product = {
-            ...newProduct,
-            id: `p${Date.now()}`,
-            imageSrc: `https://picsum.photos/seed/new${Date.now()}/400/300`,
-            imageHint: 'nuevo producto',
-        };
-        const newInventory = [productToAdd, ...prevShop.inventory];
-        return {...prevShop, inventory: newInventory};
-    });
+    addProductToData(shop.id, newProduct);
+    setShop(getShopById(params.id));
   }
 
   const handleProductUpdate = (updatedProduct: Product) => {
-    setShop(prevShop => {
-        if (!prevShop) return prevShop;
-        const newInventory = prevShop.inventory.map(p => p.id === updatedProduct.id ? updatedProduct : p);
-        return {...prevShop, inventory: newInventory};
-    });
+    updateProductInData(shop.id, updatedProduct);
+    setShop(getShopById(params.id));
   }
 
   const handleProductDelete = (productId: string) => {
-    setShop(prevShop => {
-        if (!prevShop) return prevShop;
-        const newInventory = prevShop.inventory.filter(p => p.id !== productId);
-        return {...prevShop, inventory: newInventory};
-    });
+    deleteProductFromData(shop.id, productId);
+    setShop(getShopById(params.id));
   }
 
   const filteredInventory = useMemo(() => {
@@ -734,3 +723,4 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     
 
     
+
