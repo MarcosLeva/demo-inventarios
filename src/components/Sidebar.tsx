@@ -9,9 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 
 const navLinksConfig = [
-  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Viewer', 'Vendedor'] },
-  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Viewer', 'Vendedor'] },
-  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'] },
+  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Vendedor'] },
+  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Vendedor'] },
+  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Vendedor'] },
   { href: '/connections', label: 'Conexión', icon: Link2, disabled: true, roles: ['Admin'] },
   { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin'] },
 ];
@@ -80,3 +80,5 @@ export default function Sidebar({ isMobile = false }) {
     </div>
   );
 }
+
+    

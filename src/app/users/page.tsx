@@ -274,7 +274,7 @@ function AddUserModal({ onUserAdd, allShops, children }: { onUserAdd: (user: Omi
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [role, setRole] = useState<AppUser['role']>('Viewer');
+    const [role, setRole] = useState<AppUser['role']>('Vendedor');
     const [status, setStatus] = useState<AppUser['status']>('activo');
     const [selectedShopIds, setSelectedShopIds] = useState<string[]>([]);
 
@@ -289,7 +289,7 @@ function AddUserModal({ onUserAdd, allShops, children }: { onUserAdd: (user: Omi
         // Reset form
         setName('');
         setEmail('');
-        setRole('Viewer');
+        setRole('Vendedor');
         setStatus('activo');
         setSelectedShopIds([]);
     };
@@ -319,8 +319,6 @@ function AddUserModal({ onUserAdd, allShops, children }: { onUserAdd: (user: Omi
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Admin">Admin</SelectItem>
-                                <SelectItem value="Editor">Editor</SelectItem>
-                                <SelectItem value="Viewer">Viewer</SelectItem>
                                 <SelectItem value="Vendedor">Vendedor</SelectItem>
                             </SelectContent>
                         </Select>
@@ -403,8 +401,6 @@ function EditUserModal({ user, allShops, onUserUpdate, children }: { user: AppUs
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="Admin">Admin</SelectItem>
-                                <SelectItem value="Editor">Editor</SelectItem>
-                                <SelectItem value="Viewer">Viewer</SelectItem>
                                 <SelectItem value="Vendedor">Vendedor</SelectItem>
                             </SelectContent>
                         </Select>
@@ -497,5 +493,7 @@ function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, o
         </AlertDialog>
     );
 }
+
+    
 
     

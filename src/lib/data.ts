@@ -19,7 +19,7 @@ export const icons = {
     Laptop,
     Cookie,
     BookOpen,
-    Wrench, // Changed from ToyBrick
+    Wrench,
     Sprout,
     Dumbbell,
     Guitar,
@@ -37,7 +37,7 @@ export type Shop = {
   specialization: string;
   logoSrc: string;
   logoHint: string;
-  icon: IconName; // Changed from LucideIcon to IconName
+  icon: IconName;
   inventory: Product[];
   status: 'activo' | 'inactivo';
 };
@@ -46,7 +46,7 @@ export type AppUser = {
   id: string;
   name: string;
   email: string;
-  role: 'Admin' | 'Editor' | 'Viewer' | 'Vendedor';
+  role: 'Admin' | 'Vendedor';
   status: 'activo' | 'inactivo';
   shopIds: string[];
 }
@@ -443,10 +443,6 @@ export const shops: Shop[] = [
 
 const users: AppUser[] = [
     { id: 'user-1', name: 'Admin', email: 'admin@example.com', role: 'Admin', status: 'activo', shopIds: [] },
-    { id: 'user-2', name: 'Carlos Gomez', email: 'carlos.gomez@example.com', role: 'Editor', status: 'activo', shopIds: ['1', '2', '3'] },
-    { id: 'user-3', name: 'Luisa Fernandez', email: 'luisa.fernandez@example.com', role: 'Viewer', status: 'inactivo', shopIds: ['4'] },
-    { id: 'user-4', name: 'Javier Rodriguez', email: 'javier.rodriguez@example.com', role: 'Editor', status: 'activo', shopIds: [] },
-    { id: 'user-5', name: 'Maria Lopez', email: 'maria.lopez@example.com', role: 'Viewer', status: 'activo', shopIds: ['5','6'] },
     { id: 'user-6', name: 'Vendedor', email: 'vendedor@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '7'] },
 ];
 
@@ -560,5 +556,7 @@ export function deleteProduct(shopId: string, productId: string) {
         shop.inventory = shop.inventory.filter(p => p.id !== productId);
     }
 }
+
+    
 
     
