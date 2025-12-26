@@ -219,15 +219,14 @@ export default function ShopPage() {
                     <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
                         {shop.name}
                     </h1>
+                     <p className="text-lg text-muted-foreground mt-1">{shop.specialization}</p>
                      {canEditShop && organization ? (
-                        <Button variant="link" asChild className="p-0 h-auto font-semibold text-base text-muted-foreground hover:text-primary">
+                        <Button variant="link" asChild className="p-0 h-auto font-semibold text-base text-muted-foreground hover:text-primary mt-1">
                             <Link href={`/organizations/${organization.id}`} className="flex items-center gap-1.5">
                                 <Building className="h-4 w-4" /> {organization.name}
                             </Link>
                         </Button>
-                     ) : (
-                       <p className="text-lg text-muted-foreground">{shop.specialization}</p>
-                     )}
+                     ) : null}
                 </div>
             </div>
             <div className="flex items-center gap-4">
@@ -235,7 +234,7 @@ export default function ShopPage() {
                 <div className="flex items-center">
                     <TooltipProvider>
                       <div className="flex items-center -space-x-2">
-                        {members.map(member => (
+                        {members.slice(0, 5).map(member => (
                             <Tooltip key={member.id}>
                                 <TooltipTrigger asChild>
                                     <Avatar className="h-9 w-9 border-2 border-background">
@@ -248,6 +247,18 @@ export default function ShopPage() {
                                 </TooltipContent>
                             </Tooltip>
                         ))}
+                         {members.length > 5 && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                               <Avatar className="h-9 w-9 border-2 border-background">
+                                    <AvatarFallback>+{members.length - 5}</AvatarFallback>
+                                </Avatar>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{members.length - 5} miembro(s) más</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                       </div>
                     </TooltipProvider>
                      {members.length > 0 && <span className="text-sm text-muted-foreground ml-3">{members.length} miembro(s)</span>}
@@ -1004,5 +1015,7 @@ function DynamicPropertiesEditor({ properties, setProperties }: { properties: Pr
         </div>
     );
 }
+
+    
 
     
