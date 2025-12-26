@@ -31,11 +31,14 @@ export default function AuthHeader() {
   return (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-10 w-10">
-                    <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`} alt={user.name} />
-                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                </Avatar>
+            <Button variant="ghost" className="relative h-10 rounded-full pl-2 pr-4">
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                        <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`} alt={user.name} />
+                        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                    </Avatar>
+                    <span className="hidden sm:block font-medium text-sm">{user.name}</span>
+                </div>
             </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
