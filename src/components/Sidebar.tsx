@@ -3,16 +3,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Package, Upload, Users, ShoppingCart, Building } from 'lucide-react';
+import { Home, Package, Upload, Users, ShoppingCart, Building, Link2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 
 const navLinksConfig = [
-  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Vendedor'] },
-  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Vendedor'] },
-  { href: '/organizations', label: 'Organizaciones', icon: Building, roles: ['Admin'] },
-  { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin', 'Editor'] },
-  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'] },
+  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+  { href: '/organizations', label: 'Organizaciones', icon: Building, roles: ['Admin'], disabled: false },
+  { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin', 'Editor'], disabled: false },
+  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+  { href: '/connections', label: 'Conexiones', icon: Link2, roles: ['Admin', 'Editor', 'Vendedor'], disabled: true },
 ];
 
 export default function Sidebar({ isMobile = false }) {
@@ -26,19 +27,33 @@ export default function Sidebar({ isMobile = false }) {
   const navLinks = navLinksConfig.filter(link => link.roles.includes(user.role));
 
   const renderLink = (link: typeof navLinks[0]) => {
-    const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);
+    const isActive = !link.disabled && (link.href === '/' ? pathname === '/' : pathname.startsWith(link.href));
+    
+    const linkContent = (
+       <>
+        <link.icon className="h-4 w-4" />
+        {link.label}
+       </>
+    );
+    
+    const linkClasses = cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all",
+        !link.disabled && "hover:text-primary",
+        isActive && "bg-muted text-primary",
+        link.disabled && "cursor-not-allowed opacity-50"
+    );
+
+    if(link.disabled) {
+        return <span className={linkClasses}>{linkContent}</span>
+    }
+
     return (
       <Link
         key={link.href}
         href={link.href}
-        className={cn(
-          "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary",
-          isActive && "bg-muted text-primary",
-          link.disabled && "cursor-not-allowed opacity-50"
-        )}
+        className={linkClasses}
       >
-        <link.icon className="h-4 w-4" />
-        {link.label}
+        {linkContent}
       </Link>
     );
   };
