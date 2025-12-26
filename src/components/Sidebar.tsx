@@ -22,6 +22,11 @@ export default function Sidebar({ isMobile = false }) {
   
   const navLinks = navLinksConfig.filter(link => {
     if (!user) return false;
+    // For 'Vendedor', only show 'Tiendas', 'Importar', and 'Productos'
+    if (user.role === 'Vendedor') {
+        return ['/', '/import', '/products'].includes(link.href);
+    }
+    // For 'Admin', show everything except disabled links
     return link.roles.includes(user.role);
   });
 
@@ -71,7 +76,7 @@ export default function Sidebar({ isMobile = false }) {
             <span className="">Visor de Inventarios</span>
           </Link>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 overflow-auto py-2">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
             {navLinks.map(renderLink)}
           </nav>
@@ -80,5 +85,3 @@ export default function Sidebar({ isMobile = false }) {
     </div>
   );
 }
-
-    
