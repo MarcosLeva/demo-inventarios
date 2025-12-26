@@ -148,7 +148,18 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         </Button>
       </div>
 
-      <div className="flex flex-col md:flex-row items-start md:items-center gap-6 mb-12 p-6 bg-card rounded-lg border shadow-sm">
+      <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 mb-12 p-6 bg-card rounded-lg border shadow-sm overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src={shop.logoSrc}
+            alt={`Fondo de ${shop.name}`}
+            fill
+            className="object-cover opacity-10 dark:opacity-5"
+            style={{ filter: 'blur(24px) saturate(1.2)' }}
+            data-ai-hint={shop.logoHint}
+          />
+          <div className="absolute inset-0 bg-card/80 dark:bg-card/90"></div>
+        </div>
         <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
             <Image
               src={shop.logoSrc}
@@ -159,7 +170,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
               sizes="128px"
             />
         </div>
-        <div>
+        <div className="relative">
             <div className="flex items-center gap-3 mb-2">
                  <div className="bg-accent/10 text-accent p-3 rounded-lg">
                     <Icon className="h-8 w-8" />
@@ -738,6 +749,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     
 
     
+
 
 
 
