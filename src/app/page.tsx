@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { getShops, icons } from '@/lib/data';
-import type { Shop, IconMap } from '@/lib/data';
+import type { Shop, IconMap, IconName } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -72,12 +72,8 @@ export default function Home() {
   }, [filteredShops, currentPage]);
 
   const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>) => {
-    const newShop: Shop = {
-      ...newShopData,
-      id: `shop-${Date.now()}`,
-      inventory: [],
-    };
-    setInitialShops(prevShops => [newShop, ...prevShops]);
+    addShop(newShopData);
+    setInitialShops(getShops());
   };
 
 
@@ -202,7 +198,7 @@ function ShopCardSkeleton() {
 
 
 function ShopCard({ shop, index }: { shop: Shop, index: number }) {
-  const Icon = shop.icon;
+  const Icon = icons[shop.icon];
   return (
     <Link href={`/shop/${shop.id}`} className="group block">
       <Card 
@@ -300,7 +296,7 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
     const [name, setName] = useState('');
     const [specialization, setSpecialization] = useState('');
     const [logoSrc, setLogoSrc] = useState('https://picsum.photos/seed/newshop/400/400');
-    const [iconName, setIconName] = useState<keyof IconMap>('Shirt');
+    const [iconName, setIconName] = useState<IconName>('Shirt');
     const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
 
     const handleSave = () => {
@@ -309,19 +305,12 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
             return;
         }
 
-        const selectedIcon = icons[iconName];
-
-        if (!selectedIcon) {
-            alert('Icono no válido seleccionado.');
-            return;
-        }
-
         onShopAdd({
             name,
             specialization,
             logoSrc,
             logoHint: `${name} ${specialization}`,
-            icon: selectedIcon,
+            icon: iconName,
             status,
         });
         setIsOpen(false);
@@ -355,13 +344,13 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
                      <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="shop-icon" className="text-right">Icono</Label>
                         <div className="col-span-3 flex items-center gap-2">
-                             <Select value={iconName} onValueChange={(value: keyof IconMap) => setIconName(value)}>
+                             <Select value={iconName} onValueChange={(value: IconName) => setIconName(value)}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Selecciona un icono" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {Object.keys(icons).map(key => {
-                                        const Icon = icons[key as keyof IconMap];
+                                        const Icon = icons[key as IconName];
                                         return (
                                             <SelectItem key={key} value={key}>
                                                <div className="flex items-center gap-2">
@@ -419,5 +408,7 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
         </Dialog>
     );
 }
+
+    
 
     

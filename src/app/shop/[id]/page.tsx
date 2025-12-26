@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef, use } from 'react';
-import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData } from '@/lib/data';
+import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons } from '@/lib/data';
 import type { Product, Shop } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -67,9 +67,25 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-
   const [priceRange, setPriceRange] = useState([0, 100]);
 
+  useEffect(() => {
+    // Simulate fetching shop data
+    setTimeout(() => {
+      const fetchedShop = getShopById(resolvedParams.id);
+      if (fetchedShop) {
+        setShop(fetchedShop);
+        const initialMaxPrice = fetchedShop.inventory.length > 0
+          ? Math.ceil(Math.max(...fetchedShop.inventory.map((p) => p.price)))
+          : 100;
+        setPriceRange([0, initialMaxPrice]);
+      } else {
+        // This will trigger the not-found page
+      }
+      setLoading(false);
+    }, 500); // Simulate 0.5 second load time
+  }, [resolvedParams.id]);
+  
   const filteredInventory = useMemo(() => {
     setCurrentPage(1); // Reset page when filters change
     if (!shop) return([]);
@@ -97,32 +113,13 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
   }, [shop]);
 
-  useEffect(() => {
-    // Simulate fetching shop data
-    setTimeout(() => {
-      const fetchedShop = getShopById(resolvedParams.id);
-      if (fetchedShop) {
-        setShop(fetchedShop);
-        const initialMaxPrice = fetchedShop.inventory.length > 0
-          ? Math.ceil(Math.max(...fetchedShop.inventory.map((p) => p.price)))
-          : 100;
-        setPriceRange([0, initialMaxPrice]);
-      } else {
-        notFound();
-      }
-      setLoading(false);
-    }, 500); // Simulate 0.5 second load time
-  }, [resolvedParams.id]);
-
 
   if (loading) {
     return <ShopPageSkeleton />;
   }
 
   if (!shop) {
-    useEffect(() => {
-        notFound();
-    }, []);
+    notFound();
     return null;
   }
   
@@ -146,7 +143,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     setShop(getShopById(resolvedParams.id));
   }
 
-  const Icon = shop.icon;
+  const Icon = icons[shop.icon];
 
   const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -825,3 +822,5 @@ setStatus(shop.status);
         </Dialog>
     );
 }
+
+    

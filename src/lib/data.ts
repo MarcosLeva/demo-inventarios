@@ -14,25 +14,6 @@ export type Product = {
   shopId?: string; // Add shopId to trace back to shop
 };
 
-export type Shop = {
-  id: string;
-  name: string;
-  specialization: string;
-  logoSrc: string;
-  logoHint: string;
-  icon: LucideIcon;
-  inventory: Product[];
-  status: 'activo' | 'inactivo';
-};
-
-export type AppUser = {
-  id: string;
-  name: string;
-  email: string;
-  role: 'Admin' | 'Editor' | 'Viewer';
-  status: 'activo' | 'inactivo';
-}
-
 export const icons = {
     Shirt,
     Laptop,
@@ -49,7 +30,26 @@ export const icons = {
 };
 
 export type IconMap = typeof icons;
+export type IconName = keyof IconMap;
 
+export type Shop = {
+  id: string;
+  name: string;
+  specialization: string;
+  logoSrc: string;
+  logoHint: string;
+  icon: IconName; // Changed from LucideIcon to IconName
+  inventory: Product[];
+  status: 'activo' | 'inactivo';
+};
+
+export type AppUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: 'Admin' | 'Editor' | 'Viewer';
+  status: 'activo' | 'inactivo';
+}
 
 export const shops: Shop[] = [
   {
@@ -58,7 +58,7 @@ export const shops: Shop[] = [
     specialization: 'Ropa Moderna',
     logoSrc: 'https://picsum.photos/seed/shop1/400/400',
     logoHint: 'tienda de ropa',
-    icon: Shirt,
+    icon: 'Shirt',
     status: 'activo',
     inventory: [
       {
@@ -127,7 +127,7 @@ export const shops: Shop[] = [
     specialization: 'Electrónica de Vanguardia',
     logoSrc: 'https://picsum.photos/seed/shop2/400/400',
     logoHint: 'tienda de electrónica',
-    icon: Laptop,
+    icon: 'Laptop',
     status: 'activo',
     inventory: [
       {
@@ -195,7 +195,7 @@ export const shops: Shop[] = [
     specialization: 'Panadería Artesanal',
     logoSrc: 'https://picsum.photos/seed/shop3/400/400',
     logoHint: 'panadería',
-    icon: Cookie,
+    icon: 'Cookie',
     status: 'activo',
     inventory: [
       {
@@ -256,7 +256,7 @@ export const shops: Shop[] = [
     specialization: 'Literatura Selecta',
     logoSrc: 'https://picsum.photos/seed/shop4/400/400',
     logoHint: 'librería',
-    icon: BookOpen,
+    icon: 'BookOpen',
     status: 'inactivo',
     inventory: [
       {
@@ -317,7 +317,7 @@ export const shops: Shop[] = [
     specialization: 'Juguetes Educativos',
     logoSrc: 'https://picsum.photos/seed/shop5/400/400',
     logoHint: 'juguetería',
-    icon: ToyBrick,
+    icon: 'ToyBrick',
     status: 'activo',
     inventory: [
         { id: 'p21', name: 'Set de Bloques de Construcción', description: 'Fomenta la creatividad con 500 piezas de colores.', price: 49.99, imageSrc: 'https://picsum.photos/seed/prod21/400/300', imageHint: 'bloques construcción', stock: 30, status: 'activo' },
@@ -333,7 +333,7 @@ export const shops: Shop[] = [
     specialization: 'Artículos de Jardinería',
     logoSrc: 'https://picsum.photos/seed/shop6/400/400',
     logoHint: 'tienda de jardinería',
-    icon: Sprout,
+    icon: 'Sprout',
     status: 'activo',
     inventory: [
         { id: 'p26', name: 'Set de Herramientas de Jardín', description: 'Incluye pala, rastrillo y podadoras.', price: 39.99, imageSrc: 'https://picsum.photos/seed/prod26/400/300', imageHint: 'herramientas jardín', stock: 55, status: 'activo' },
@@ -349,7 +349,7 @@ export const shops: Shop[] = [
     specialization: 'Artículos Deportivos',
     logoSrc: 'https://picsum.photos/seed/shop7/400/400',
     logoHint: 'tienda de deportes',
-    icon: Dumbbell,
+    icon: 'Dumbbell',
     status: 'activo',
     inventory: [
         { id: 'p31', name: 'Balón de Fútbol Profesional', description: 'Balón oficial de la liga, tamaño 5.', price: 95.00, imageSrc: 'https://picsum.photos/seed/prod31/400/300', imageHint: 'balón fútbol', stock: 40, status: 'activo' },
@@ -365,7 +365,7 @@ export const shops: Shop[] = [
     specialization: 'Instrumentos Musicales',
     logoSrc: 'https://picsum.photos/seed/shop8/400/400',
     logoHint: 'tienda de música',
-    icon: Guitar,
+    icon: 'Guitar',
     status: 'inactivo',
     inventory: [
         { id: 'p36', name: 'Guitarra Acústica', description: 'Ideal para principiantes, sonido cálido.', price: 150.00, imageSrc: 'https://picsum.photos/seed/prod36/400/300', imageHint: 'guitarra acústica', stock: 25, status: 'activo' },
@@ -381,7 +381,7 @@ export const shops: Shop[] = [
     specialization: 'Ferretería y Bricolaje',
     logoSrc: 'https://picsum.photos/seed/shop9/400/400',
     logoHint: 'ferretería',
-    icon: Wrench,
+    icon: 'Wrench',
     status: 'activo',
     inventory: [
         { id: 'p41', name: 'Taladro Inalámbrico 18V', description: 'Potente y versátil, con 2 baterías.', price: 129.99, imageSrc: 'https://picsum.photos/seed/prod41/400/300', imageHint: 'taladro inalámbrico', stock: 40, status: 'activo' },
@@ -397,7 +397,7 @@ export const shops: Shop[] = [
     specialization: 'Tienda de Mascotas',
     logoSrc: 'https://picsum.photos/seed/shop10/400/400',
     logoHint: 'tienda mascotas',
-    icon: Dog,
+    icon: 'Dog',
     status: 'activo',
     inventory: [
         { id: 'p46', name: 'Pienso para Perro Adulto', description: 'Saco de 15kg, sabor pollo y arroz.', price: 45.00, imageSrc: 'https://picsum.photos/seed/prod46/400/300', imageHint: 'pienso perro', stock: 80, status: 'activo' },
@@ -413,7 +413,7 @@ export const shops: Shop[] = [
     specialization: 'Cafetería de Especialidad',
     logoSrc: 'https://picsum.photos/seed/shop11/400/400',
     logoHint: 'cafetería',
-    icon: Coffee,
+    icon: 'Coffee',
     status: 'activo',
     inventory: [
         { id: 'p51', name: 'Café en Grano de Colombia', description: 'Bolsa de 250g, tueste medio.', price: 12.00, imageSrc: 'https://picsum.photos/seed/prod51/400/300', imageHint: 'café grano', stock: 100, status: 'activo' },
@@ -429,7 +429,7 @@ export const shops: Shop[] = [
     specialization: 'Farmacia y Parafarmacia',
     logoSrc: 'https://picsum.photos/seed/shop12/400/400',
     logoHint: 'farmacia',
-    icon: Pill,
+    icon: 'Pill',
     status: 'activo',
     inventory: [
         { id: 'p56', name: 'Crema Hidratante Facial SPF 30', description: 'Protección solar y hidratación diaria.', price: 28.50, imageSrc: 'https://picsum.photos/seed/prod56/400/300', imageHint: 'crema facial', stock: 70, status: 'activo' },
@@ -458,7 +458,11 @@ export function getShops() {
 }
 
 export function getShopById(id: string | number) {
-  return shopsStore.find((shop) => shop.id === String(id));
+  const shop = shopsStore.find((shop) => shop.id === String(id));
+  if (!shop) return undefined;
+  
+  // Return a deep copy to avoid direct mutation of the store
+  return JSON.parse(JSON.stringify(shop));
 }
 
 export function getAllProducts() {
@@ -479,7 +483,7 @@ export function getUsers() {
 }
 
 export function addShop(shop: Omit<Shop, 'id'|'inventory'>) {
-    const newShop = {
+    const newShop: Shop = {
         ...shop,
         id: `shop-${Date.now()}`,
         inventory: []
@@ -503,12 +507,13 @@ export function addProduct(shopId: string, product: Omit<Product, 'id' | 'imageS
             imageSrc: `https://picsum.photos/seed/new${Date.now()}/400/300`,
             imageHint: 'nuevo producto',
         };
-        shop.inventory.unshift(newProduct);
+        const originalShop = shopsStore.find(s => s.id === shopId);
+        originalShop?.inventory.unshift(newProduct);
     }
 }
 
 export function updateProduct(shopId: string, updatedProduct: Product) {
-    const shop = getShopById(shopId);
+    const shop = shopsStore.find(s => s.id === shopId);
     if (shop) {
         const index = shop.inventory.findIndex(p => p.id === updatedProduct.id);
         if (index !== -1) {
@@ -518,8 +523,10 @@ export function updateProduct(shopId: string, updatedProduct: Product) {
 }
 
 export function deleteProduct(shopId: string, productId: string) {
-    const shop = getShopById(shopId);
+    const shop = shopsStore.find(s => s.id === shopId);
     if (shop) {
         shop.inventory = shop.inventory.filter(p => p.id !== productId);
     }
 }
+
+    
