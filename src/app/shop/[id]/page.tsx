@@ -69,8 +69,9 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
   const [priceRange, setPriceRange] = useState([0, 100]);
 
+  const { id } = params;
+
   useEffect(() => {
-    const { id } = params;
     // Simulate fetching shop data
     setTimeout(() => {
       const fetchedShop = getShopById(id);
@@ -85,7 +86,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       }
       setLoading(false);
     }, 500); // Simulate 0.5 second load time
-  }, [params]);
+  }, [id]);
 
 
   if (loading) {
