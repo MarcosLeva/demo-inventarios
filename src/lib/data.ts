@@ -1,5 +1,5 @@
 
-import { Shirt, Laptop, Cookie, BookOpen, ToyBrick, Sprout, Dumbbell, Guitar, Wrench, Dog, Coffee, Pill } from 'lucide-react';
+import { Shirt, Laptop, Cookie, BookOpen, Wrench, Sprout, Dumbbell, Guitar, Dog, Coffee, Pill } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type Product = {
@@ -19,11 +19,10 @@ export const icons = {
     Laptop,
     Cookie,
     BookOpen,
-    ToyBrick,
+    Wrench, // Changed from ToyBrick
     Sprout,
     Dumbbell,
     Guitar,
-    Wrench,
     Dog,
     Coffee,
     Pill
@@ -314,18 +313,18 @@ export const shops: Shop[] = [
   },
   {
     id: '5',
-    name: 'Mundo Juguete',
-    specialization: 'Juguetes Educativos',
-    logoSrc: 'https://picsum.photos/seed/shop5/400/400',
-    logoHint: 'juguetería',
-    icon: 'ToyBrick',
+    name: 'Autopartes Gohner',
+    specialization: 'Refacciones y Accesorios Automotrices',
+    logoSrc: 'https://picsum.photos/seed/gohner/400/400',
+    logoHint: 'autopartes',
+    icon: 'Wrench',
     status: 'activo',
     inventory: [
-        { id: 'p21', name: 'Set de Bloques de Construcción', description: 'Fomenta la creatividad con 500 piezas de colores.', price: 49.99, imageSrc: 'https://picsum.photos/seed/prod21/400/300', imageHint: 'bloques construcción', stock: 30, status: 'activo' },
-        { id: 'p22', name: 'Puzzle del Sistema Solar', description: 'Aprende sobre los planetas con este puzzle de 200 piezas.', price: 19.99, imageSrc: 'https://picsum.photos/seed/prod22/400/300', imageHint: 'puzzle espacio', stock: 60, status: 'activo' },
-        { id: 'p23', name: 'Kit de Experimentos Científicos', description: 'Más de 20 experimentos divertidos y seguros para niños.', price: 34.99, imageSrc: 'https://picsum.photos/seed/prod23/400/300', imageHint: 'kit ciencia', stock: 0, status: 'inactivo' },
-        { id: 'p24', name: 'Dinosaurio Interactivo', description: 'Un T-Rex que ruge y camina.', price: 45.00, imageSrc: 'https://picsum.photos/seed/prod24/400/300', imageHint: 'dinosaurio juguete', stock: 18, status: 'activo' },
-        { id: 'p25', name: 'Muñeca Clásica', description: 'Muñeca de 45cm con ropa intercambiable.', price: 29.95, imageSrc: 'https://picsum.photos/seed/prod25/400/300', imageHint: 'muñeca', stock: 40, status: 'activo' }
+        { id: 'p21', name: 'Filtro de Aceite Gohner G-28', description: 'Alta eficiencia para motores a gasolina. Compatible con modelos 2010-2020.', price: 12.50, imageSrc: 'https://picsum.photos/seed/prod21/400/300', imageHint: 'filtro aceite', stock: 150, status: 'activo' },
+        { id: 'p22', name: 'Batería Gohner S-42B20R', description: 'Acumulador de 12V, 45Ah. Larga duración y arranque confiable.', price: 95.00, imageSrc: 'https://picsum.photos/seed/prod22/400/300', imageHint: 'bateria auto', stock: 30, status: 'activo' },
+        { id: 'p23', name: 'Balatas Delanteras G-784', description: 'Juego de balatas cerámicas para un frenado silencioso y seguro.', price: 45.99, imageSrc: 'https://picsum.photos/seed/prod23/400/300', imageHint: 'balatas freno', stock: 80, status: 'activo' },
+        { id: 'p24', name: 'Anticongelante G-Cool 50/50', description: 'Protección para el sistema de enfriamiento. Garrafa de 1 galón.', price: 18.99, imageSrc: 'https://picsum.photos/seed/prod24/400/300', imageHint: 'anticongelante', stock: 120, status: 'activo' },
+        { id: 'p25', name: 'Bujía de Iridio G-Power', description: 'Mejora la eficiencia de combustible y el rendimiento del motor. Pack de 4.', price: 32.00, imageSrc: 'https://picsum.photos/seed/prod25/400/300', imageHint: 'bujias', stock: 0, status: 'inactivo' }
     ]
   },
   {
@@ -561,3 +560,5 @@ export function deleteProduct(shopId: string, productId: string) {
         shop.inventory = shop.inventory.filter(p => p.id !== productId);
     }
 }
+
+    
