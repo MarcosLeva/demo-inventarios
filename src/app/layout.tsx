@@ -29,7 +29,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet" />
       </head>
-      <body className={cn('font-body antialiased bg-background/50 text-foreground min-h-screen')}>
+      <body className={cn('font-body antialiased bg-background/50 dark:bg-background text-foreground min-h-screen')}>
         <AuthProvider>
           <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
             <Sidebar />
@@ -58,12 +58,12 @@ export default function RootLayout({
                 <AuthHeader />
               </header>
 
-              <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background/50">
+              <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6 bg-background/50 dark:bg-background">
                 {children}
               </main>
 
                <footer className="bg-card/50 border-t border-border mt-auto py-3 px-6 text-center text-muted-foreground text-xs">
-                  <p>&copy; {new Date().getFullYear()} Visor de Inventarios. Todos los derechos reservados. Powered by COCOCO Ventures</p>
+                  <p>&copy; {new Date().getFullYear()} Visor de Inventarios. Powered by COCOCO Ventures</p>
                 </footer>
             </div>
           </div>
