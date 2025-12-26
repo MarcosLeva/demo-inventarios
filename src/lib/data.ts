@@ -85,6 +85,7 @@ const shops: Shop[] = [
     inventory: [
       { id: 'p1', name: 'Camiseta Clásica de Algodón', properties: [{key: 'Descripción', value: 'Una camiseta cómoda y elegante para el día a día.'}, {key: 'Talla', value: 'M'}, {key: 'Color', value: 'Blanco'}], price: 24.99, imageSrc: 'https://picsum.photos/seed/prod1/400/300', imageHint: 'camiseta', stock: 50, status: 'activo' },
       { id: 'p2', name: 'Vaqueros Slim Fit', properties: [{key: 'Descripción', value: 'Vaqueros duraderos y a la moda que sientan genial.'}, {key: 'Talla', value: '32'}, {key: 'Color', value: 'Azul Oscuro'}], price: 79.99, imageSrc: 'https://picsum.photos/seed/prod2/400/300', imageHint: 'vaqueros', stock: 25, status: 'activo' },
+      { id: 'p3', name: 'Sudadera con Capucha', properties: [{key: 'Descripción', value: 'Cálida y cómoda, perfecta para un look casual.'}, {key: 'Talla', value: 'L'}, {key: 'Color', value: 'Gris'}], price: 59.95, imageSrc: 'https://picsum.photos/seed/prod3/400/300', imageHint: 'sudadera', stock: 30, status: 'activo' },
     ],
   },
   {
@@ -97,8 +98,9 @@ const shops: Shop[] = [
     status: 'activo',
     organizationId: 'org-2',
     inventory: [
-      { id: 'p4', name: 'UltraBook Pro', properties: [{key: 'Descripción', value: 'Portátil potente y ligero para profesionales.'}, {key: 'Procesador', value: 'Intel Core i7'}, {key: 'RAM', value: '16GB'}], price: 1299.99, imageSrc: 'https://picsum.photos/seed/prod3/400/300', imageHint: 'portátil', stock: 10, status: 'activo' },
-      { id: 'p5', name: 'Teléfono Galaxy X', properties: [{key: 'Descripción', value: 'El último smartphone con una pantalla impresionante.'}, {key: 'Almacenamiento', value: '256GB'}, {key: 'Color', value: 'Negro espacial'}], price: 999.99, imageSrc: 'https://picsum.photos/seed/prod4/400/300', imageHint: 'smartphone', stock: 0, status: 'activo' },
+      { id: 'p4', name: 'UltraBook Pro', properties: [{key: 'Descripción', value: 'Portátil potente y ligero para profesionales.'}, {key: 'Procesador', value: 'Intel Core i7'}, {key: 'RAM', value: '16GB'}], price: 1299.99, imageSrc: 'https://picsum.photos/seed/prod4/400/300', imageHint: 'portátil', stock: 10, status: 'activo' },
+      { id: 'p5', name: 'Teléfono Galaxy X', properties: [{key: 'Descripción', value: 'El último smartphone con una pantalla impresionante.'}, {key: 'Almacenamiento', value: '256GB'}, {key: 'Color', value: 'Negro espacial'}], price: 999.99, imageSrc: 'https://picsum.photos/seed/prod5/400/300', imageHint: 'smartphone', stock: 0, status: 'activo' },
+      { id: 'p6', name: 'Auriculares Inalámbricos', properties: [{key: 'Descripción', value: 'Sonido cristalino con cancelación de ruido.'}, {key: 'Batería', value: '24 horas'}, {key: 'Color', value: 'Blanco'}], price: 179.00, imageSrc: 'https://picsum.photos/seed/prod6/400/300', imageHint: 'auriculares', stock: 40, status: 'activo' },
     ],
   },
   {
@@ -111,8 +113,9 @@ const shops: Shop[] = [
     status: 'activo',
     organizationId: 'org-3',
     inventory: [
-      { id: 'p7', name: 'Croissant de Mantequilla', properties: [{key: 'Descripción', value: 'Hojaldrado, mantecoso y recién horneado a diario.'}, {key: 'Alérgenos', value: 'Gluten, Lácteos'}], price: 3.5, imageSrc: 'https://picsum.photos/seed/prod5/400/300', imageHint: 'croissant', stock: 200, status: 'activo' },
-      { id: 'p8', name: 'Cupcake de Terciopelo', properties: [{key: 'Descripción', value: 'Un capricho decadente con un rico glaseado de queso crema.'}, {key: 'Alérgenos', value: 'Gluten, Lácteos, Huevos'}], price: 4.75, imageSrc: 'https://picsum.photos/seed/prod6/400/300', imageHint: 'cupcake', stock: 75, status: 'activo' },
+      { id: 'p7', name: 'Croissant de Mantequilla', properties: [{key: 'Descripción', value: 'Hojaldrado, mantecoso y recién horneado a diario.'}, {key: 'Alérgenos', value: 'Gluten, Lácteos'}], price: 3.5, imageSrc: 'https://picsum.photos/seed/prod7/400/300', imageHint: 'croissant', stock: 200, status: 'activo' },
+      { id: 'p8', name: 'Cupcake de Terciopelo', properties: [{key: 'Descripción', value: 'Un capricho decadente con un rico glaseado de queso crema.'}, {key: 'Alérgenos', value: 'Gluten, Lácteos, Huevos'}], price: 4.75, imageSrc: 'https://picsum.photos/seed/prod8/400/300', imageHint: 'cupcake', stock: 75, status: 'activo' },
+      { id: 'p9', name: 'Pan de Masa Madre', properties: [{key: 'Descripción', value: 'Hogaza rústica con una corteza crujiente y miga tierna.'}, {key: 'Ingredientes', value: 'Harina, Agua, Sal'}], price: 6.00, imageSrc: 'https://picsum.photos/seed/prod9/400/300', imageHint: 'pan', stock: 30, status: 'activo' },
     ],
   },
   {
@@ -125,8 +128,9 @@ const shops: Shop[] = [
     status: 'inactivo',
     organizationId: 'org-4',
     inventory: [
-      { id: 'p10', name: "El Heredero del Dragón", properties: [{key: 'Descripción', value: 'Un libro de fantasia.'}, {key: 'Autor', value: 'J.R.R. Tolkien'}, {key: 'Género', value: 'Fantasía'}], price: 18.99, imageSrc: 'https://picsum.photos/seed/prod7/400/300', imageHint: 'libro', stock: 40, status: 'activo' },
-      { id: 'p11', name: 'Deriva Cósmica', properties: [{key: 'Descripción', value: 'Un libro de ciencia ficción.'}, {key: 'Autor', value: 'Isaac Asimov'}, {key: 'Género', value: 'Ciencia Ficción'}], price: 16.99, imageSrc: 'https://picsum.photos/seed/prod8/400/300', imageHint: 'libro espacio', stock: 15, status: 'activo' },
+      { id: 'p10', name: "El Heredero del Dragón", properties: [{key: 'Descripción', value: 'Un libro de fantasia.'}, {key: 'Autor', value: 'J.R.R. Tolkien'}, {key: 'Género', value: 'Fantasía'}], price: 18.99, imageSrc: 'https://picsum.photos/seed/prod10/400/300', imageHint: 'libro', stock: 40, status: 'activo' },
+      { id: 'p11', name: 'Deriva Cósmica', properties: [{key: 'Descripción', value: 'Un libro de ciencia ficción.'}, {key: 'Autor', value: 'Isaac Asimov'}, {key: 'Género', value: 'Ciencia Ficción'}], price: 16.99, imageSrc: 'https://picsum.photos/seed/prod11/400/300', imageHint: 'libro espacio', stock: 15, status: 'activo' },
+      { id: 'p12', name: 'El Misterio de la Calle Sombra', properties: [{key: 'Descripción', value: 'Una novela de misterio apasionante.'}, {key: 'Autor', value: 'Agatha Christie'}, {key: 'Género', value: 'Misterio'}], price: 14.50, imageSrc: 'https://picsum.photos/seed/prod12/400/300', imageHint: 'libro misterio', stock: 22, status: 'inactivo' },
     ],
   },
   {
@@ -139,19 +143,99 @@ const shops: Shop[] = [
     status: 'activo',
     organizationId: 'org-2',
     inventory: [
-        { id: 'p21', name: 'Filtro de Aceite Gohner G-28', properties: [{key: 'Descripción', value: 'Alta eficiencia para motores a gasolina.'}, {key: 'Compatibilidad', value: 'Modelos 2010-2020'}], price: 12.50, imageSrc: 'https://picsum.photos/seed/prod21/400/300', imageHint: 'filtro aceite', stock: 150, status: 'activo' },
+      { id: 'p13', name: 'Filtro de Aceite Gohner G-28', properties: [{key: 'Descripción', value: 'Alta eficiencia para motores a gasolina.'}, {key: 'Compatibilidad', value: 'Modelos 2010-2020'}], price: 12.50, imageSrc: 'https://picsum.photos/seed/prod13/400/300', imageHint: 'filtro aceite', stock: 150, status: 'activo' },
+      { id: 'p14', name: 'Juego de Balatas Cerámicas', properties: [{key: 'Descripción', value: 'Frenado silencioso y de alto rendimiento.'}, {key: 'Posición', value: 'Delanteras'}], price: 55.80, imageSrc: 'https://picsum.photos/seed/prod14/400/300', imageHint: 'balatas', stock: 60, status: 'activo' },
     ]
   },
+  {
+    id: '6',
+    name: 'El Jardín Secreto',
+    specialization: 'Plantas y Jardinería',
+    logoSrc: 'https://picsum.photos/seed/shop6/400/400',
+    logoHint: 'jardinería',
+    icon: 'Sprout',
+    status: 'activo',
+    organizationId: 'org-1',
+    inventory: [
+      { id: 'p15', name: 'Orquídea Phalaenopsis', properties: [{key: 'Descripción', value: 'Elegante orquídea de interior, fácil de cuidar.'}, {key: 'Color', value: 'Blanco'}, {key: 'Luz', value: 'Indirecta'}], price: 29.99, imageSrc: 'https://picsum.photos/seed/prod15/400/300', imageHint: 'orquídea', stock: 18, status: 'activo' },
+      { id: 'p16', name: 'Kit de Herramientas de Jardín', properties: [{key: 'Descripción', value: 'Set de 3 piezas de acero inoxidable.'}, {key: 'Incluye', value: 'Pala, rastrillo, trasplantador'}], price: 22.50, imageSrc: 'https://picsum.photos/seed/prod16/400/300', imageHint: 'herramientas jardín', stock: 35, status: 'activo' },
+    ]
+  },
+  {
+    id: '7',
+    name: 'Fuerza & Forma',
+    specialization: 'Equipo de Gimnasio',
+    logoSrc: 'https://picsum.photos/seed/shop7/400/400',
+    logoHint: 'gimnasio',
+    icon: 'Dumbbell',
+    status: 'activo',
+    organizationId: 'org-2',
+    inventory: [
+      { id: 'p17', name: 'Juego de Mancuernas Ajustables', properties: [{key: 'Descripción', value: 'Ajustables de 2.5 a 24 kg. Ahorra espacio.'}, {key: 'Material', value: 'Acero'}, {key: 'Unidades', value: 'Par'}], price: 250.00, imageSrc: 'https://picsum.photos/seed/prod17/400/300', imageHint: 'mancuernas', stock: 12, status: 'activo' },
+    ]
+  },
+  {
+    id: '8',
+    name: 'Acordes y Melodías',
+    specialization: 'Instrumentos Musicales',
+    logoSrc: 'https://picsum.photos/seed/shop8/400/400',
+    logoHint: 'tienda de música',
+    icon: 'Guitar',
+    status: 'inactivo',
+    organizationId: 'org-4',
+    inventory: [
+      { id: 'p18', name: 'Guitarra Acústica "Trovador"', properties: [{key: 'Descripción', value: 'Ideal para principiantes, con sonido cálido.'}, {key: 'Madera', value: 'Abeto'}, {key: 'Cuerdas', value: 'Nylon'}], price: 120.00, imageSrc: 'https://picsum.photos/seed/prod18/400/300', imageHint: 'guitarra', stock: 8, status: 'activo' },
+    ]
+  },
+  {
+    id: '9',
+    name: 'La Pata Amiga',
+    specialization: 'Suministros para Mascotas',
+    logoSrc: 'https://picsum.photos/seed/shop9/400/400',
+    logoHint: 'tienda de mascotas',
+    icon: 'Dog',
+    status: 'activo',
+    organizationId: 'org-3',
+    inventory: [
+      { id: 'p19', name: 'Alimento Premium para Perro', properties: [{key: 'Descripción', value: 'Croquetas de salmón para todas las edades.'}, {key: 'Peso', value: '15 kg'}, {key: 'Etapa', value: 'Adulto'}], price: 65.00, imageSrc: 'https://picsum.photos/seed/prod19/400/300', imageHint: 'comida perro', stock: 45, status: 'activo' },
+    ]
+  },
+  {
+    id: '10',
+    name: 'El Cafetal Despierto',
+    specialization: 'Café de Especialidad',
+    logoSrc: 'https://picsum.photos/seed/shop10/400/400',
+    logoHint: 'cafetería',
+    icon: 'Coffee',
+    status: 'activo',
+    organizationId: 'org-3',
+    inventory: [
+      { id: 'p20', name: 'Café en Grano de Chiapas', properties: [{key: 'Descripción', value: 'Notas de chocolate y nuez, tostado medio.'}, {key: 'Origen', value: 'México'}, {key: 'Presentación', value: '1 kg'}], price: 25.00, imageSrc: 'https://picsum.photos/seed/prod20/400/300', imageHint: 'café grano', stock: 100, status: 'activo' },
+    ]
+  },
+  {
+    id: '11',
+    name: 'Farmacia Bienestar',
+    specialization: 'Salud y Cuidado Personal',
+    logoSrc: 'https://picsum.photos/seed/shop11/400/400',
+    logoHint: 'farmacia',
+    icon: 'Pill',
+    status: 'activo',
+    organizationId: 'org-4',
+    inventory: [
+      { id: 'p21', name: 'Vitamina C 1000mg', properties: [{key: 'Descripción', value: 'Suplemento para fortalecer el sistema inmune.'}, {key: 'Contenido', value: '100 tabletas'}, {key: 'Dosis', value: '1 al día'}], price: 15.50, imageSrc: 'https://picsum.photos/seed/prod21/400/300', imageHint: 'vitaminas', stock: 250, status: 'activo' },
+    ]
+  }
 ];
 
 const users: AppUser[] = [
     { id: 'user-1', name: 'Admin Principal', email: 'admin@example.com', role: 'Admin', status: 'activo', shopIds: [] },
     { id: 'user-2', name: 'Laura Méndez (Admin)', email: 'laura.mendez@example.com', role: 'Admin', status: 'activo', shopIds: [] },
     
-    { id: 'user-editor-1', name: 'Eduardo Manos-Tijeras (Editor)', email: 'editor1@example.com', role: 'Editor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
-    { id: 'user-editor-2', name: 'Esther Exposito (Editor)', email: 'editor2@example.com', role: 'Editor', status: 'activo', shopIds: ['2', '5'], organizationId: 'org-2' },
-    { id: 'user-editor-3', name: 'Gordon Ramsay (Editor)', email: 'editor3@example.com', role: 'Editor', status: 'activo', shopIds: ['3'], organizationId: 'org-3' },
-    { id: 'user-editor-4', name: 'Stephen King (Editor)', email: 'editor4@example.com', role: 'Editor', status: 'activo', shopIds: ['4'], organizationId: 'org-4' },
+    { id: 'user-editor-1', name: 'Eduardo Manos-Tijeras (Editor)', email: 'editor1@example.com', role: 'Editor', status: 'activo', shopIds: ['1', '6'], organizationId: 'org-1' },
+    { id: 'user-editor-2', name: 'Esther Exposito (Editor)', email: 'editor2@example.com', role: 'Editor', status: 'activo', shopIds: ['2', '5', '7'], organizationId: 'org-2' },
+    { id: 'user-editor-3', name: 'Gordon Ramsay (Editor)', email: 'editor3@example.com', role: 'Editor', status: 'activo', shopIds: ['3', '9', '10'], organizationId: 'org-3' },
+    { id: 'user-editor-4', name: 'Stephen King (Editor)', email: 'editor4@example.com', role: 'Editor', status: 'activo', shopIds: ['4', '8', '11'], organizationId: 'org-4' },
     
     { id: 'user-3', name: 'Carlos Pérez', email: 'carlos.perez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
     { id: 'user-4', name: 'Ana García', email: 'ana.garcia@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['1'], organizationId: 'org-1' },
