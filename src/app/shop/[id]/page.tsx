@@ -154,11 +154,10 @@ export default function ShopPage({ params }: { params: { id: string } }) {
             src={shop.logoSrc}
             alt={`Fondo de ${shop.name}`}
             fill
-            className="object-cover opacity-20 dark:opacity-10"
+            className="object-cover opacity-10 dark:opacity-5"
             style={{ filter: 'blur(24px) saturate(1.2)' }}
             data-ai-hint={shop.logoHint}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/50 dark:from-card dark:via-card/90 dark:to-card/70"></div>
         </div>
         <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
             <Image
