@@ -442,8 +442,18 @@ export const shops: Shop[] = [
 ];
 
 const users: AppUser[] = [
-    { id: 'user-1', name: 'Admin', email: 'admin@example.com', role: 'Admin', status: 'activo', shopIds: [] },
+    { id: 'user-1', name: 'Admin Principal', email: 'admin@example.com', role: 'Admin', status: 'activo', shopIds: [] },
+    { id: 'user-2', name: 'Laura Méndez', email: 'laura.mendez@example.com', role: 'Admin', status: 'activo', shopIds: [] },
+    { id: 'user-3', name: 'Carlos Pérez', email: 'carlos.perez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['2', '5'] },
+    { id: 'user-4', name: 'Ana García', email: 'ana.garcia@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['3', '11'] },
+    { id: 'user-5', name: 'Jorge Martín', email: 'jorge.martin@example.com', role: 'Admin', status: 'inactivo', shopIds: [] },
     { id: 'user-6', name: 'Vendedor', email: 'vendedor@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '7'] },
+    { id: 'user-7', name: 'Sofía Reyes', email: 'sofia.reyes@example.com', role: 'Vendedor', status: 'activo', shopIds: ['4', '8', '9'] },
+    { id: 'user-8', name: 'Luis Fernández', email: 'luis.fernandez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['10', '12'] },
+    { id: 'user-9', name: 'Elena Jiménez', email: 'elena.jimenez@example.com', role: 'Admin', status: 'activo', shopIds: [] },
+    { id: 'user-10', name: 'Miguel Ángel', email: 'miguel.angel@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['1', '2', '3', '4'] },
+    { id: 'user-11', name: 'Patricia Moreno', email: 'patricia.moreno@example.com', role: 'Vendedor', status: 'activo', shopIds: ['6'] },
+    { id: 'user-12', name: 'David Navarro', email: 'david.navarro@example.com', role: 'Admin', status: 'activo', shopIds: [] },
 ];
 
 // In-memory data store
