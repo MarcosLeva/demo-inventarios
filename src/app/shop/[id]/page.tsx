@@ -2,14 +2,14 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons } from '@/lib/data';
-import type { Product, Shop, ProductProperty } from '@/lib/data';
+import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons, getUsers, getOrganizations } from '@/lib/data';
+import type { Product, Shop, ProductProperty, AppUser, Organization } from '@/lib/data';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Upload, Eye, X } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Upload, Eye, X, Building, Users as UsersIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -58,6 +58,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/use-auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 const ITEMS_PER_PAGE = 10;
 
@@ -65,6 +72,8 @@ export default function ShopPage() {
   const params = useParams<{ id: string }>();
   const { user } = useAuth();
   const [shop, setShop] = useState<Shop | undefined>(undefined);
+  const [organization, setOrganization] = useState<Organization | undefined>(undefined);
+  const [members, setMembers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
@@ -72,9 +81,8 @@ export default function ShopPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [priceRange, setPriceRange] = useState([0, 100]);
 
-  useEffect(() => {
+  const fetchData = () => {
     if (!user) return;
-    setTimeout(() => {
       const fetchedShop = getShopById(params.id, user);
       if (fetchedShop) {
         setShop(fetchedShop);
@@ -82,8 +90,23 @@ export default function ShopPage() {
           ? Math.ceil(Math.max(...fetchedShop.inventory.map((p) => p.price)))
           : 100;
         setPriceRange([0, initialMaxPrice]);
+
+        // Fetch organization and members
+        const allOrgs = getOrganizations(user);
+        const org = allOrgs.find(o => o.id === fetchedShop.organizationId);
+        setOrganization(org);
+
+        const allUsers = getUsers(user);
+        const shopMembers = allUsers.filter(u => u.shopIds.includes(fetchedShop.id));
+        setMembers(shopMembers);
+
       }
       setLoading(false);
+  }
+
+  useEffect(() => {
+    setTimeout(() => {
+     fetchData();
     }, 500);
   }, [params.id, user]);
   
@@ -124,24 +147,28 @@ export default function ShopPage() {
     return null;
   }
   
+  const handleDataUpdate = () => {
+    fetchData();
+  }
+  
   const handleShopUpdate = (updatedShopData: Shop) => {
     updateShopInData(updatedShopData);
-    setShop(getShopById(params.id, user));
+    handleDataUpdate();
   }
 
   const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => {
     addProductToData(params.id, newProduct);
-    setShop(getShopById(params.id, user));
+    handleDataUpdate();
   }
 
   const handleProductUpdate = (updatedProduct: Product) => {
     updateProductInData(params.id, updatedProduct);
-    setShop(getShopById(params.id, user));
+    handleDataUpdate();
   }
 
   const handleProductDelete = (productId: string) => {
     deleteProductFromData(params.id, productId);
-    setShop(getShopById(params.id, user));
+    handleDataUpdate();
   }
 
   const Icon = icons[shop.icon];
@@ -163,190 +190,242 @@ export default function ShopPage() {
           </Link>
         </Button>
       </div>
-
-      <div className="relative mb-12 overflow-hidden rounded-lg border shadow-sm">
-        <div className="absolute inset-0 bg-background/80 z-10"></div>
-        <Image
-            src={shop.logoSrc}
-            alt={`${shop.name} background`}
-            fill
-            className="object-cover"
-            style={{filter: 'blur(4px)'}}
-            data-ai-hint={shop.logoHint}
-            sizes="100vw"
-        />
-        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6 z-20">
-            <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
-                <Image
-                  src={shop.logoSrc}
-                  alt={`${shop.name} logo`}
-                  fill
-                  className="object-cover"
-                  data-ai-hint={shop.logoHint}
-                  sizes="128px"
-                />
-            </div>
-            <div className="relative">
-                <div className="flex items-center gap-3 mb-2">
-                    <div className="bg-accent/10 text-accent p-3 rounded-lg">
-                        <Icon className="h-8 w-8" />
-                    </div>
-                    <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
-                        {shop.name}
-                    </h1>
-                    {canEditShop && (
-                      <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
-                          <Button variant="outline" size="icon" className="shrink-0">
-                              <Edit className="h-4 w-4" />
-                              <span className="sr-only">Editar Tienda</span>
-                          </Button>
-                      </EditShopModal>
-                    )}
-                </div>
-              <p className="text-lg text-muted-foreground ml-1">{shop.specialization}</p>
-            </div>
-        </div>
-      </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-6 mb-8 p-6 bg-card rounded-lg border">
-        <div className="lg:col-span-4">
-            <h3 className="text-lg font-medium">Filtros de Inventario</h3>
-            <p className="text-sm text-muted-foreground">Refina la lista de productos.</p>
-        </div>
-
-        <div className="lg:col-span-2">
-            <Label htmlFor="search-inventory">Buscar producto</Label>
-            <div className="relative mt-2">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  id="search-inventory"
-                  type="text"
-                  placeholder="Buscar por nombre..."
-                  className="pl-10 w-full"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-        </div>
-
-        <div className="space-y-2">
-            <Label>Estatus</Label>
-            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por estatus" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estatus</SelectItem>
-                <SelectItem value="activo">Activo</SelectItem>
-                <SelectItem value="inactivo">Inactivo</SelectItem>
-              </SelectContent>
-            </Select>
-        </div>
-        
-        <div className="flex items-end pb-2">
-             <div className="flex items-center gap-2">
-                <Checkbox
-                    id="hide-out-of-stock"
-                    checked={hideOutOfStock}
-                    onCheckedChange={(checked) => setHideOutOfStock(Boolean(checked))}
-                />
-                <Label htmlFor="hide-out-of-stock" className="text-sm">
-                    Ocultar agotados
-                </Label>
-            </div>
-        </div>
-
-        <div className="lg:col-span-4">
-            <div className="flex justify-between items-center mb-2">
-                <Label>Rango de precios</Label>
-                <span className="text-sm text-muted-foreground font-medium">
-                    {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                </span>
-            </div>
-            <Slider
-                value={priceRange}
-                onValueChange={setPriceRange}
-                min={0}
-                max={maxPrice}
-                step={1}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <div className="md:col-span-3 lg:col-span-4">
+          <div className="relative mb-12 overflow-hidden rounded-lg border shadow-sm">
+            <div className="absolute inset-0 bg-background/80 z-10"></div>
+            <Image
+                src={shop.logoSrc}
+                alt={`${shop.name} background`}
+                fill
+                className="object-cover"
+                style={{filter: 'blur(4px)'}}
+                data-ai-hint={shop.logoHint}
+                sizes="100vw"
             />
+            <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6 z-20">
+                <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
+                    <Image
+                      src={shop.logoSrc}
+                      alt={`${shop.name} logo`}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={shop.logoHint}
+                      sizes="128px"
+                    />
+                </div>
+                <div className="relative">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="bg-accent/10 text-accent p-3 rounded-lg">
+                            <Icon className="h-8 w-8" />
+                        </div>
+                        <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
+                            {shop.name}
+                        </h1>
+                        {canEditShop && (
+                          <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
+                              <Button variant="outline" size="icon" className="shrink-0">
+                                  <Edit className="h-4 w-4" />
+                                  <span className="sr-only">Editar Tienda</span>
+                              </Button>
+                          </EditShopModal>
+                        )}
+                    </div>
+                  <p className="text-lg text-muted-foreground ml-1">{shop.specialization}</p>
+                </div>
+            </div>
+          </div>
         </div>
-      </div>
+
+        <aside className="md:col-span-1 lg:col-span-1 md:order-first space-y-6">
+           {canEditShop && organization && (
+              <Card>
+                  <CardHeader>
+                      <CardTitle className="flex items-center gap-2"><Building /> Organización</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                      <Button variant="link" asChild className="p-0 h-auto font-semibold text-base">
+                          <Link href={`/organizations/${organization.id}`}>{organization.name}</Link>
+                      </Button>
+                  </CardContent>
+              </Card>
+           )}
+           {canEditShop && (
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><UsersIcon /> Miembros Asignados</CardTitle>
+                    <CardDescription>{members.length} miembro(s) en esta tienda.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {members.length > 0 ? (
+                        <div className="flex flex-wrap gap-2">
+                            <TooltipProvider>
+                            {members.map(member => (
+                                <Tooltip key={member.id}>
+                                    <TooltipTrigger asChild>
+                                        <Avatar className="h-10 w-10 border-2 border-background">
+                                            <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${member.name}`} alt={member.name} />
+                                            <AvatarFallback>{member.name.substring(0, 2)}</AvatarFallback>
+                                        </Avatar>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{member.name}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            ))}
+                            </TooltipProvider>
+                        </div>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">No hay miembros asignados.</p>
+                    )}
+                </CardContent>
+             </Card>
+           )}
+        </aside>
+
+        <main className="md:col-span-2 lg:col-span-3">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-6 mb-8 p-6 bg-card rounded-lg border">
+            <div className="lg:col-span-4">
+                <h3 className="text-lg font-medium">Filtros de Inventario</h3>
+                <p className="text-sm text-muted-foreground">Refina la lista de productos.</p>
+            </div>
+
+            <div className="lg:col-span-2">
+                <Label htmlFor="search-inventory">Buscar producto</Label>
+                <div className="relative mt-2">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                    <Input
+                      id="search-inventory"
+                      type="text"
+                      placeholder="Buscar por nombre..."
+                      className="pl-10 w-full"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label>Estatus</Label>
+                <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Filtrar por estatus" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los estatus</SelectItem>
+                    <SelectItem value="activo">Activo</SelectItem>
+                    <SelectItem value="inactivo">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+            </div>
+            
+            <div className="flex items-end pb-2">
+                 <div className="flex items-center gap-2">
+                    <Checkbox
+                        id="hide-out-of-stock"
+                        checked={hideOutOfStock}
+                        onCheckedChange={(checked) => setHideOutOfStock(Boolean(checked))}
+                    />
+                    <Label htmlFor="hide-out-of-stock" className="text-sm">
+                        Ocultar agotados
+                    </Label>
+                </div>
+            </div>
+
+            <div className="lg:col-span-4">
+                <div className="flex justify-between items-center mb-2">
+                    <Label>Rango de precios</Label>
+                    <span className="text-sm text-muted-foreground font-medium">
+                        {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                    </span>
+                </div>
+                <Slider
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                    min={0}
+                    max={maxPrice}
+                    step={1}
+                />
+            </div>
+          </div>
 
 
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
-        {canEditShop && (
-          <AddProductModal onProductAdd={handleProductAdd}>
-              <Button>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Agregar Producto
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
+            {canEditShop && (
+              <AddProductModal onProductAdd={handleProductAdd}>
+                  <Button>
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Agregar Producto
+                  </Button>
+              </AddProductModal>
+            )}
+          </div>
+
+          <Card>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">Imagen</TableHead>
+                    <TableHead>Producto</TableHead>
+                    <TableHead>Descripción Corta</TableHead>
+                    <TableHead className="text-center">Estatus</TableHead>
+                    <TableHead className="text-right">Stock</TableHead>
+                    <TableHead className="text-right">Precio</TableHead>
+                    <TableHead className="text-right">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedInventory.length > 0 ? (
+                    paginatedInventory.map((product, index) => (
+                      <ProductRow 
+                        key={product.id} 
+                        product={product}
+                        canEdit={canEditShop}
+                        onProductUpdate={handleProductUpdate}
+                        onProductDelete={handleProductDelete}
+                        index={index}
+                      />
+                    ))
+                  ) : (
+                    <TableRow>
+                        <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                            No se encontraron productos que coincidan con tus criterios.
+                        </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+          </Card>
+
+           {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                 <span className="sr-only">Página anterior</span>
               </Button>
-          </AddProductModal>
-        )}
+              <span className="text-sm font-medium">
+                Página {currentPage} de {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+                 <span className="sr-only">Página siguiente</span>
+              </Button>
+            </div>
+          )}
+        </main>
       </div>
-
-      <Card>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Imagen</TableHead>
-                <TableHead>Producto</TableHead>
-                <TableHead>Descripción Corta</TableHead>
-                <TableHead className="text-center">Estatus</TableHead>
-                <TableHead className="text-right">Stock</TableHead>
-                <TableHead className="text-right">Precio</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedInventory.length > 0 ? (
-                paginatedInventory.map((product, index) => (
-                  <ProductRow 
-                    key={product.id} 
-                    product={product}
-                    canEdit={canEditShop}
-                    onProductUpdate={handleProductUpdate}
-                    onProductDelete={handleProductDelete}
-                    index={index}
-                  />
-                ))
-              ) : (
-                <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                        No se encontraron productos que coincidan con tus criterios.
-                    </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-      </Card>
-
-       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-4 mt-8">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-             <span className="sr-only">Página anterior</span>
-          </Button>
-          <span className="text-sm font-medium">
-            Página {currentPage} de {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-             <span className="sr-only">Página siguiente</span>
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
@@ -951,3 +1030,5 @@ function DynamicPropertiesEditor({ properties, setProperties }: { properties: Pr
         </div>
     );
 }
+
+    
