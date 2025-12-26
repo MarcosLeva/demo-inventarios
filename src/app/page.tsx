@@ -82,17 +82,22 @@ export default function Home() {
 
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl lg:text-6xl">
-          Explora el Inventario de las Tiendas
-        </h1>
-        <p className="mt-4 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
-          Navega a través de una lista curada de tiendas y explora sus inventarios únicos.
-        </p>
+    <>
+      <div className="flex items-center justify-between">
+        <header>
+          <h1 className="text-3xl font-bold tracking-tight">Tiendas</h1>
+          <p className="text-muted-foreground">
+            Explora y gestiona el inventario de las tiendas.
+          </p>
+        </header>
+        <AddShopModal onShopAdd={handleShopAdd}>
+             <Button className="hidden sm:flex">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Agregar Tienda
+            </Button>
+        </AddShopModal>
       </div>
-
-       <div className="flex flex-col sm:flex-row gap-4 mb-8 items-start">
+       <div className="flex flex-col sm:flex-row gap-4 items-start">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
@@ -125,15 +130,15 @@ export default function Home() {
                 <SelectItem value="inactivo">Inactivas</SelectItem>
             </SelectContent>
         </Select>
-        <AddShopModal onShopAdd={handleShopAdd}>
-             <Button className="w-full sm:w-auto">
+         <AddShopModal onShopAdd={handleShopAdd}>
+             <Button className="w-full sm:hidden">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Agregar Tienda
             </Button>
         </AddShopModal>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {loading ? (
           Array.from({ length: SHOPS_PER_PAGE }).map((_, index) => <ShopCardSkeleton key={index} />)
         ) : paginatedShops.map((shop, index) => (
@@ -142,13 +147,20 @@ export default function Home() {
       </div>
 
       {!loading && filteredShops.length === 0 && (
-          <p className="text-muted-foreground col-span-full text-center py-10">
-              No se encontraron tiendas que coincidan con tus criterios.
-          </p>
+          <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed shadow-sm col-span-full py-10">
+            <div className="flex flex-col items-center gap-1 text-center">
+              <h3 className="text-2xl font-bold tracking-tight">
+                No se encontraron tiendas
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Intenta ajustar tu búsqueda o filtros.
+              </p>
+            </div>
+          </div>
       )}
 
       {totalPages > 1 && !loading && (
-        <div className="flex items-center justify-center gap-4 mt-12">
+        <div className="flex items-center justify-center gap-4 mt-4">
           <Button
             variant="outline"
             size="icon"
@@ -172,7 +184,7 @@ export default function Home() {
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

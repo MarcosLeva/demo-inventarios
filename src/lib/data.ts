@@ -1,3 +1,4 @@
+
 import { Shirt, Laptop, Cookie, BookOpen, ToyBrick, Sprout, Dumbbell, Guitar, Wrench, Dog, Coffee, Pill } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -10,6 +11,7 @@ export type Product = {
   imageHint: string;
   stock: number;
   status: 'activo' | 'inactivo';
+  shopId?: string; // Add shopId to trace back to shop
 };
 
 export type Shop = {
@@ -22,6 +24,14 @@ export type Shop = {
   inventory: Product[];
   status: 'activo' | 'inactivo';
 };
+
+export type AppUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: 'Admin' | 'Editor' | 'Viewer';
+  status: 'activo' | 'inactivo';
+}
 
 export const icons = {
     Shirt,
@@ -431,8 +441,17 @@ export const shops: Shop[] = [
   }
 ];
 
+const users: AppUser[] = [
+    { id: 'user-1', name: 'Admin', email: 'admin@example.com', role: 'Admin', status: 'activo' },
+    { id: 'user-2', name: 'Carlos Gomez', email: 'carlos.gomez@example.com', role: 'Editor', status: 'activo' },
+    { id: 'user-3', name: 'Luisa Fernandez', email: 'luisa.fernandez@example.com', role: 'Viewer', status: 'inactivo' },
+    { id: 'user-4', name: 'Javier Rodriguez', email: 'javier.rodriguez@example.com', role: 'Editor', status: 'activo' },
+    { id: 'user-5', name: 'Maria Lopez', email: 'maria.lopez@example.com', role: 'Viewer', status: 'activo' },
+];
+
 // In-memory data store
-let shopsStore: Shop[] = [...shops];
+let shopsStore: Shop[] = JSON.parse(JSON.stringify(shops));
+let usersStore: AppUser[] = [...users];
 
 export function getShops() {
   return shopsStore;
@@ -440,6 +459,23 @@ export function getShops() {
 
 export function getShopById(id: string | number) {
   return shopsStore.find((shop) => shop.id === String(id));
+}
+
+export function getAllProducts() {
+    const allProducts: Product[] = [];
+    shopsStore.forEach(shop => {
+        shop.inventory.forEach(product => {
+            allProducts.push({
+                ...product,
+                shopId: shop.id
+            });
+        });
+    });
+    return allProducts;
+}
+
+export function getUsers() {
+    return usersStore;
 }
 
 export function addShop(shop: Omit<Shop, 'id'|'inventory'>) {
