@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Tag, Search } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -21,10 +21,15 @@ import {
 } from '@/components/ui/table';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function ShopPage({ params }: { params: { id: string } }) {
   const shop = getShopById(params.id);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
+  const [hideOutOfStock, setHideOutOfStock] = useState(false);
   
   const maxPrice = useMemo(() => {
     if (!shop || shop.inventory.length === 0) {
@@ -49,9 +54,11 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     return shop.inventory.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
-      return matchesSearch && matchesPrice;
+      const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+      const matchesStock = !hideOutOfStock || product.stock > 0;
+      return matchesSearch && matchesPrice && matchesStatus && matchesStock;
     });
-  }, [shop, searchTerm, priceRange]);
+  }, [shop, searchTerm, priceRange, statusFilter, hideOutOfStock]);
 
   const Icon = shop.icon;
 
@@ -95,31 +102,55 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       
-      <div className="flex flex-col md:flex-row gap-6 items-center mb-8">
-        <div className="relative w-full md:w-1/3">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Buscar en el inventario..."
-              className="pl-10 w-full"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-        </div>
-        <div className="w-full md:flex-1">
-            <div className="flex justify-between items-center mb-2">
-                <Label className="text-sm">Rango de precios</Label>
-                <span className="text-sm text-muted-foreground font-medium">
-                    {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                </span>
+      <div className="space-y-4 mb-8">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative w-full md:w-1/3">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Buscar en el inventario..."
+                  className="pl-10 w-full"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
-             <Slider
-                value={priceRange}
-                onValueChange={setPriceRange}
-                min={0}
-                max={maxPrice}
-                step={1}
-            />
+            <div className="w-full md:flex-1">
+                <div className="flex justify-between items-center mb-2">
+                    <Label className="text-sm">Rango de precios</Label>
+                    <span className="text-sm text-muted-foreground font-medium">
+                        {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                    </span>
+                </div>
+                 <Slider
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                    min={0}
+                    max={maxPrice}
+                    step={1}
+                />
+            </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 items-center">
+            <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Filtrar por estatus" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estatus</SelectItem>
+                <SelectItem value="activo">Activo</SelectItem>
+                <SelectItem value="inactivo">Inactivo</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-2">
+                <Checkbox
+                    id="hide-out-of-stock"
+                    checked={hideOutOfStock}
+                    onCheckedChange={(checked) => setHideOutOfStock(Boolean(checked))}
+                />
+                <Label htmlFor="hide-out-of-stock" className="text-sm">
+                    Ocultar agotados
+                </Label>
+            </div>
         </div>
       </div>
 
@@ -132,6 +163,8 @@ export default function ShopPage({ params }: { params: { id: string } }) {
                 <TableHead className="w-[100px]">Imagen</TableHead>
                 <TableHead>Producto</TableHead>
                 <TableHead>Descripción</TableHead>
+                <TableHead className="text-center">Estatus</TableHead>
+                <TableHead className="text-right">Stock</TableHead>
                 <TableHead className="text-right">Precio</TableHead>
               </TableRow>
             </TableHeader>
@@ -142,8 +175,8 @@ export default function ShopPage({ params }: { params: { id: string } }) {
                 ))
               ) : (
                 <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                        No se encontraron productos que coincidan con tu búsqueda.
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                        No se encontraron productos que coincidan con tus criterios.
                     </TableCell>
                 </TableRow>
               )}
@@ -159,9 +192,11 @@ function ProductRow({ product }: { product: Product }) {
     style: 'currency',
     currency: 'EUR',
   }).format(product.price);
+  
+  const isOutOfStock = product.stock === 0;
 
   return (
-    <TableRow>
+    <TableRow className={isOutOfStock && product.status === 'activo' ? 'bg-destructive/5' : ''}>
       <TableCell>
         <div className="relative h-16 w-16 rounded-md overflow-hidden">
           <Image
@@ -176,6 +211,18 @@ function ProductRow({ product }: { product: Product }) {
       </TableCell>
       <TableCell className="font-medium">{product.name}</TableCell>
       <TableCell className="text-muted-foreground">{product.description}</TableCell>
+      <TableCell className="text-center">
+        <Badge variant={product.status === 'activo' ? 'secondary' : 'outline'} className="capitalize">
+            {product.status === 'activo' ? <PackageCheck className="mr-1.5" /> : <PackageX className="mr-1.5" />}
+            {product.status}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-right font-semibold">
+          <div className={`flex items-center justify-end gap-1.5 ${isOutOfStock ? 'text-destructive' : ''}`}>
+             <Package className="text-inherit/80" />
+             {isOutOfStock ? 'Agotado' : product.stock}
+          </div>
+      </TableCell>
       <TableCell className="text-right font-semibold text-primary">
           <div className='flex items-center justify-end gap-1.5'>
              <Tag className="h-4 w-4 text-primary/80" />

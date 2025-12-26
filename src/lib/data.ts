@@ -8,6 +8,8 @@ export type Product = {
   price: number;
   imageSrc: string;
   imageHint: string;
+  stock: number;
+  status: 'activo' | 'inactivo';
 };
 
 export type Shop = {
@@ -36,6 +38,8 @@ export const shops: Shop[] = [
         price: 24.99,
         imageSrc: 'https://picsum.photos/seed/prod1/400/300',
         imageHint: 'camiseta',
+        stock: 50,
+        status: 'activo',
       },
       {
         id: 'p2',
@@ -44,6 +48,8 @@ export const shops: Shop[] = [
         price: 79.99,
         imageSrc: 'https://picsum.photos/seed/prod2/400/300',
         imageHint: 'vaqueros',
+        stock: 25,
+        status: 'activo',
       },
       {
         id: 'p3',
@@ -52,6 +58,8 @@ export const shops: Shop[] = [
         price: 59.99,
         imageSrc: 'https://picsum.photos/seed/prod9/400/300',
         imageHint: 'sudadera',
+        stock: 0,
+        status: 'inactivo',
       },
     ],
   },
@@ -70,6 +78,8 @@ export const shops: Shop[] = [
         price: 1299.99,
         imageSrc: 'https://picsum.photos/seed/prod3/400/300',
         imageHint: 'portátil',
+        stock: 10,
+        status: 'activo',
       },
       {
         id: 'p5',
@@ -78,6 +88,8 @@ export const shops: Shop[] = [
         price: 999.99,
         imageSrc: 'https://picsum.photos/seed/prod4/400/300',
         imageHint: 'smartphone',
+        stock: 0,
+        status: 'activo',
       },
       {
         id: 'p6',
@@ -86,6 +98,8 @@ export const shops: Shop[] = [
         price: 149.99,
         imageSrc: 'https://picsum.photos/seed/prod10/400/300',
         imageHint: 'auriculares',
+        stock: 100,
+        status: 'inactivo',
       },
     ],
   },
@@ -104,6 +118,8 @@ export const shops: Shop[] = [
         price: 3.5,
         imageSrc: 'https://picsum.photos/seed/prod5/400/300',
         imageHint: 'croissant',
+        stock: 200,
+        status: 'activo',
       },
       {
         id: 'p8',
@@ -112,6 +128,8 @@ export const shops: Shop[] = [
         price: 4.75,
         imageSrc: 'https://picsum.photos/seed/prod6/400/300',
         imageHint: 'cupcake',
+        stock: 75,
+        status: 'activo',
       },
        {
         id: 'p9',
@@ -120,6 +138,8 @@ export const shops: Shop[] = [
         price: 8.00,
         imageSrc: 'https://picsum.photos/seed/prod11/400/300',
         imageHint: 'pan',
+        stock: 30,
+        status: 'activo',
       },
     ],
   },
@@ -138,6 +158,8 @@ export const shops: Shop[] = [
         price: 18.99,
         imageSrc: 'https://picsum.photos/seed/prod7/400/300',
         imageHint: 'libro',
+        stock: 40,
+        status: 'activo',
       },
       {
         id: 'p11',
@@ -146,6 +168,8 @@ export const shops: Shop[] = [
         price: 16.99,
         imageSrc: 'https://picsum.photos/seed/prod8/400/300',
         imageHint: 'libro espacio',
+        stock: 15,
+        status: 'activo',
       },
        {
         id: 'p12',
@@ -154,6 +178,8 @@ export const shops: Shop[] = [
         price: 14.50,
         imageSrc: 'https://picsum.photos/seed/prod12/400/300',
         imageHint: 'libro de misterio',
+        stock: 0,
+        status: 'inactivo',
       },
     ],
   },
