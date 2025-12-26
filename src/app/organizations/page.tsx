@@ -3,14 +3,14 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import React from 'react';
-import { getOrganizations, addOrganization, updateOrganization, getUsers } from '@/lib/data';
-import type { Organization, AppUser } from '@/lib/data';
+import { getOrganizations, addOrganization, updateOrganization, getUsers, getShops } from '@/lib/data';
+import type { Organization, AppUser, Shop } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Building, PlusCircle, Search, ChevronLeft, ChevronRight, Edit, Users, ArrowRight } from 'lucide-react';
+import { Building, PlusCircle, Search, ChevronLeft, ChevronRight, Edit, Users, ArrowRight, Store } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,7 @@ const ORGS_PER_PAGE = 10;
 export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [allShops, setAllShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,6 +56,7 @@ export default function OrganizationsPage() {
     setTimeout(() => {
         setOrganizations(getOrganizations(user));
         setAllUsers(getUsers(user));
+        setAllShops(getShops(user));
         setLoading(false);
     }, 500);
   }
@@ -83,6 +85,7 @@ export default function OrganizationsPage() {
   }, [filteredOrgs, currentPage]);
 
   const getUserById = (id: string) => allUsers.find(u => u.id === id);
+  const getShopCountByOrgId = (orgId: string) => allShops.filter(s => s.organizationId === orgId).length;
 
 
   if (loading || user?.role !== 'Admin') {
@@ -143,7 +146,13 @@ export default function OrganizationsPage() {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {paginatedOrgs.map(org => (
-                <OrganizationCard key={org.id} org={org} onOrgUpdate={handleOrgUpdate} getUserById={getUserById} />
+                <OrganizationCard 
+                  key={org.id} 
+                  org={org} 
+                  onOrgUpdate={handleOrgUpdate} 
+                  getUserById={getUserById}
+                  shopCount={getShopCountByOrgId(org.id)}
+                />
             ))}
              {paginatedOrgs.length === 0 && (
                 <div className="col-span-full text-center py-10">
@@ -180,8 +189,7 @@ export default function OrganizationsPage() {
   );
 }
 
-function OrganizationCard({ org, onOrgUpdate, getUserById }: { org: Organization, onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined }) {
-  const [name, setName] = useState(org.name);
+function OrganizationCard({ org, onOrgUpdate, getUserById, shopCount }: { org: Organization, onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined, shopCount: number }) {
 
   const handleNameUpdate = (newName: string) => {
     onOrgUpdate({...org, name: newName});
@@ -196,10 +204,19 @@ function OrganizationCard({ org, onOrgUpdate, getUserById }: { org: Organization
                    <EditableOrgName name={org.name} onUpdate={handleNameUpdate} />
               </span>
           </CardTitle>
-          <CardDescription>{org.userIds.length} miembro(s)</CardDescription>
+           <div className="flex items-center gap-4 text-sm text-muted-foreground pt-1">
+              <div className="flex items-center gap-1.5">
+                  <Users className="h-4 w-4" />
+                  <span>{org.userIds.length} miembro(s)</span>
+              </div>
+               <div className="flex items-center gap-1.5">
+                  <Store className="h-4 w-4" />
+                  <span>{shopCount} tienda(s)</span>
+              </div>
+          </div>
       </CardHeader>
       <CardContent className="flex-grow">
-          <p className="font-semibold text-sm mb-2">Miembros:</p>
+          <p className="font-semibold text-sm mb-2">Miembros Clave:</p>
            <div className="flex flex-wrap gap-1">
               {org.userIds.slice(0, 5).map(userId => {
                   const member = getUserById(userId);
@@ -318,3 +335,5 @@ function AddOrganizationModal({onOrgAdd, children}: {onOrgAdd: (name: string) =>
         </Dialog>
     )
 }
+
+    
