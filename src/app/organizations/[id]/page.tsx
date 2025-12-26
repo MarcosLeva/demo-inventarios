@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getOrganizationById, getShops, getUsers, updateOrganization, assignShopToUsers } from '@/lib/data';
+import { getOrganizationById, getShops, getUsers, updateOrganization, assignShopToUsers, addShopAndAssignUsers } from '@/lib/data';
 import type { Organization, AppUser, Shop } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowLeft, Building, Users, Store, ChevronLeft, ChevronRight, Search, MoreHorizontal, UserPlus, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Building, Users, Store, ChevronLeft, ChevronRight, Search, UserPlus, Link as LinkIcon, PlusCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -19,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { AddShopModal } from '@/components/AddShopModal';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -32,6 +34,7 @@ export default function OrganizationDetailPage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [allUsers, setAllUsers] = useState<AppUser[]>([]);
+  const [allOrganizations, setAllOrganizations] = useState<Organization[]>([]);
   const [canManage, setCanManage] = useState(false);
 
 
@@ -62,6 +65,7 @@ export default function OrganizationDetailPage() {
 
       setOrganization(org);
       setAllUsers(allUsersData);
+      setAllOrganizations(org ? [org] : []);
       setMembers(allUsersData.filter(u => org.userIds.includes(u.id)));
       setShops(allShopsData.filter(s => s.organizationId === org.id));
       setLoading(false);
@@ -79,6 +83,12 @@ export default function OrganizationDetailPage() {
     assignShopToUsers(shopId, userIds);
     fetchData(); 
   }
+  
+  const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => {
+    if (!currentUser) return;
+    addShopAndAssignUsers(newShopData as Omit<Shop, 'id'|'inventory'|'organizationId'> & { organizationId: string }, assignedUserIds, currentUser); 
+    fetchData();
+  };
 
   if (loading) {
     return <OrganizationDetailSkeleton />;
@@ -127,16 +137,30 @@ export default function OrganizationDetailPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <UsersTable 
-            members={members} 
-            getInitials={getInitials} 
-            organizationId={organization.id} 
-            allUsers={assignableUsersForOrg}
-            onMembersUpdate={handleMembersUpdate}
-            canManage={canManage}
-        />
-        <ShopsTable shops={shops} members={members} onAssignShop={handleAssignShop} canManage={canManage} />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+            <UsersTable 
+                members={members} 
+                getInitials={getInitials} 
+                organizationId={organization.id} 
+                allUsers={assignableUsersForOrg}
+                onMembersUpdate={handleMembersUpdate}
+                canManage={canManage}
+            />
+        </div>
+        <div className="lg:col-span-1">
+            <ShopsTable 
+                shops={shops} 
+                members={members} 
+                onAssignShop={handleAssignShop} 
+                canManage={canManage} 
+                onShopAdd={handleShopAdd}
+                allUsers={allUsers}
+                allOrganizations={allOrganizations}
+                currentUser={currentUser}
+                organizationId={organization.id}
+            />
+        </div>
       </div>
     </div>
   );
@@ -171,7 +195,7 @@ function UsersTable({ members, getInitials, organizationId, allUsers, onMembersU
                             currentMemberIds={members.map(m => m.id)}
                             onUpdate={onMembersUpdate}
                         >
-                            <Button variant="outline"><UserPlus className="mr-2" /> Gestionar</Button>
+                            <Button variant="outline"><UserPlus className="mr-2" /> Gestionar Miembros</Button>
                         </ManageMembersModal>
                      )}
                 </div>
@@ -228,7 +252,7 @@ function UsersTable({ members, getInitials, organizationId, allUsers, onMembersU
     );
 }
 
-function ShopsTable({ shops, members, onAssignShop, canManage }: { shops: Shop[], members: AppUser[], onAssignShop: (shopId: string, userIds: string[]) => void, canManage: boolean }) {
+function ShopsTable({ shops, members, onAssignShop, canManage, onShopAdd, allUsers, allOrganizations, currentUser, organizationId }: { shops: Shop[], members: AppUser[], onAssignShop: (shopId: string, userIds: string[]) => void, canManage: boolean, onShopAdd: (newShopData: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], allOrganizations: Organization[], currentUser: AppUser | null, organizationId: string }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -249,8 +273,23 @@ function ShopsTable({ shops, members, onAssignShop, canManage }: { shops: Shop[]
     return (
          <Card>
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Store /> Tiendas</CardTitle>
-                <CardDescription>Tiendas que pertenecen a esta organización.</CardDescription>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <CardTitle className="flex items-center gap-2"><Store /> Tiendas</CardTitle>
+                        <CardDescription>Tiendas de esta organización.</CardDescription>
+                    </div>
+                    {canManage && (
+                        <AddShopModal 
+                            onShopAdd={onShopAdd} 
+                            allUsers={allUsers} 
+                            allOrganizations={allOrganizations}
+                            currentUser={currentUser}
+                            defaultOrganizationId={organizationId}
+                        >
+                            <Button variant="outline"><PlusCircle className="mr-2" /> Agregar</Button>
+                        </AddShopModal>
+                    )}
+                </div>
                  <div className="relative pt-2">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input placeholder="Buscar tienda..." className="pl-9" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
@@ -261,37 +300,20 @@ function ShopsTable({ shops, members, onAssignShop, canManage }: { shops: Shop[]
                     <TableHeader>
                         <TableRow>
                             <TableHead>Nombre</TableHead>
-                            <TableHead>Usuarios</TableHead>
-                            <TableHead>Estatus</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                          {paginatedShops.length > 0 ? paginatedShops.map(shop => (
                             <TableRow key={shop.id}>
-                                <TableCell className="font-medium">
-                                    <Link href={`/shop/${shop.id}`} className="hover:underline">{shop.name}</Link>
-                                </TableCell>
                                 <TableCell>
-                                    <div className="flex -space-x-2">
-                                        {getAssignedUsers(shop.id).slice(0, 3).map(user => (
-                                            <Avatar key={user.id} className="h-6 w-6 border-2 border-background">
-                                                <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`} />
-                                                <AvatarFallback>{user.name[0]}</AvatarFallback>
-                                            </Avatar>
-                                        ))}
-                                        {getAssignedUsers(shop.id).length > 3 && (
-                                            <Avatar className="h-6 w-6 border-2 border-background">
-                                                <AvatarFallback>+{getAssignedUsers(shop.id).length - 3}</AvatarFallback>
-                                            </Avatar>
-                                        )}
-                                        {getAssignedUsers(shop.id).length === 0 && (
-                                            <span className="text-xs text-muted-foreground">Ninguno</span>
-                                        )}
+                                    <div>
+                                        <Link href={`/shop/${shop.id}`} className="font-medium hover:underline">{shop.name}</Link>
+                                        <div className="flex items-center text-xs text-muted-foreground mt-1">
+                                             <Users className="h-3 w-3 mr-1" />
+                                            {getAssignedUsers(shop.id).length} usuario(s)
+                                        </div>
                                     </div>
-                                </TableCell>
-                                <TableCell>
-                                    <Badge variant={shop.status === 'activo' ? 'secondary' : 'destructive'}>{shop.status}</Badge>
                                 </TableCell>
                                 <TableCell className="text-right">
                                      {canManage && (
@@ -305,7 +327,7 @@ function ShopsTable({ shops, members, onAssignShop, canManage }: { shops: Shop[]
                             </TableRow>
                          )) : (
                              <TableRow>
-                                <TableCell colSpan={4} className="text-center h-24">No se encontraron tiendas.</TableCell>
+                                <TableCell colSpan={2} className="text-center h-24">No se encontraron tiendas.</TableCell>
                             </TableRow>
                          )}
                     </TableBody>
@@ -392,7 +414,7 @@ function AssignUsersToShopModal({ shop, members, onAssign, children }: { shop: S
     }, [isOpen, shop, vendors]);
 
     const handleSave = () => {
-        assignShopToUsers(shop.id, selectedUserIds);
+        onAssign(shop.id, selectedUserIds);
         setIsOpen(false);
     }
     
@@ -453,45 +475,48 @@ function OrganizationDetailSkeleton() {
         <Skeleton className="h-4 w-80 mt-3" />
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-10 w-full mt-2" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-                {Array.from({length: 3}).map((_, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                        <Skeleton className="h-9 w-9 rounded-full" />
-                        <div className="space-y-1">
-                            <Skeleton className="h-4 w-24" />
-                            <Skeleton className="h-3 w-32" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+            <Card>
+            <CardHeader>
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-10 w-full mt-2" />
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                    {Array.from({length: 3}).map((_, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                            <Skeleton className="h-9 w-9 rounded-full" />
+                            <div className="space-y-1">
+                                <Skeleton className="h-4 w-24" />
+                                <Skeleton className="h-3 w-32" />
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
-         <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
-            <Skeleton className="h-4 w-48" />
-            <Skeleton className="h-10 w-full mt-2" />
-          </CardHeader>
-          <CardContent>
-             <div className="space-y-4">
-                {Array.from({length: 3}).map((_, i) => (
-                    <div key={i} className="flex justify-between">
-                       <Skeleton className="h-5 w-24" />
-                       <Skeleton className="h-5 w-32" />
-                       <Skeleton className="h-5 w-16" />
-                    </div>
-                ))}
-            </div>
-          </CardContent>
-        </Card>
+                    ))}
+                </div>
+            </CardContent>
+            </Card>
+        </div>
+        <div className="lg:col-span-1">
+            <Card>
+            <CardHeader>
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-48" />
+                <Skeleton className="h-10 w-full mt-2" />
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                    {Array.from({length: 3}).map((_, i) => (
+                        <div key={i} className="flex justify-between">
+                        <Skeleton className="h-5 w-24" />
+                        <Skeleton className="h-5 w-16" />
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+            </Card>
+        </div>
       </div>
     </div>
   );
