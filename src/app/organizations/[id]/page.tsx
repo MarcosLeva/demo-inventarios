@@ -4,7 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getOrganizationById, getShops, getUsers, updateOrganization, assignShopToUsers, addShopAndAssignUsers } from '@/lib/data';
+import { getOrganizationById, getShops, getUsers, updateOrganization, assignShopToUsers, addShopAndAssignUsers, addUser } from '@/lib/data';
 import type { Organization, AppUser, Shop } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -21,6 +21,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AddShopModal } from '@/components/AddShopModal';
+import { AddUserModal } from '@/components/UserModals';
+
 
 const ITEMS_PER_PAGE = 5;
 
@@ -90,6 +92,12 @@ export default function OrganizationDetailPage() {
     fetchData();
   };
 
+  const handleMemberAdd = (newUserData: Omit<AppUser, 'id'>) => {
+    if (!currentUser) return;
+    addUser(newUserData, currentUser);
+    fetchData();
+  };
+
   if (loading) {
     return <OrganizationDetailSkeleton />;
   }
@@ -146,6 +154,10 @@ export default function OrganizationDetailPage() {
                 allUsers={assignableUsersForOrg}
                 onMembersUpdate={handleMembersUpdate}
                 canManage={canManage}
+                onMemberAdd={handleMemberAdd}
+                currentUser={currentUser}
+                allOrganizations={allOrganizations}
+                allShops={shops}
             />
         </div>
         <div className="lg:col-span-1">
@@ -166,7 +178,7 @@ export default function OrganizationDetailPage() {
   );
 }
 
-function UsersTable({ members, getInitials, organizationId, allUsers, onMembersUpdate, canManage }: { members: AppUser[], getInitials: (name: string) => string, organizationId: string, allUsers: AppUser[], onMembersUpdate: (userIds: string[]) => void, canManage: boolean }) {
+function UsersTable({ members, getInitials, organizationId, allUsers, onMembersUpdate, canManage, onMemberAdd, currentUser, allOrganizations, allShops }: { members: AppUser[], getInitials: (name: string) => string, organizationId: string, allUsers: AppUser[], onMembersUpdate: (userIds: string[]) => void, canManage: boolean, onMemberAdd: (newUserData: Omit<AppUser, 'id'>) => void, currentUser: AppUser | null, allOrganizations: Organization[], allShops: Shop[] }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -189,14 +201,25 @@ function UsersTable({ members, getInitials, organizationId, allUsers, onMembersU
                         <CardDescription>Usuarios que pertenecen a esta organización.</CardDescription>
                     </div>
                      {canManage && (
-                        <ManageMembersModal 
-                            organizationId={organizationId}
-                            allUsers={allUsers}
-                            currentMemberIds={members.map(m => m.id)}
-                            onUpdate={onMembersUpdate}
-                        >
-                            <Button variant="outline"><UserPlus className="mr-2" /> Gestionar Miembros</Button>
-                        </ManageMembersModal>
+                        <div className="flex gap-2">
+                            <AddUserModal
+                                onUserAdd={onMemberAdd}
+                                allShops={allShops}
+                                allOrganizations={allOrganizations}
+                                currentUser={currentUser}
+                                defaultOrganizationId={organizationId}
+                            >
+                                <Button><UserPlus className="mr-2" /> Agregar Miembro</Button>
+                            </AddUserModal>
+                            <ManageMembersModal 
+                                organizationId={organizationId}
+                                allUsers={allUsers}
+                                currentMemberIds={members.map(m => m.id)}
+                                onUpdate={onMembersUpdate}
+                            >
+                                <Button variant="outline">Gestionar Miembros</Button>
+                            </ManageMembersModal>
+                        </div>
                      )}
                 </div>
                  <div className="relative pt-2">
