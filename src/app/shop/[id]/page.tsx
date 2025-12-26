@@ -111,7 +111,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
   const filteredInventory = useMemo(() => {
     setCurrentPage(1); // Reset page when filters change
-    if (!shop) return [];
+    if (!shop) return([]);
     return shop.inventory.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
@@ -154,11 +154,11 @@ export default function ShopPage({ params }: { params: { id: string } }) {
             src={shop.logoSrc}
             alt={`Fondo de ${shop.name}`}
             fill
-            className="object-cover opacity-10 dark:opacity-5"
+            className="object-cover opacity-20 dark:opacity-10"
             style={{ filter: 'blur(24px) saturate(1.2)' }}
             data-ai-hint={shop.logoHint}
           />
-          <div className="absolute inset-0 bg-card/80 dark:bg-card/90"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-card/50 dark:from-card dark:via-card/90 dark:to-card/70"></div>
         </div>
         <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
             <Image
@@ -753,3 +753,6 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
 
 
 
+
+
+    
