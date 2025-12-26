@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Building, PlusCircle, Search, ChevronLeft, ChevronRight, Edit, Users } from 'lucide-react';
+import { Building, PlusCircle, Search, ChevronLeft, ChevronRight, Edit, Users, ArrowRight } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -25,6 +25,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const ORGS_PER_PAGE = 10;
@@ -44,7 +45,7 @@ export default function OrganizationsPage() {
           return;
       }
       fetchData();
-  }, [user]);
+  }, [user, router]);
 
   const fetchData = () => {
     setLoading(true);
@@ -82,7 +83,7 @@ export default function OrganizationsPage() {
 
 
   if (!user || user.role !== 'Admin') {
-    return <div className="flex items-center justify-center h-screen">Acceso denegado.</div>;
+    return <div className="flex items-center justify-center h-full">Acceso denegado.</div>;
   }
 
   return (
@@ -121,31 +122,7 @@ export default function OrganizationsPage() {
                 Array.from({length: 6}).map((_, i) => <OrganizationCardSkeleton key={i}/>)
             ): (
                 paginatedOrgs.map(org => (
-                    <Card key={org.id}>
-                        <CardHeader>
-                            <CardTitle className="flex items-center justify-between">
-                                <span className="flex items-center gap-2">
-                                    <Building className="text-primary" />
-                                    {org.name}
-                                </span>
-                                <EditOrganizationModal organization={org} allUsers={allUsers} onOrgUpdate={handleOrgUpdate}>
-                                    <Button variant="ghost" size="icon"><Edit className="h-4 w-4"/></Button>
-                                </EditOrganizationModal>
-                            </CardTitle>
-                            <CardDescription>{org.userIds.length} miembro(s)</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="font-semibold text-sm mb-2">Miembros:</p>
-                             <div className="flex flex-wrap gap-1">
-                                {org.userIds.slice(0, 5).map(userId => {
-                                    const member = getUserById(userId);
-                                    return member ? <Badge key={userId} variant="secondary">{member.name}</Badge> : null;
-                                })}
-                                {org.userIds.length > 5 && <Badge variant="outline">+{org.userIds.length - 5} más</Badge>}
-                                {org.userIds.length === 0 && <p className="text-xs text-muted-foreground">Sin miembros asignados.</p>}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <OrganizationCard key={org.id} org={org} allUsers={allUsers} onOrgUpdate={handleOrgUpdate} getUserById={getUserById} />
                 ))
             )}
              {!loading && paginatedOrgs.length === 0 && (
@@ -183,6 +160,43 @@ export default function OrganizationsPage() {
   );
 }
 
+function OrganizationCard({ org, allUsers, onOrgUpdate, getUserById }: { org: Organization, allUsers: AppUser[], onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined }) {
+  return (
+    <Card className="flex flex-col group">
+      <CardHeader className="flex-grow">
+          <CardTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                  <Building className="text-primary" />
+                  {org.name}
+              </span>
+              <EditOrganizationModal organization={org} allUsers={allUsers} onOrgUpdate={onOrgUpdate}>
+                  <Button variant="ghost" size="icon"><Edit className="h-4 w-4"/></Button>
+              </EditOrganizationModal>
+          </CardTitle>
+          <CardDescription>{org.userIds.length} miembro(s)</CardDescription>
+      </CardHeader>
+      <CardContent className="flex-grow">
+          <p className="font-semibold text-sm mb-2">Miembros:</p>
+           <div className="flex flex-wrap gap-1">
+              {org.userIds.slice(0, 5).map(userId => {
+                  const member = getUserById(userId);
+                  return member ? <Badge key={userId} variant="secondary">{member.name}</Badge> : null;
+              })}
+              {org.userIds.length > 5 && <Badge variant="outline">+{org.userIds.length - 5} más</Badge>}
+              {org.userIds.length === 0 && <p className="text-xs text-muted-foreground">Sin miembros asignados.</p>}
+          </div>
+      </CardContent>
+      <div className="p-6 pt-0 mt-auto">
+          <Button asChild variant="outline" className="w-full">
+              <Link href={`/organizations/${org.id}`}>
+                  Ver Detalles <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+          </Button>
+      </div>
+    </Card>
+  )
+}
+
 function OrganizationCardSkeleton() {
     return (
         <Card>
@@ -198,6 +212,9 @@ function OrganizationCardSkeleton() {
                     <Skeleton className="h-5 w-14 rounded-full" />
                  </div>
             </CardContent>
+            <div className="p-6 pt-0">
+                <Skeleton className="h-10 w-full" />
+            </div>
         </Card>
     )
 }

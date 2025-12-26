@@ -69,7 +69,7 @@ const organizations: Organization[] = [
     { id: 'org-1', name: 'Grupo Moda Central', userIds: ['user-editor-1', 'user-3', 'user-4', 'user-7', 'user-vendedor1', 'user-vendedor5', 'user-vendedor7', 'user-vendedor9', 'user-vendedor10'] },
     { id: 'org-2', name: 'Tech & More Inc.', userIds: ['user-editor-2', 'user-5', 'user-8', 'user-vendedor2', 'user-vendedor6', 'user-vendedor8'] },
     { id: 'org-3', name: 'Delicias Gastronómicas', userIds: ['user-editor-3', 'user-vendedor3'] },
-    { id: 'org-4', name: 'Consorcio Literario', userIds: ['user-editor-4', 'user-6'] },
+    { id: 'org-4', name: 'Consorcio Literario', userIds: ['user-editor-4', 'user-6', 'user-vendedor4'] },
 ];
 
 const shops: Shop[] = [
@@ -162,7 +162,7 @@ const users: AppUser[] = [
     { id: 'user-vendedor1', name: 'Vendedor 1', email: 'vendedor1@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
     { id: 'user-vendedor2', name: 'Vendedor 2', email: 'vendedor2@example.com', role: 'Vendedor', status: 'activo', shopIds: ['2'], organizationId: 'org-2' },
     { id: 'user-vendedor3', name: 'Vendedor 3', email: 'vendedor3@example.com', role: 'Vendedor', status: 'activo', shopIds: ['3'], organizationId: 'org-3' },
-    { id: 'user-vendedor4', name: 'Vendedor 4', email: 'vendedor4@example.com', role: 'Vendedor', status: 'inactivo', shopIds: [], organizationId: 'org-4' },
+    { id: 'user-vendedor4', name: 'Vendedor 4', email: 'vendedor4@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['4'], organizationId: 'org-4' },
     { id: 'user-vendedor5', name: 'Vendedor 5', email: 'vendedor5@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
     { id: 'user-vendedor6', name: 'Vendedor 6', email: 'vendedor6@example.com', role: 'Vendedor', status: 'activo', shopIds: [], organizationId: 'org-2' },
     { id: 'user-vendedor7', name: 'Vendedor 7', email: 'vendedor7@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
@@ -176,9 +176,15 @@ let usersStore: AppUser[] = JSON.parse(JSON.stringify(users));
 let organizationsStore: Organization[] = JSON.parse(JSON.stringify(organizations));
 
 // --- Organizations ---
-export function getOrganizations(user?: AppUser | null) {
+export function getOrganizations(user?: AppUser | null): Organization[] {
   if (!user || user.role !== 'Admin') return [];
   return JSON.parse(JSON.stringify(organizationsStore));
+}
+
+export function getOrganizationById(id: string, user?: AppUser | null): Organization | undefined {
+  if (!user || user.role !== 'Admin') return undefined;
+  const org = organizationsStore.find(o => o.id === id);
+  return org ? JSON.parse(JSON.stringify(org)) : undefined;
 }
 
 export function addOrganization(name: string) {
