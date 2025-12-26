@@ -7,15 +7,6 @@ import { Home, Package, Upload, Users, ShoppingCart, Link2, Building } from 'luc
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 
-const navLinksConfig = [
-  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
-  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
-  { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin', 'Editor'], disabled: false },
-  { href: '/organizations', label: 'Organización', icon: Building, roles: ['Admin', 'Editor'], disabled: false },
-  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
-  { href: '/connections', label: 'Conexiones', icon: Link2, roles: ['Admin', 'Editor', 'Vendedor'], disabled: true },
-];
-
 export default function Sidebar({ isMobile = false }) {
   const pathname = usePathname();
   const { user } = useAuth();
@@ -23,6 +14,15 @@ export default function Sidebar({ isMobile = false }) {
   if (!user) {
     return null;
   }
+
+  const navLinksConfig = [
+    { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+    { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+    { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin', 'Editor'], disabled: false },
+    { href: '/organizations', label: user.role === 'Admin' ? 'Organizaciones' : 'Organización', icon: Building, roles: ['Admin', 'Editor'], disabled: false },
+    { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
+    { href: '/connections', label: 'Conexiones', icon: Link2, roles: ['Admin', 'Editor', 'Vendedor'], disabled: true },
+  ];
 
   const navLinks = navLinksConfig.filter(link => link.roles.includes(user.role));
 
@@ -32,7 +32,7 @@ export default function Sidebar({ isMobile = false }) {
         href = `/organizations/${user.organizationId}`;
     }
 
-    const isActive = !link.disabled && (link.href === '/' ? pathname === '/' : pathname.startsWith(link.href));
+    const isActive = !link.disabled && (link.href === '/' ? pathname === '/' : pathname.startsWith(href));
     
     const linkContent = (
        <>
