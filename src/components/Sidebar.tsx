@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
 
-const allNavLinks = [
+const navLinksConfig = [
   { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Viewer', 'Vendedor'] },
   { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Viewer'] },
   { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'] },
@@ -20,7 +20,10 @@ export default function Sidebar({ isMobile = false }) {
   const pathname = usePathname();
   const { user } = useAuth();
   
-  const navLinks = allNavLinks.filter(link => user && link.roles.includes(user.role));
+  const navLinks = navLinksConfig.filter(link => {
+    if (!user) return false;
+    return link.roles.includes(user.role);
+  });
 
   const renderLink = (link: typeof navLinks[0]) => {
     const isActive = link.href === '/' ? pathname === '/' : pathname.startsWith(link.href);

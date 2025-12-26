@@ -44,7 +44,7 @@ export default function Home() {
   useEffect(() => {
     // Simulate fetching data
     setTimeout(() => {
-      setInitialShops(getShops(user as AppUser));
+      setInitialShops(getShops(user));
       setLoading(false);
     }, 500); // Simulate 0.5 second loading time
   }, [user]);
@@ -76,7 +76,7 @@ export default function Home() {
   const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>) => {
     // This function is mocked and won't actually add a shop
     // addShop(newShopData); 
-    setInitialShops(getShops(user as AppUser));
+    setInitialShops(getShops(user));
   };
 
 

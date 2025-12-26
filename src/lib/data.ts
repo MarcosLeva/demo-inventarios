@@ -455,7 +455,7 @@ const users: AppUser[] = [
 let shopsStore: Shop[] = JSON.parse(JSON.stringify(shops));
 let usersStore: AppUser[] = JSON.parse(JSON.stringify(users));
 
-export function getShops(user?: AppUser) {
+export function getShops(user?: AppUser | null) {
   if (user?.role === 'Vendedor' && user.shopIds.length > 0) {
     return JSON.parse(JSON.stringify(shopsStore.filter(shop => user.shopIds.includes(shop.id))));
   }
