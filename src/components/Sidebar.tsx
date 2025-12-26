@@ -92,7 +92,7 @@ export default function Sidebar({ isMobile = false }) {
 
   return (
     <div className="hidden border-r bg-card md:block">
-        <div className="flex h-full max-h-screen flex-col">
+        <div className="flex h-full flex-col">
             {header}
             {content}
         </div>
