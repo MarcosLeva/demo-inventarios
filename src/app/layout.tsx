@@ -31,9 +31,9 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased bg-background/50 dark:bg-background text-foreground min-h-screen')}>
         <AuthProvider>
-          <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+          <div className="relative min-h-screen">
             <Sidebar />
-            <div className="flex flex-col">
+            <div className="flex flex-col md:pl-[220px] lg:pl-[280px]">
               <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
                 <Sheet>
                   <SheetTrigger asChild>

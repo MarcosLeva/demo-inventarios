@@ -22,11 +22,9 @@ export default function Sidebar({ isMobile = false }) {
   
   const navLinks = navLinksConfig.filter(link => {
     if (!user) return false;
-    // For 'Vendedor', only show 'Tiendas', 'Importar', and 'Productos'
     if (user.role === 'Vendedor') {
         return ['/', '/import', '/products'].includes(link.href);
     }
-    // For 'Admin', show everything except disabled links
     return link.roles.includes(user.role);
   });
 
@@ -68,7 +66,7 @@ export default function Sidebar({ isMobile = false }) {
   }
 
   return (
-    <div className="hidden border-r bg-card md:block">
+    <div className="hidden md:block fixed left-0 top-0 h-full w-[220px] lg:w-[280px] border-r bg-card z-40">
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
