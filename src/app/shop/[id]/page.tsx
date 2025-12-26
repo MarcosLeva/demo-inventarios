@@ -1,15 +1,15 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { getShopById } from '@/lib/data';
-import type { Product } from '@/lib/data';
+import type { Product, Shop } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -24,13 +24,45 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 export default function ShopPage({ params }: { params: { id: string } }) {
-  const shop = getShopById(params.id);
+  const shopData = getShopById(params.id);
+
+  const [shop, setShop] = useState<Shop | undefined>(shopData);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
-  
+
   const maxPrice = useMemo(() => {
     if (!shop || shop.inventory.length === 0) {
       return 100;
@@ -40,13 +72,32 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
   const [priceRange, setPriceRange] = useState([0, maxPrice]);
 
+  useEffect(() => {
+    if (shop) {
+        setPriceRange([0, Math.ceil(Math.max(...shop.inventory.map((p) => p.price))) || 100]);
+    }
+  }, [shop]);
+
+
   if (!shop) {
     notFound();
   }
-  
-  useMemo(() => {
-      setPriceRange([0, maxPrice]);
-  }, [maxPrice]);
+
+  const handleProductUpdate = (updatedProduct: Product) => {
+    setShop(prevShop => {
+        if (!prevShop) return prevShop;
+        const newInventory = prevShop.inventory.map(p => p.id === updatedProduct.id ? updatedProduct : p);
+        return {...prevShop, inventory: newInventory};
+    });
+  }
+
+  const handleProductDelete = (productId: string) => {
+    setShop(prevShop => {
+        if (!prevShop) return prevShop;
+        const newInventory = prevShop.inventory.filter(p => p.id !== productId);
+        return {...prevShop, inventory: newInventory};
+    });
+  }
 
 
   const filteredInventory = useMemo(() => {
@@ -166,16 +217,22 @@ export default function ShopPage({ params }: { params: { id: string } }) {
                 <TableHead className="text-center">Estatus</TableHead>
                 <TableHead className="text-right">Stock</TableHead>
                 <TableHead className="text-right">Precio</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredInventory.length > 0 ? (
                 filteredInventory.map((product) => (
-                  <ProductRow key={product.id} product={product} />
+                  <ProductRow 
+                    key={product.id} 
+                    product={product}
+                    onProductUpdate={handleProductUpdate}
+                    onProductDelete={handleProductDelete}
+                  />
                 ))
               ) : (
                 <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
                         No se encontraron productos que coincidan con tus criterios.
                     </TableCell>
                 </TableRow>
@@ -187,7 +244,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   );
 }
 
-function ProductRow({ product }: { product: Product }) {
+function ProductRow({ product, onProductUpdate, onProductDelete }: { product: Product, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void }) {
   const formatPrice = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -229,6 +286,165 @@ function ProductRow({ product }: { product: Product }) {
              {formatPrice}
           </div>
       </TableCell>
+      <TableCell className="text-right">
+        <ProductActionsCell product={product} onProductUpdate={onProductUpdate} onProductDelete={onProductDelete} />
+      </TableCell>
     </TableRow>
   );
+}
+
+function ProductActionsCell({ product, onProductUpdate, onProductDelete }: { product: Product, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void }) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Abrir menú</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <EditProductModal product={product} onProductUpdate={onProductUpdate}>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Edit className="mr-2 h-4 w-4" />
+                <span>Editar</span>
+            </DropdownMenuItem>
+        </EditProductModal>
+        <UpdateStockModal product={product} onProductUpdate={onProductUpdate}>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                <span>Actualizar Stock</span>
+            </DropdownMenuItem>
+        </UpdateStockModal>
+        <DropdownMenuSeparator />
+        <DeleteProductAlert productId={product.id} onProductDelete={onProductDelete}>
+            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                <Trash2 className="mr-2 h-4 w-4" />
+                <span>Eliminar</span>
+            </DropdownMenuItem>
+        </DeleteProductAlert>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function EditProductModal({ product, onProductUpdate, children }: { product: Product, onProductUpdate: (product: Product) => void, children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [name, setName] = useState(product.name);
+    const [description, setDescription] = useState(product.description);
+    const [price, setPrice] = useState(product.price);
+    const [status, setStatus] = useState(product.status);
+
+    const handleSave = () => {
+        onProductUpdate({
+            ...product,
+            name,
+            description,
+            price,
+            status,
+        });
+        setIsOpen(false);
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Editar Producto</DialogTitle>
+                    <DialogDescription>Realiza cambios en los detalles del producto.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name" className="text-right">Nombre</Label>
+                        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="description" className="text-right">Descripción</Label>
+                        <Input id="description" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="price" className="text-right">Precio (€)</Label>
+                        <Input id="price" type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="status" className="text-right">Estatus</Label>
+                        <Select value={status} onValueChange={(value: 'activo' | 'inactivo') => setStatus(value)}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecciona un estatus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleSave}>Guardar Cambios</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function UpdateStockModal({ product, onProductUpdate, children }: { product: Product, onProductUpdate: (product: Product) => void, children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [stock, setStock] = useState(product.stock);
+    
+    const handleSave = () => {
+        onProductUpdate({ ...product, stock });
+        setIsOpen(false);
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Actualizar Stock</DialogTitle>
+                    <DialogDescription>Ajusta la cantidad de stock para <strong>{product.name}</strong>.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="stock" className="text-right">Stock</Label>
+                        <Input id="stock" type="number" value={stock} onChange={(e) => setStock(Number(e.target.value))} className="col-span-3" />
+                    </div>
+                </div>
+                 <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleSave}>Guardar Cambios</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
+function DeleteProductAlert({ productId, onProductDelete, children }: { productId: string, onProductDelete: (productId: string) => void, children: React.ReactNode }) {
+    const handleDelete = () => {
+        onProductDelete(productId);
+    }
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente el producto de la base de datos.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
 }
