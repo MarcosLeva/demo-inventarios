@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { getAllProducts, getShops } from '@/lib/data';
-import type { Product, Shop } from '@/lib/data';
+import type { Product, Shop, AppUser } from '@/lib/data';
 import {
   Table,
   TableBody,
@@ -19,20 +19,22 @@ import { Input } from '@/components/ui/input';
 import { Search, Package, Tag, PackageCheck, PackageX } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const { user } = useAuth();
 
   useEffect(() => {
     setTimeout(() => {
-      setProducts(getAllProducts());
-      setShops(getShops());
+      setProducts(getAllProducts(user));
+      setShops(getShops(user));
       setLoading(false);
     }, 500);
-  }, []);
+  }, [user]);
 
   const getShopName = (shopId: string | undefined) => {
     if (!shopId) return 'N/A';

@@ -470,9 +470,11 @@ export function getShopById(id: string | number) {
   return JSON.parse(JSON.stringify(shop));
 }
 
-export function getAllProducts() {
+export function getAllProducts(user?: AppUser | null) {
     const allProducts: Product[] = [];
-    shopsStore.forEach(shop => {
+    const shopsToSearch = getShops(user);
+
+    shopsToSearch.forEach(shop => {
         shop.inventory.forEach(product => {
             allProducts.push({
                 ...product,
