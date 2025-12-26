@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import { getAllProducts, getShops } from '@/lib/data';
-import type { Product, Shop, AppUser, ProductProperty } from '@/lib/data';
+import type { Product, Shop } from '@/lib/data';
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Package, Tag, PackageCheck, PackageX, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { Search, PackageCheck, PackageX, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -29,9 +29,8 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogDescription,
-  DialogClose,
 } from "@/components/ui/dialog"
-import { Label } from '@/components/ui/label';
+import { ProductFilters } from '@/components/ProductFilters';
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -42,12 +41,27 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedShop, setSelectedShop] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
+  const [hideOutOfStock, setHideOutOfStock] = useState(false);
+  const [priceRange, setPriceRange] = useState([0, 100]);
   const { user } = useAuth();
+  
+  const maxPrice = useMemo(() => {
+    if (!products || products.length === 0) {
+      return 100;
+    }
+    return Math.ceil(Math.max(...products.map((p) => p.price)));
+  }, [products]);
 
   useEffect(() => {
     setTimeout(() => {
-      setProducts(getAllProducts(user));
+      const allProducts = getAllProducts(user);
+      setProducts(allProducts);
       setShops(getShops(user));
+      const initialMaxPrice = allProducts.length > 0
+          ? Math.ceil(Math.max(...allProducts.map((p) => p.price)))
+          : 100;
+      setPriceRange([0, initialMaxPrice]);
       setLoading(false);
     }, 500);
   }, [user]);
@@ -63,9 +77,12 @@ export default function ProductsPage() {
     return products.filter(product => {
       const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesShop = selectedShop === 'all' || product.shopId === selectedShop;
-      return matchesSearchTerm && matchesShop;
+      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
+      const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+      const matchesStock = !hideOutOfStock || product.stock > 0;
+      return matchesSearchTerm && matchesShop && matchesPrice && matchesStatus && matchesStock;
     });
-  }, [products, searchTerm, selectedShop]);
+  }, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock]);
   
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
 
@@ -90,135 +107,130 @@ export default function ProductsPage() {
         </p>
       </header>
       
-      <Card>
-        <CardHeader>
-            <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <Input
-                        type="text"
-                        placeholder="Buscar por nombre de producto..."
-                        className="pl-10 w-full"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <Select value={selectedShop} onValueChange={setSelectedShop}>
-                    <SelectTrigger className="w-full sm:w-[240px]">
-                        <SelectValue placeholder="Filtrar por tienda" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Todas las tiendas</SelectItem>
-                        {shops.map(shop => (
-                        <SelectItem key={shop.id} value={shop.id}>
-                            {shop.name}
-                        </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[80px]">Imagen</TableHead>
-                <TableHead>Producto</TableHead>
-                <TableHead>Tienda</TableHead>
-                <TableHead>Estatus</TableHead>
-                <TableHead className="text-right">Stock</TableHead>
-                <TableHead className="text-right">Precio</TableHead>
-                <TableHead className="text-center">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                Array.from({ length: PRODUCTS_PER_PAGE }).map((_, index) => (
-                    <TableRow key={index}>
-                        <TableCell><Skeleton className="h-16 w-16 rounded-md" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-20" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
-                        <TableCell><Skeleton className="h-8 w-8 mx-auto" /></TableCell>
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <aside className="lg:col-span-1">
+             <ProductFilters
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                hideOutOfStock={hideOutOfStock}
+                setHideOutOfStock={setHideOutOfStock}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
+                maxPrice={maxPrice}
+                shops={shops}
+                selectedShop={selectedShop}
+                setSelectedShop={setSelectedShop}
+              />
+        </aside>
+
+        <main className="lg:col-span-3">
+            <h2 className="text-3xl font-bold font-headline mb-4">Resultados ({filteredProducts.length})</h2>
+            <Card>
+                <CardContent className="p-0">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead className="w-[80px]">Imagen</TableHead>
+                        <TableHead>Producto</TableHead>
+                        <TableHead>Tienda</TableHead>
+                        <TableHead>Estatus</TableHead>
+                        <TableHead className="text-right">Stock</TableHead>
+                        <TableHead className="text-right">Precio</TableHead>
+                        <TableHead className="text-center">Acciones</TableHead>
                     </TableRow>
-                ))
-              ) : paginatedProducts.length > 0 ? (
-                paginatedProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="relative h-16 w-16 rounded-md overflow-hidden">
-                        <Image
-                          src={product.imageSrc}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                        />
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell className="text-muted-foreground">{getShopName(product.shopId)}</TableCell>
-                    <TableCell>
-                      <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
-                        {product.status === 'activo' ? <PackageCheck className="mr-1.5 h-3 w-3" /> : <PackageX className="mr-1.5 h-3 w-3" />}
-                        {product.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className={cn("text-right font-semibold", product.stock === 0 ? "text-destructive" : "")}>
-                       {product.stock === 0 ? 'Agotado' : product.stock}
-                    </TableCell>
-                    <TableCell className="text-right font-semibold text-primary">
-                      {formatPrice(product.price)}
-                    </TableCell>
-                    <TableCell className="text-center">
-                        <ViewProductModal product={product} shopName={getShopName(product.shopId)}>
-                            <Button variant="ghost" size="icon">
-                                <Eye className="h-4 w-4" />
-                                <span className="sr-only">Ver Detalles</span>
-                            </Button>
-                        </ViewProductModal>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
-                    No se encontraron productos.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-      
-      {totalPages > 1 && !loading && (
-        <div className="flex items-center justify-center gap-4 mt-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Página anterior</span>
-          </Button>
-          <span className="text-sm font-medium">
-            Página {currentPage} de {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            <ChevronRight className="h-4 w-4" />
-            <span className="sr-only">Página siguiente</span>
-          </Button>
-        </div>
-      )}
+                    </TableHeader>
+                    <TableBody>
+                    {loading ? (
+                        Array.from({ length: PRODUCTS_PER_PAGE }).map((_, index) => (
+                            <TableRow key={index}>
+                                <TableCell><Skeleton className="h-16 w-16 rounded-md" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-20" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                                <TableCell><Skeleton className="h-8 w-8 mx-auto" /></TableCell>
+                            </TableRow>
+                        ))
+                    ) : paginatedProducts.length > 0 ? (
+                        paginatedProducts.map((product) => (
+                        <TableRow key={product.id}>
+                            <TableCell>
+                            <div className="relative h-16 w-16 rounded-md overflow-hidden">
+                                <Image
+                                src={product.imageSrc}
+                                alt={product.name}
+                                fill
+                                className="object-cover"
+                                sizes="64px"
+                                />
+                            </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell className="text-muted-foreground">{getShopName(product.shopId)}</TableCell>
+                            <TableCell>
+                            <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
+                                {product.status === 'activo' ? <PackageCheck className="mr-1.5 h-3 w-3" /> : <PackageX className="mr-1.5 h-3 w-3" />}
+                                {product.status}
+                            </Badge>
+                            </TableCell>
+                            <TableCell className={cn("text-right font-semibold", product.stock === 0 ? "text-destructive" : "")}>
+                            {product.stock === 0 ? 'Agotado' : product.stock}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold text-primary">
+                            {formatPrice(product.price)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                                <ViewProductModal product={product} shopName={getShopName(product.shopId)}>
+                                    <Button variant="ghost" size="icon">
+                                        <Eye className="h-4 w-4" />
+                                        <span className="sr-only">Ver Detalles</span>
+                                    </Button>
+                                </ViewProductModal>
+                            </TableCell>
+                        </TableRow>
+                        ))
+                    ) : (
+                        <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">
+                            No se encontraron productos.
+                        </TableCell>
+                        </TableRow>
+                    )}
+                    </TableBody>
+                </Table>
+                </CardContent>
+            </Card>
+            
+            {totalPages > 1 && !loading && (
+                <div className="flex items-center justify-center gap-4 mt-4">
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="sr-only">Página anterior</span>
+                </Button>
+                <span className="text-sm font-medium">
+                    Página {currentPage} de {totalPages}
+                </span>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                >
+                    <ChevronRight className="h-4 w-4" />
+                    <span className="sr-only">Página siguiente</span>
+                </Button>
+                </div>
+            )}
+        </main>
+      </div>
     </div>
   );
 }
@@ -270,3 +282,5 @@ function ViewProductModal({ product, shopName, children }: { product: Product, s
         </Dialog>
     )
 }
+
+    

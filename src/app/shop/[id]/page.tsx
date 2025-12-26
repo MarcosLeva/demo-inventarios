@@ -19,11 +19,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,7 +62,9 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
+import { ProductFilters } from '@/components/ProductFilters';
+
 
 const ITEMS_PER_PAGE = 10;
 
@@ -80,6 +80,14 @@ export default function ShopPage() {
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [priceRange, setPriceRange] = useState([0, 100]);
+
+  const maxPrice = useMemo(() => {
+    if (!shop || shop.inventory.length === 0) {
+      return 100;
+    }
+    return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
+  }, [shop]);
+
 
   const fetchData = () => {
     if (!user) return;
@@ -130,14 +138,6 @@ export default function ShopPage() {
     return filteredInventory.slice(startIndex, endIndex);
   }, [filteredInventory, currentPage]);
 
-  const maxPrice = useMemo(() => {
-    if (!shop || shop.inventory.length === 0) {
-      return 100;
-    }
-    return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
-  }, [shop]);
-
-
   if (loading) {
     return <ShopPageSkeleton />;
   }
@@ -170,13 +170,6 @@ export default function ShopPage() {
     deleteProductFromData(params.id, productId);
     handleDataUpdate();
   }
-
-  const Icon = icons[shop.icon];
-
-  const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(price);
 
   const canEditShop = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop.organizationId);
 
@@ -279,74 +272,17 @@ export default function ShopPage() {
       
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <aside className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="bg-accent/10 text-accent p-3 rounded-lg">
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  Filtros
-                </CardTitle>
-                <CardDescription>Refina la lista de productos.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                  <div>
-                      <Label htmlFor="search-inventory">Buscar producto</Label>
-                      <div className="relative mt-2">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                          <Input
-                            id="search-inventory"
-                            type="text"
-                            placeholder="Nombre del producto..."
-                            className="pl-10 w-full"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                          />
-                      </div>
-                  </div>
-
-                  <div className="space-y-2">
-                      <Label>Estatus</Label>
-                      <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Filtrar por estatus" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Todos los estatus</SelectItem>
-                          <SelectItem value="activo">Activo</SelectItem>
-                          <SelectItem value="inactivo">Inactivo</SelectItem>
-                        </SelectContent>
-                      </Select>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 pt-2">
-                      <Checkbox
-                          id="hide-out-of-stock"
-                          checked={hideOutOfStock}
-                          onCheckedChange={(checked) => setHideOutOfStock(Boolean(checked))}
-                      />
-                      <Label htmlFor="hide-out-of-stock" className="text-sm">
-                          Ocultar agotados
-                      </Label>
-                  </div>
-
-                  <div className="pt-2">
-                      <div className="flex justify-between items-center mb-2">
-                          <Label>Rango de precios</Label>
-                          <span className="text-sm text-muted-foreground font-medium">
-                              {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                          </span>
-                      </div>
-                      <Slider
-                          value={priceRange}
-                          onValueChange={setPriceRange}
-                          min={0}
-                          max={maxPrice}
-                          step={1}
-                      />
-                  </div>
-              </CardContent>
-            </Card>
+           <ProductFilters
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                hideOutOfStock={hideOutOfStock}
+                setHideOutOfStock={setHideOutOfStock}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
+                maxPrice={maxPrice}
+            />
         </aside>
 
         <main className="lg:col-span-3">
@@ -1015,6 +951,8 @@ function DynamicPropertiesEditor({ properties, setProperties }: { properties: Pr
         </div>
     );
 }
+
+    
 
     
 
