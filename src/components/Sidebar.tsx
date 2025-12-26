@@ -44,7 +44,7 @@ export default function Sidebar({ isMobile = false }) {
     );
 
     if(link.disabled) {
-        return <span className={linkClasses}>{linkContent}</span>
+        return <span key={link.href} className={linkClasses}>{linkContent}</span>
     }
 
     return (
