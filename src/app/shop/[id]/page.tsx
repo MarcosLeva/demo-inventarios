@@ -84,6 +84,10 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   if (!shop) {
     notFound();
   }
+  
+  const handleShopUpdate = (updatedShop: Shop) => {
+    setShop(updatedShop);
+  }
 
   const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => {
     setShop(prevShop => {
@@ -173,6 +177,12 @@ export default function ShopPage({ params }: { params: { id: string } }) {
                  <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
                     {shop.name}
                  </h1>
+                 <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
+                    <Button variant="outline" size="icon" className="shrink-0">
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Editar Tienda</span>
+                    </Button>
+                </EditShopModal>
             </div>
           <p className="text-lg text-muted-foreground ml-1">{shop.specialization}</p>
         </div>
@@ -601,4 +611,50 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
     );
 }
 
+function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpdate: (shop: Shop) => void, children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [name, setName] = useState(shop.name);
+    const [specialization, setSpecialization] = useState(shop.specialization);
+
+    const handleSave = () => {
+        if (!name || !specialization) {
+            alert('Por favor completa todos los campos.');
+            return;
+        }
+        onShopUpdate({
+            ...shop,
+            name,
+            specialization,
+        });
+        setIsOpen(false);
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Editar Tienda</DialogTitle>
+                    <DialogDescription>Realiza cambios en los detalles de la tienda.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-name" className="text-right">Nombre</Label>
+                        <Input id="shop-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-specialization" className="text-right">Especialización</Label>
+                        <Input id="shop-specialization" value={specialization} onChange={(e) => setSpecialization(e.target.value)} className="col-span-3" />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleSave}>Guardar Cambios</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
     
