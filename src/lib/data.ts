@@ -20,6 +20,7 @@ export type Shop = {
   logoHint: string;
   icon: LucideIcon;
   inventory: Product[];
+  status: 'activo' | 'inactivo';
 };
 
 export const icons = {
@@ -48,6 +49,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop1/400/400',
     logoHint: 'tienda de ropa',
     icon: Shirt,
+    status: 'activo',
     inventory: [
       {
         id: 'p1',
@@ -116,6 +118,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop2/400/400',
     logoHint: 'tienda de electrónica',
     icon: Laptop,
+    status: 'activo',
     inventory: [
       {
         id: 'p4',
@@ -183,6 +186,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop3/400/400',
     logoHint: 'panadería',
     icon: Cookie,
+    status: 'activo',
     inventory: [
       {
         id: 'p7',
@@ -243,6 +247,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop4/400/400',
     logoHint: 'librería',
     icon: BookOpen,
+    status: 'inactivo',
     inventory: [
       {
         id: 'p10',
@@ -303,6 +308,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop5/400/400',
     logoHint: 'juguetería',
     icon: ToyBrick,
+    status: 'activo',
     inventory: [
         { id: 'p21', name: 'Set de Bloques de Construcción', description: 'Fomenta la creatividad con 500 piezas de colores.', price: 49.99, imageSrc: 'https://picsum.photos/seed/prod21/400/300', imageHint: 'bloques construcción', stock: 30, status: 'activo' },
         { id: 'p22', name: 'Puzzle del Sistema Solar', description: 'Aprende sobre los planetas con este puzzle de 200 piezas.', price: 19.99, imageSrc: 'https://picsum.photos/seed/prod22/400/300', imageHint: 'puzzle espacio', stock: 60, status: 'activo' },
@@ -318,6 +324,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop6/400/400',
     logoHint: 'tienda de jardinería',
     icon: Sprout,
+    status: 'activo',
     inventory: [
         { id: 'p26', name: 'Set de Herramientas de Jardín', description: 'Incluye pala, rastrillo y podadoras.', price: 39.99, imageSrc: 'https://picsum.photos/seed/prod26/400/300', imageHint: 'herramientas jardín', stock: 55, status: 'activo' },
         { id: 'p27', name: 'Semillas de Girasol Gigante', description: 'Paquete para cultivar tus propios girasoles.', price: 5.99, imageSrc: 'https://picsum.photos/seed/prod27/400/300', imageHint: 'semillas girasol', stock: 150, status: 'activo' },
@@ -333,6 +340,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop7/400/400',
     logoHint: 'tienda de deportes',
     icon: Dumbbell,
+    status: 'activo',
     inventory: [
         { id: 'p31', name: 'Balón de Fútbol Profesional', description: 'Balón oficial de la liga, tamaño 5.', price: 95.00, imageSrc: 'https://picsum.photos/seed/prod31/400/300', imageHint: 'balón fútbol', stock: 40, status: 'activo' },
         { id: 'p32', name: 'Esterilla de Yoga', description: 'Antideslizante y ecológica.', price: 35.00, imageSrc: 'https://picsum.photos/seed/prod32/400/300', imageHint: 'esterilla yoga', stock: 90, status: 'activo' },
@@ -348,6 +356,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop8/400/400',
     logoHint: 'tienda de música',
     icon: Guitar,
+    status: 'inactivo',
     inventory: [
         { id: 'p36', name: 'Guitarra Acústica', description: 'Ideal para principiantes, sonido cálido.', price: 150.00, imageSrc: 'https://picsum.photos/seed/prod36/400/300', imageHint: 'guitarra acústica', stock: 25, status: 'activo' },
         { id: 'p37', name: 'Teclado Electrónico de 61 Teclas', description: 'Con múltiples sonidos y ritmos.', price: 220.00, imageSrc: 'https://picsum.photos/seed/prod37/400/300', imageHint: 'teclado electrónico', stock: 20, status: 'activo' },
@@ -363,6 +372,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop9/400/400',
     logoHint: 'ferretería',
     icon: Wrench,
+    status: 'activo',
     inventory: [
         { id: 'p41', name: 'Taladro Inalámbrico 18V', description: 'Potente y versátil, con 2 baterías.', price: 129.99, imageSrc: 'https://picsum.photos/seed/prod41/400/300', imageHint: 'taladro inalámbrico', stock: 40, status: 'activo' },
         { id: 'p42', name: 'Juego de 100 Puntas para Atornillar', description: 'Para todo tipo de tornillos.', price: 25.00, imageSrc: 'https://picsum.photos/seed/prod42/400/300', imageHint: 'puntas atornillar', stock: 150, status: 'activo' },
@@ -378,6 +388,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop10/400/400',
     logoHint: 'tienda mascotas',
     icon: Dog,
+    status: 'activo',
     inventory: [
         { id: 'p46', name: 'Pienso para Perro Adulto', description: 'Saco de 15kg, sabor pollo y arroz.', price: 45.00, imageSrc: 'https://picsum.photos/seed/prod46/400/300', imageHint: 'pienso perro', stock: 80, status: 'activo' },
         { id: 'p47', name: 'Arena Aglomerante para Gatos', description: 'Control de olores superior, 10L.', price: 12.50, imageSrc: 'https://picsum.photos/seed/prod47/400/300', imageHint: 'arena gatos', stock: 120, status: 'activo' },
@@ -393,6 +404,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop11/400/400',
     logoHint: 'cafetería',
     icon: Coffee,
+    status: 'activo',
     inventory: [
         { id: 'p51', name: 'Café en Grano de Colombia', description: 'Bolsa de 250g, tueste medio.', price: 12.00, imageSrc: 'https://picsum.photos/seed/prod51/400/300', imageHint: 'café grano', stock: 100, status: 'activo' },
         { id: 'p52', name: 'Prensa Francesa de 1L', description: 'Prepara un café delicioso y con cuerpo.', price: 35.00, imageSrc: 'https://picsum.photos/seed/prod52/400/300', imageHint: 'prensa francesa', stock: 30, status: 'activo' },
@@ -408,6 +420,7 @@ export const shops: Shop[] = [
     logoSrc: 'https://picsum.photos/seed/shop12/400/400',
     logoHint: 'farmacia',
     icon: Pill,
+    status: 'activo',
     inventory: [
         { id: 'p56', name: 'Crema Hidratante Facial SPF 30', description: 'Protección solar y hidratación diaria.', price: 28.50, imageSrc: 'https://picsum.photos/seed/prod56/400/300', imageHint: 'crema facial', stock: 70, status: 'activo' },
         { id: 'p57', name: 'Complejo Vitamínico (60 cápsulas)', description: 'Refuerza tu sistema inmunológico.', price: 19.95, imageSrc: 'https://picsum.photos/seed/prod57/400/300', imageHint: 'vitaminas', stock: 90, status: 'activo' },
@@ -429,8 +442,13 @@ export function getShopById(id: string | number) {
   return shopsStore.find((shop) => shop.id === String(id));
 }
 
-export function addShop(shop: Shop) {
-    shopsStore.unshift(shop);
+export function addShop(shop: Omit<Shop, 'id'|'inventory'>) {
+    const newShop = {
+        ...shop,
+        id: `shop-${Date.now()}`,
+        inventory: []
+    }
+    shopsStore.unshift(newShop);
 }
 
 export function updateShop(updatedShop: Shop) {

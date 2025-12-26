@@ -653,12 +653,14 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     const [name, setName] = useState(shop.name);
     const [specialization, setSpecialization] = useState(shop.specialization);
     const [logoSrc, setLogoSrc] = useState(shop.logoSrc);
+    const [status, setStatus] = useState(shop.status);
 
     useEffect(() => {
         if (isOpen) {
             setName(shop.name);
             setSpecialization(shop.specialization);
             setLogoSrc(shop.logoSrc);
+            setStatus(shop.status);
         }
     }, [isOpen, shop]);
 
@@ -672,6 +674,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             name,
             specialization,
             logoSrc,
+            status,
         });
         setIsOpen(false);
     }
@@ -692,6 +695,18 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="shop-specialization" className="text-right">Especialización</Label>
                         <Input id="shop-specialization" value={specialization} onChange={(e) => setSpecialization(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-status-edit" className="text-right">Estatus</Label>
+                        <Select value={status} onValueChange={(value: 'activo' | 'inactivo') => setStatus(value)}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecciona un estatus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4 pt-2">
                         <Label className="text-right pt-2">Logo</Label>
@@ -723,4 +738,5 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     
 
     
+
 

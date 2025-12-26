@@ -32,6 +32,7 @@ export default function Home() {
   const [initialShops, setInitialShops] = useState(getShops());
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [currentPage, setCurrentPage] = useState(1);
 
   const specializations = useMemo(() => {
@@ -45,9 +46,10 @@ export default function Home() {
       const matchesSearchTerm = shop.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesSpecialization =
         selectedSpecialization === 'all' || shop.specialization === selectedSpecialization;
-      return matchesSearchTerm && matchesSpecialization;
+      const matchesStatus = statusFilter === 'all' || shop.status === statusFilter;
+      return matchesSearchTerm && matchesSpecialization && matchesStatus;
     }).sort((a, b) => a.name.localeCompare(b.name));
-  }, [initialShops, searchTerm, selectedSpecialization]);
+  }, [initialShops, searchTerm, selectedSpecialization, statusFilter]);
 
   const totalPages = Math.ceil(filteredShops.length / SHOPS_PER_PAGE);
   const paginatedShops = useMemo(() => {
@@ -99,6 +101,16 @@ export default function Home() {
               </SelectItem>
             ))}
           </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Filtrar por estatus" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">Todos los estatus</SelectItem>
+                <SelectItem value="activo">Activas</SelectItem>
+                <SelectItem value="inactivo">Inactivas</SelectItem>
+            </SelectContent>
         </Select>
         <AddShopModal onShopAdd={handleShopAdd}>
              <Button className="w-full sm:w-auto">
@@ -241,6 +253,7 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
     const [specialization, setSpecialization] = useState('');
     const [logoSrc, setLogoSrc] = useState('https://picsum.photos/seed/newshop/400/400');
     const [iconName, setIconName] = useState<keyof IconMap>('Shirt');
+    const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
 
     const handleSave = () => {
         if (!name || !specialization || !iconName) {
@@ -260,7 +273,8 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
             specialization,
             logoSrc,
             logoHint: `${name} ${specialization}`,
-            icon: selectedIcon
+            icon: selectedIcon,
+            status,
         });
         setIsOpen(false);
         // Reset form
@@ -268,6 +282,7 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
         setSpecialization('');
         setLogoSrc('https://picsum.photos/seed/newshop/400/400');
         setIconName('Shirt');
+        setStatus('activo');
     };
 
     const IconPreview = icons[iconName] || null;
@@ -317,6 +332,18 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
                             )}
                         </div>
                     </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-status" className="text-right">Estatus</Label>
+                        <Select value={status} onValueChange={(value: 'activo' | 'inactivo') => setStatus(value)}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecciona un estatus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                     <div className="grid grid-cols-4 items-start gap-4 pt-2">
                         <Label className="text-right pt-2">Logo</Label>
                         <div className="col-span-3">
@@ -344,4 +371,5 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
         </Dialog>
     );
 }
+
 
