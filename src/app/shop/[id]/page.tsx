@@ -19,25 +19,45 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Slider } from '@/components/ui/slider';
+import { Label } from '@/components/ui/label';
 
 export default function ShopPage({ params }: { params: { id: string } }) {
   const shop = getShopById(params.id);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  const maxPrice = useMemo(() => {
+    if (!shop || shop.inventory.length === 0) {
+      return 100;
+    }
+    return Math.max(...shop.inventory.map((p) => p.price));
+  }, [shop]);
+
+  const [priceRange, setPriceRange] = useState([0, maxPrice]);
 
   if (!shop) {
     notFound();
   }
+  
+  useMemo(() => {
+      setPriceRange([0, maxPrice]);
+  }, [maxPrice]);
+
 
   const filteredInventory = useMemo(() => {
-    if (!searchTerm) {
-      return shop.inventory;
-    }
-    return shop.inventory.filter((product) =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [shop.inventory, searchTerm]);
+    return shop.inventory.filter((product) => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
+      return matchesSearch && matchesPrice;
+    });
+  }, [shop.inventory, searchTerm, priceRange]);
 
   const Icon = shop.icon;
+
+  const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(price);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -74,20 +94,43 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold font-headline">Inventario</h2>
-        <div className="relative w-full max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Buscar en el inventario..."
-            className="pl-10 w-full"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      <div className="mb-8 p-6 bg-card rounded-lg border">
+        <h3 className="text-xl font-bold mb-6">Filtrar Inventario</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+                <Label htmlFor="search-product">Nombre del producto</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="search-product"
+                    type="text"
+                    placeholder="Buscar en el inventario..."
+                    className="pl-10 w-full"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+            </div>
+            <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                    <Label>Rango de precios</Label>
+                    <span className="text-sm text-muted-foreground font-medium">
+                        {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                    </span>
+                </div>
+                 <Slider
+                    value={priceRange}
+                    onValueChange={setPriceRange}
+                    min={0}
+                    max={maxPrice}
+                    step={1}
+                />
+            </div>
         </div>
       </div>
 
+
+      <h2 className="text-3xl font-bold font-headline mb-8">Inventario ({filteredInventory.length})</h2>
       <Card>
           <Table>
             <TableHeader>

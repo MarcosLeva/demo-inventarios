@@ -34,7 +34,7 @@ export default function Home() {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl lg:text-6xl">
-          Descubre Tiendas Locales
+          Explora el Inventario de las Tiendas
         </h1>
         <p className="mt-4 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
           Navega a través de una lista curada de tiendas y explora sus inventarios únicos.
