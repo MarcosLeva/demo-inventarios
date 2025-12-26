@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowRight, Search, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
+import { ArrowRight, Search, ChevronLeft, ChevronRight, PlusCircle, Users, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { icons } from '@/lib/data';
 import { Badge } from '@/components/ui/badge';
@@ -83,6 +83,10 @@ export default function Home() {
 
   const canAddShop = user?.role === 'Admin' || user?.role === 'Editor';
 
+  const getMemberCountForShop = (shopId: string) => {
+    return allUsers.filter(u => u.shopIds.includes(shopId)).length;
+  }
+
 
   return (
     <>
@@ -149,7 +153,12 @@ export default function Home() {
         {loading ? (
           Array.from({ length: SHOPS_PER_PAGE }).map((_, index) => <ShopCardSkeleton key={index} />)
         ) : paginatedShops.map((shop, index) => (
-            <ShopCard key={shop.id} shop={shop} index={index} />
+            <ShopCard 
+                key={shop.id} 
+                shop={shop} 
+                index={index} 
+                memberCount={getMemberCountForShop(shop.id)}
+            />
         ))}
       </div>
 
@@ -208,13 +217,13 @@ function ShopCardSkeleton() {
 }
 
 
-function ShopCard({ shop, index }: { shop: Shop, index: number }) {
+function ShopCard({ shop, index, memberCount }: { shop: Shop, index: number, memberCount: number }) {
   const Icon = icons[shop.icon];
   return (
     <Link href={`/shop/${shop.id}`} className="group block">
       <Card 
         className={cn(
-            "h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 animate-in fade-in-0",
+            "h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 animate-in fade-in-0 flex flex-col",
         )}
         style={{ animationDelay: `${index * 50}ms` }}
       >
@@ -233,7 +242,7 @@ function ShopCard({ shop, index }: { shop: Shop, index: number }) {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="p-6 flex flex-col">
+        <CardContent className="p-6 flex flex-col flex-grow">
           <div className="flex items-start gap-4">
              <div className="bg-accent/10 text-accent p-3 rounded-lg">
                 {Icon && <Icon className="h-6 w-6" />}
@@ -241,6 +250,16 @@ function ShopCard({ shop, index }: { shop: Shop, index: number }) {
              <div className="flex-1">
                 <h2 className="text-xl font-bold font-headline mb-1">{shop.name}</h2>
                 <p className="text-sm text-muted-foreground">{shop.specialization}</p>
+             </div>
+          </div>
+          <div className="mt-4 flex-grow space-y-2 text-sm text-muted-foreground">
+             <div className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                <span>{shop.inventory.length} producto(s)</span>
+             </div>
+             <div className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                <span>{memberCount} miembro(s)</span>
              </div>
           </div>
           <div className="flex justify-end items-center mt-6 pt-4 border-t">
