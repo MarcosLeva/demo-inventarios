@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, PlusCircle, MoreHorizontal, Edit, Trash2, Store } from 'lucide-react';
+import { Search, PlusCircle, MoreHorizontal, Edit, Trash2, Store, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -54,11 +54,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+const USERS_PER_PAGE = 10;
+
 export default function UsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchData();
@@ -83,11 +86,21 @@ export default function UsersPage() {
   }
 
   const filteredUsers = useMemo(() => {
+    setCurrentPage(1);
     return users.filter(user =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [users, searchTerm]);
+
+  const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
+
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * USERS_PER_PAGE;
+    const endIndex = startIndex + USERS_PER_PAGE;
+    return filteredUsers.slice(startIndex, endIndex);
+  }, [filteredUsers, currentPage]);
+
 
   const handleAddUser = (newUser: Omit<AppUser, 'id'>) => {
     addUser(newUser);
@@ -148,7 +161,7 @@ export default function UsersPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                Array.from({ length: 5 }).map((_, index) => (
+                Array.from({ length: USERS_PER_PAGE }).map((_, index) => (
                     <TableRow key={index}>
                         <TableCell>
                             <div className="flex items-center gap-4">
@@ -165,8 +178,8 @@ export default function UsersPage() {
                         <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                     </TableRow>
                 ))
-              ) : filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
+              ) : paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                        <div className="flex items-center gap-4">
@@ -236,6 +249,32 @@ export default function UsersPage() {
           </Table>
         </CardContent>
       </Card>
+      
+      {totalPages > 1 && !loading && (
+        <div className="flex items-center justify-center gap-4 mt-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Página anterior</span>
+          </Button>
+          <span className="text-sm font-medium">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Página siguiente</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
@@ -493,7 +532,3 @@ function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, o
         </AlertDialog>
     );
 }
-
-    
-
-    
