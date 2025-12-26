@@ -1,4 +1,4 @@
-import { Shirt, Laptop, Cookie, BookOpen } from 'lucide-react';
+import { Shirt, Laptop, Cookie, BookOpen, ToyBrick, Sprout, Dumbbell, Guitar, Wrench, Dog, Coffee, Pill } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type Product = {
@@ -61,6 +61,26 @@ export const shops: Shop[] = [
         stock: 0,
         status: 'inactivo',
       },
+      {
+        id: 'p13',
+        name: 'Chaqueta Bomber',
+        description: 'Una chaqueta estilosa para cualquier ocasión.',
+        price: 89.90,
+        imageSrc: 'https://picsum.photos/seed/prod13/400/300',
+        imageHint: 'chaqueta',
+        stock: 15,
+        status: 'activo',
+      },
+      {
+        id: 'p14',
+        name: 'Pantalones Chinos',
+        description: 'Pantalones versátiles perfectos para la oficina o el fin de semana.',
+        price: 64.50,
+        imageSrc: 'https://picsum.photos/seed/prod14/400/300',
+        imageHint: 'pantalones',
+        stock: 30,
+        status: 'activo',
+      },
     ],
   },
   {
@@ -100,6 +120,26 @@ export const shops: Shop[] = [
         imageHint: 'auriculares',
         stock: 100,
         status: 'inactivo',
+      },
+      {
+        id: 'p15',
+        name: 'Smartwatch 2.0',
+        description: 'Monitoriza tu actividad y notificaciones desde tu muñeca.',
+        price: 249.00,
+        imageSrc: 'https://picsum.photos/seed/prod15/400/300',
+        imageHint: 'smartwatch',
+        stock: 40,
+        status: 'activo',
+      },
+      {
+        id: 'p16',
+        name: 'Tableta Gráfica',
+        description: 'Ideal para diseñadores y artistas digitales.',
+        price: 450.00,
+        imageSrc: 'https://picsum.photos/seed/prod16/400/300',
+        imageHint: 'tableta gráfica',
+        stock: 22,
+        status: 'activo',
       },
     ],
   },
@@ -141,6 +181,26 @@ export const shops: Shop[] = [
         stock: 30,
         status: 'activo',
       },
+      {
+        id: 'p17',
+        name: 'Tarta de Manzana',
+        description: 'La clásica tarta de manzana de la abuela.',
+        price: 25.00,
+        imageSrc: 'https://picsum.photos/seed/prod17/400/300',
+        imageHint: 'tarta manzana',
+        stock: 12,
+        status: 'activo',
+      },
+       {
+        id: 'p18',
+        name: 'Galletas con Chips de Chocolate',
+        description: 'Media docena de galletas recién horneadas.',
+        price: 9.50,
+        imageSrc: 'https://picsum.photos/seed/prod18/400/300',
+        imageHint: 'galletas chocolate',
+        stock: 0,
+        status: 'inactivo',
+      },
     ],
   },
   {
@@ -181,8 +241,148 @@ export const shops: Shop[] = [
         stock: 0,
         status: 'inactivo',
       },
+      {
+        id: 'p19',
+        name: 'Poesía de Medianoche',
+        description: 'Una colección de poemas introspectivos.',
+        price: 12.00,
+        imageSrc: 'https://picsum.photos/seed/prod19/400/300',
+        imageHint: 'libro poesía',
+        stock: 50,
+        status: 'activo',
+      },
+      {
+        id: 'p20',
+        name: 'Biografía de un Genio',
+        description: 'La vida y obra de una mente brillante.',
+        price: 22.50,
+        imageSrc: 'https://picsum.photos/seed/prod20/400/300',
+        imageHint: 'libro biografía',
+        stock: 20,
+        status: 'activo',
+      },
     ],
   },
+  {
+    id: '5',
+    name: 'Mundo Juguete',
+    specialization: 'Juguetes Educativos',
+    logoSrc: 'https://picsum.photos/seed/shop5/400/400',
+    logoHint: 'juguetería',
+    icon: ToyBrick,
+    inventory: [
+        { id: 'p21', name: 'Set de Bloques de Construcción', description: 'Fomenta la creatividad con 500 piezas de colores.', price: 49.99, imageSrc: 'https://picsum.photos/seed/prod21/400/300', imageHint: 'bloques construcción', stock: 30, status: 'activo' },
+        { id: 'p22', name: 'Puzzle del Sistema Solar', description: 'Aprende sobre los planetas con este puzzle de 200 piezas.', price: 19.99, imageSrc: 'https://picsum.photos/seed/prod22/400/300', imageHint: 'puzzle espacio', stock: 60, status: 'activo' },
+        { id: 'p23', name: 'Kit de Experimentos Científicos', description: 'Más de 20 experimentos divertidos y seguros para niños.', price: 34.99, imageSrc: 'https://picsum.photos/seed/prod23/400/300', imageHint: 'kit ciencia', stock: 0, status: 'inactivo' },
+        { id: 'p24', name: 'Dinosaurio Interactivo', description: 'Un T-Rex que ruge y camina.', price: 45.00, imageSrc: 'https://picsum.photos/seed/prod24/400/300', imageHint: 'dinosaurio juguete', stock: 18, status: 'activo' },
+        { id: 'p25', name: 'Muñeca Clásica', description: 'Muñeca de 45cm con ropa intercambiable.', price: 29.95, imageSrc: 'https://picsum.photos/seed/prod25/400/300', imageHint: 'muñeca', stock: 40, status: 'activo' }
+    ]
+  },
+  {
+    id: '6',
+    name: 'El Jardín Secreto',
+    specialization: 'Artículos de Jardinería',
+    logoSrc: 'https://picsum.photos/seed/shop6/400/400',
+    logoHint: 'tienda de jardinería',
+    icon: Sprout,
+    inventory: [
+        { id: 'p26', name: 'Set de Herramientas de Jardín', description: 'Incluye pala, rastrillo y podadoras.', price: 39.99, imageSrc: 'https://picsum.photos/seed/prod26/400/300', imageHint: 'herramientas jardín', stock: 55, status: 'activo' },
+        { id: 'p27', name: 'Semillas de Girasol Gigante', description: 'Paquete para cultivar tus propios girasoles.', price: 5.99, imageSrc: 'https://picsum.photos/seed/prod27/400/300', imageHint: 'semillas girasol', stock: 150, status: 'activo' },
+        { id: 'p28', name: 'Maceta de Cerámica', description: 'Elegante maceta para interiores, 25cm de diámetro.', price: 22.50, imageSrc: 'https://picsum.photos/seed/prod28/400/300', imageHint: 'maceta cerámica', stock: 80, status: 'activo' },
+        { id: 'p29', name: 'Guantes de Jardinería', description: 'Protege tus manos con estilo y comodidad.', price: 12.99, imageSrc: 'https://picsum.photos/seed/prod29/400/300', imageHint: 'guantes jardín', stock: 120, status: 'activo' },
+        { id: 'p30', name: 'Regadera Metálica', description: 'Capacidad de 5 litros, diseño vintage.', price: 28.00, imageSrc: 'https://picsum.photos/seed/prod30/400/300', imageHint: 'regadera', stock: 0, status: 'inactivo' }
+    ]
+  },
+  {
+    id: '7',
+    name: 'Deporte Total',
+    specialization: 'Artículos Deportivos',
+    logoSrc: 'https://picsum.photos/seed/shop7/400/400',
+    logoHint: 'tienda de deportes',
+    icon: Dumbbell,
+    inventory: [
+        { id: 'p31', name: 'Balón de Fútbol Profesional', description: 'Balón oficial de la liga, tamaño 5.', price: 95.00, imageSrc: 'https://picsum.photos/seed/prod31/400/300', imageHint: 'balón fútbol', stock: 40, status: 'activo' },
+        { id: 'p32', name: 'Esterilla de Yoga', description: 'Antideslizante y ecológica.', price: 35.00, imageSrc: 'https://picsum.photos/seed/prod32/400/300', imageHint: 'esterilla yoga', stock: 90, status: 'activo' },
+        { id: 'p33', name: 'Juego de Mancuernas Ajustables', description: 'De 2.5kg a 24kg. Ahorra espacio.', price: 250.00, imageSrc: 'https://picsum.photos/seed/prod33/400/300', imageHint: 'mancuernas', stock: 15, status: 'activo' },
+        { id: 'p34', name: 'Cuerda para Saltar de Velocidad', description: 'Perfecta para cardio y entrenamiento funcional.', price: 18.50, imageSrc: 'https://picsum.photos/seed/prod34/400/300', imageHint: 'cuerda saltar', stock: 200, status: 'activo' },
+        { id: 'p35', name: 'Zapatillas de Running', description: 'Máxima amortiguación y soporte.', price: 120.00, imageSrc: 'https://picsum.photos/seed/prod35/400/300', imageHint: 'zapatillas running', stock: 65, status: 'activo' }
+    ]
+  },
+  {
+    id: '8',
+    name: 'Acordes y Melodías',
+    specialization: 'Instrumentos Musicales',
+    logoSrc: 'https://picsum.photos/seed/shop8/400/400',
+    logoHint: 'tienda de música',
+    icon: Guitar,
+    inventory: [
+        { id: 'p36', name: 'Guitarra Acústica', description: 'Ideal para principiantes, sonido cálido.', price: 150.00, imageSrc: 'https://picsum.photos/seed/prod36/400/300', imageHint: 'guitarra acústica', stock: 25, status: 'activo' },
+        { id: 'p37', name: 'Teclado Electrónico de 61 Teclas', description: 'Con múltiples sonidos y ritmos.', price: 220.00, imageSrc: 'https://picsum.photos/seed/prod37/400/300', imageHint: 'teclado electrónico', stock: 20, status: 'activo' },
+        { id: 'p38', name: 'Ukelele Soprano', description: 'Divertido y fácil de tocar.', price: 60.00, imageSrc: 'https://picsum.photos/seed/prod38/400/300', imageHint: 'ukelele', stock: 50, status: 'activo' },
+        { id: 'p39', name: 'Micrófono de Condensador USB', description: 'Calidad de estudio para grabaciones en casa.', price: 110.00, imageSrc: 'https://picsum.photos/seed/prod39/400/300', imageHint: 'micrófono usb', stock: 35, status: 'activo' },
+        { id: 'p40', name: 'Batería Electrónica Compacta', description: 'Silenciosa y perfecta para practicar.', price: 450.00, imageSrc: 'https://picsum.photos/seed/prod40/400/300', imageHint: 'batería electrónica', stock: 0, status: 'inactivo' }
+    ]
+  },
+  {
+    id: '9',
+    name: 'La Caja de Herramientas',
+    specialization: 'Ferretería y Bricolaje',
+    logoSrc: 'https://picsum.photos/seed/shop9/400/400',
+    logoHint: 'ferretería',
+    icon: Wrench,
+    inventory: [
+        { id: 'p41', name: 'Taladro Inalámbrico 18V', description: 'Potente y versátil, con 2 baterías.', price: 129.99, imageSrc: 'https://picsum.photos/seed/prod41/400/300', imageHint: 'taladro inalámbrico', stock: 40, status: 'activo' },
+        { id: 'p42', name: 'Juego de 100 Puntas para Atornillar', description: 'Para todo tipo de tornillos.', price: 25.00, imageSrc: 'https://picsum.photos/seed/prod42/400/300', imageHint: 'puntas atornillar', stock: 150, status: 'activo' },
+        { id: 'p43', name: 'Sierra Circular de Mano', description: 'Cortes precisos en madera.', price: 89.90, imageSrc: 'https://picsum.photos/seed/prod43/400/300', imageHint: 'sierra circular', stock: 30, status: 'activo' },
+        { id: 'p44', name: 'Caja de Herramientas Metálica', description: 'Resistente y con 5 compartimentos.', price: 65.00, imageSrc: 'https://picsum.photos/seed/prod44/400/300', imageHint: 'caja herramientas', stock: 0, status: 'inactivo' },
+        { id: 'p45', name: 'Flexómetro 8 metros', description: 'Cinta métrica resistente a impactos.', price: 15.75, imageSrc: 'https://picsum.photos/seed/prod45/400/300', imageHint: 'flexómetro', stock: 200, status: 'activo' }
+    ]
+  },
+  {
+    id: '10',
+    name: 'Patitas Felices',
+    specialization: 'Tienda de Mascotas',
+    logoSrc: 'https://picsum.photos/seed/shop10/400/400',
+    logoHint: 'tienda mascotas',
+    icon: Dog,
+    inventory: [
+        { id: 'p46', name: 'Pienso para Perro Adulto', description: 'Saco de 15kg, sabor pollo y arroz.', price: 45.00, imageSrc: 'https://picsum.photos/seed/prod46/400/300', imageHint: 'pienso perro', stock: 80, status: 'activo' },
+        { id: 'p47', name: 'Arena Aglomerante para Gatos', description: 'Control de olores superior, 10L.', price: 12.50, imageSrc: 'https://picsum.photos/seed/prod47/400/300', imageHint: 'arena gatos', stock: 120, status: 'activo' },
+        { id: 'p48', name: 'Rascador para Gatos con Plataformas', description: 'Mantiene las uñas sanas y entretiene.', price: 75.00, imageSrc: 'https://picsum.photos/seed/prod48/400/300', imageHint: 'rascador gatos', stock: 25, status: 'activo' },
+        { id: 'p49', name: 'Cama para Mascota Mediana', description: 'Suave y lavable.', price: 32.99, imageSrc: 'https://picsum.photos/seed/prod49/400/300', imageHint: 'cama mascota', stock: 40, status: 'activo' },
+        { id: 'p50', name: 'Juguete Interactivo para Perro', description: 'Dispensador de premios para estimular la mente.', price: 19.99, imageSrc: 'https://picsum.photos/seed/prod50/400/300', imageHint: 'juguete perro', stock: 60, status: 'activo' }
+    ]
+  },
+  {
+    id: '11',
+    name: 'Café del Sol',
+    specialization: 'Cafetería de Especialidad',
+    logoSrc: 'https://picsum.photos/seed/shop11/400/400',
+    logoHint: 'cafetería',
+    icon: Coffee,
+    inventory: [
+        { id: 'p51', name: 'Café en Grano de Colombia', description: 'Bolsa de 250g, tueste medio.', price: 12.00, imageSrc: 'https://picsum.photos/seed/prod51/400/300', imageHint: 'café grano', stock: 100, status: 'activo' },
+        { id: 'p52', name: 'Prensa Francesa de 1L', description: 'Prepara un café delicioso y con cuerpo.', price: 35.00, imageSrc: 'https://picsum.photos/seed/prod52/400/300', imageHint: 'prensa francesa', stock: 30, status: 'activo' },
+        { id: 'p53', name: 'Molinillo de Café Manual', description: 'Muele los granos al momento para máxima frescura.', price: 45.00, imageSrc: 'https://picsum.photos/seed/prod53/400/300', imageHint: 'molinillo café', stock: 25, status: 'activo' },
+        { id: 'p54', name: 'Taza de Cerámica Artesanal', description: 'Cada pieza es única.', price: 20.00, imageSrc: 'https://picsum.photos/seed/prod54/400/300', imageHint: 'taza cerámica', stock: 50, status: 'activo' },
+        { id: 'p55', name: 'Siropes para Café (Set de 3)', description: 'Vainilla, Caramelo y Avellana.', price: 18.00, imageSrc: 'https://picsum.photos/seed/prod55/400/300', imageHint: 'siropes café', stock: 0, status: 'inactivo' }
+    ]
+  },
+  {
+    id: '12',
+    name: 'Bienestar y Salud',
+    specialization: 'Farmacia y Parafarmacia',
+    logoSrc: 'https://picsum.photos/seed/shop12/400/400',
+    logoHint: 'farmacia',
+    icon: Pill,
+    inventory: [
+        { id: 'p56', name: 'Crema Hidratante Facial SPF 30', description: 'Protección solar y hidratación diaria.', price: 28.50, imageSrc: 'https://picsum.photos/seed/prod56/400/300', imageHint: 'crema facial', stock: 70, status: 'activo' },
+        { id: 'p57', name: 'Complejo Vitamínico (60 cápsulas)', description: 'Refuerza tu sistema inmunológico.', price: 19.95, imageSrc: 'https://picsum.photos/seed/prod57/400/300', imageHint: 'vitaminas', stock: 90, status: 'activo' },
+        { id: 'p58', name: 'Termómetro Digital', description: 'Lectura rápida y precisa.', price: 9.99, imageSrc: 'https://picsum.photos/seed/prod58/400/300', imageHint: 'termómetro', stock: 150, status: 'activo' },
+        { id: 'p59', name: 'Gel de Aloe Vera Puro', description: 'Calma e hidrata la piel irritada. 250ml.', price: 12.80, imageSrc: 'https://picsum.photos/seed/prod59/400/300', imageHint: 'aloe vera', stock: 60, status: 'activo' },
+        { id: 'p60', name: 'Tiritas Resistentes al Agua (Caja de 40)', description: 'Surtido de varios tamaños.', price: 4.50, imageSrc: 'https://picsum.photos/seed/prod60/400/300', imageHint: 'tiritas', stock: 300, status: 'activo' }
+    ]
+  }
 ];
 
 export function getShops() {
