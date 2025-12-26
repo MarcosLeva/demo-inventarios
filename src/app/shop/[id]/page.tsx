@@ -31,7 +31,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         <Button asChild variant="ghost">
           <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
-            Back to all shops
+            Volver a todas las tiendas
           </Link>
         </Button>
       </div>
@@ -60,16 +60,16 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       
-      <h2 className="text-3xl font-bold font-headline mb-8">Inventory</h2>
+      <h2 className="text-3xl font-bold font-headline mb-8">Inventario</h2>
 
       <Card>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Image</TableHead>
-                <TableHead>Product</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Price</TableHead>
+                <TableHead className="w-[100px]">Imagen</TableHead>
+                <TableHead>Producto</TableHead>
+                <TableHead>Descripción</TableHead>
+                <TableHead className="text-right">Precio</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -80,7 +80,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
               ) : (
                 <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
-                        This shop's inventory is currently empty.
+                        El inventario de esta tienda está actualmente vacío.
                     </TableCell>
                 </TableRow>
               )}
@@ -92,9 +92,9 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 }
 
 function ProductRow({ product }: { product: Product }) {
-  const formatPrice = new Intl.NumberFormat('en-US', {
+  const formatPrice = new Intl.NumberFormat('es-ES', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'EUR',
   }).format(product.price);
 
   return (

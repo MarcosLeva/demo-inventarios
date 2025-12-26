@@ -34,10 +34,10 @@ export default function Home() {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl lg:text-6xl">
-          Discover Local Shops
+          Descubre Tiendas Locales
         </h1>
         <p className="mt-4 text-lg leading-8 text-muted-foreground max-w-2xl mx-auto">
-          Browse through a curated list of shops and explore their unique inventories.
+          Navega a través de una lista curada de tiendas y explora sus inventarios únicos.
         </p>
       </div>
 
@@ -46,7 +46,7 @@ export default function Home() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search by shop name..."
+            placeholder="Buscar por nombre de tienda..."
             className="pl-10 w-full"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -54,12 +54,12 @@ export default function Home() {
         </div>
         <Select value={selectedSpecialization} onValueChange={setSelectedSpecialization}>
           <SelectTrigger className="w-full sm:w-[240px]">
-            <SelectValue placeholder="Filter by specialization" />
+            <SelectValue placeholder="Filtrar por especialización" />
           </SelectTrigger>
           <SelectContent>
             {specializations.map((spec) => (
               <SelectItem key={spec} value={spec}>
-                {spec === 'all' ? 'All Specializations' : spec}
+                {spec === 'all' ? 'Todas las Especialidades' : spec}
               </SelectItem>
             ))}
           </SelectContent>
@@ -72,7 +72,7 @@ export default function Home() {
         ))}
          {filteredShops.length === 0 && (
             <p className="text-muted-foreground col-span-full text-center">
-                No shops found matching your criteria.
+                No se encontraron tiendas que coincidan con tus criterios.
             </p>
         )}
       </div>
@@ -109,7 +109,7 @@ function ShopCard({ shop }: { shop: Shop }) {
           </div>
           <div className="flex justify-end items-center mt-6 pt-4 border-t">
             <div className="text-sm font-medium text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              View Inventory <ArrowRight className="h-4 w-4 transform -translate-x-1 group-hover:translate-x-0 transition-transform duration-300" />
+              Ver Inventario <ArrowRight className="h-4 w-4 transform -translate-x-1 group-hover:translate-x-0 transition-transform duration-300" />
             </div>
           </div>
         </CardContent>
