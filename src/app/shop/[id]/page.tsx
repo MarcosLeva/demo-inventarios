@@ -1,11 +1,20 @@
+
 import { getShopById } from '@/lib/data';
 import type { Product } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { ArrowLeft, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export default function ShopPage({ params }: { params: { id: string } }) {
   const shop = getShopById(params.id);
@@ -53,49 +62,63 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       
       <h2 className="text-3xl font-bold font-headline mb-8">Inventory</h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {shop.inventory.length > 0 ? (
-          shop.inventory.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        ) : (
-          <p className="text-muted-foreground col-span-full">This shop's inventory is currently empty.</p>
-        )}
-      </div>
+      <Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[100px]">Image</TableHead>
+                <TableHead>Product</TableHead>
+                <TableHead>Description</TableHead>
+                <TableHead className="text-right">Price</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {shop.inventory.length > 0 ? (
+                shop.inventory.map((product) => (
+                  <ProductRow key={product.id} product={product} />
+                ))
+              ) : (
+                <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                        This shop's inventory is currently empty.
+                    </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+      </Card>
     </div>
   );
 }
 
-function ProductCard({ product }: { product: Product }) {
+function ProductRow({ product }: { product: Product }) {
   const formatPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
   }).format(product.price);
 
   return (
-    <Card className="overflow-hidden flex flex-col h-full group transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1">
-      <CardHeader className="p-0">
-        <div className="relative h-56 w-full">
+    <TableRow>
+      <TableCell>
+        <div className="relative h-16 w-16 rounded-md overflow-hidden">
           <Image
             src={product.imageSrc}
             alt={product.name}
             fill
-            className="object-cover transition-transform duration-300 ease-in-out group-hover:scale-105"
+            className="object-cover"
             data-ai-hint={product.imageHint}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="64px"
           />
         </div>
-      </CardHeader>
-      <CardContent className="p-4 flex flex-col flex-grow">
-        <CardTitle className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">{product.name}</CardTitle>
-        <CardDescription className="text-sm text-muted-foreground mb-4 flex-grow">{product.description}</CardDescription>
-        <div className="flex justify-between items-center mt-auto pt-4 border-t">
-          <p className="text-lg font-semibold text-primary flex items-center gap-1.5">
-            <Tag className="h-4 w-4 text-primary/80" />
-            {formatPrice}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+      </TableCell>
+      <TableCell className="font-medium">{product.name}</TableCell>
+      <TableCell className="text-muted-foreground">{product.description}</TableCell>
+      <TableCell className="text-right font-semibold text-primary">
+          <div className='flex items-center justify-end gap-1.5'>
+             <Tag className="h-4 w-4 text-primary/80" />
+             {formatPrice}
+          </div>
+      </TableCell>
+    </TableRow>
   );
 }
