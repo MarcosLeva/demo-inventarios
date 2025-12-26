@@ -60,7 +60,7 @@ import { cn } from '@/lib/utils';
 const ITEMS_PER_PAGE = 10;
 
 export default function ShopPage({ params }: { params: { id: string } }) {
-  const resolvedParams = use(Promise.resolve(params));
+  const resolvedParams = use(params);
   const [shop, setShop] = useState<Shop | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -833,3 +833,6 @@ setStatus(shop.status);
 
     
 
+
+
+    
