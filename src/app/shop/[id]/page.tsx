@@ -148,33 +148,44 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         </Button>
       </div>
 
-      <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 mb-12 p-6 bg-card rounded-lg border shadow-sm">
-        <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
-            <Image
-              src={shop.logoSrc}
-              alt={`${shop.name} logo`}
-              fill
-              className="object-cover"
-              data-ai-hint={shop.logoHint}
-              sizes="128px"
-            />
-        </div>
-        <div className="relative">
-            <div className="flex items-center gap-3 mb-2">
-                 <div className="bg-accent/10 text-accent p-3 rounded-lg">
-                    <Icon className="h-8 w-8" />
-                 </div>
-                 <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
-                    {shop.name}
-                 </h1>
-                 <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
-                    <Button variant="outline" size="icon" className="shrink-0">
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Editar Tienda</span>
-                    </Button>
-                </EditShopModal>
+      <div className="relative mb-12 overflow-hidden rounded-lg border shadow-sm">
+        <Image
+            src={shop.logoSrc}
+            alt={`${shop.name} background`}
+            fill
+            className="object-cover"
+            style={{filter: 'blur(4px)'}}
+            data-ai-hint={shop.logoHint}
+            sizes="100vw"
+        />
+        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6">
+            <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
+                <Image
+                  src={shop.logoSrc}
+                  alt={`${shop.name} logo`}
+                  fill
+                  className="object-cover"
+                  data-ai-hint={shop.logoHint}
+                  sizes="128px"
+                />
             </div>
-          <p className="text-lg text-muted-foreground ml-1">{shop.specialization}</p>
+            <div className="relative">
+                <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-accent/10 text-accent p-3 rounded-lg">
+                        <Icon className="h-8 w-8" />
+                    </div>
+                    <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
+                        {shop.name}
+                    </h1>
+                    <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
+                        <Button variant="outline" size="icon" className="shrink-0">
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Editar Tienda</span>
+                        </Button>
+                    </EditShopModal>
+                </div>
+              <p className="text-lg text-muted-foreground ml-1">{shop.specialization}</p>
+            </div>
         </div>
       </div>
       
@@ -748,4 +759,5 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
 
 
     
+
 
