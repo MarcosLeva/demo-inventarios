@@ -153,37 +153,31 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       
-      <div className="space-y-4 mb-8">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative w-full md:w-1/3">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-x-8 gap-y-6 mb-8 p-6 bg-card rounded-lg border">
+        <div className="lg:col-span-4">
+            <h3 className="text-lg font-medium">Filtros de Inventario</h3>
+            <p className="text-sm text-muted-foreground">Refina la lista de productos.</p>
+        </div>
+
+        <div className="lg:col-span-2">
+            <Label htmlFor="search-inventory">Buscar producto</Label>
+            <div className="relative mt-2">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
+                  id="search-inventory"
                   type="text"
-                  placeholder="Buscar en el inventario..."
+                  placeholder="Buscar por nombre..."
                   className="pl-10 w-full"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
             </div>
-            <div className="w-full md:flex-1">
-                <div className="flex justify-between items-center mb-2">
-                    <Label className="text-sm">Rango de precios</Label>
-                    <span className="text-sm text-muted-foreground font-medium">
-                        {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                    </span>
-                </div>
-                 <Slider
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    min={0}
-                    max={maxPrice}
-                    step={1}
-                />
-            </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
+
+        <div className="space-y-2">
+            <Label>Estatus</Label>
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
-              <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectTrigger>
                 <SelectValue placeholder="Filtrar por estatus" />
               </SelectTrigger>
               <SelectContent>
@@ -192,7 +186,10 @@ export default function ShopPage({ params }: { params: { id: string } }) {
                 <SelectItem value="inactivo">Inactivo</SelectItem>
               </SelectContent>
             </Select>
-            <div className="flex items-center gap-2">
+        </div>
+        
+        <div className="flex items-end pb-2">
+             <div className="flex items-center gap-2">
                 <Checkbox
                     id="hide-out-of-stock"
                     checked={hideOutOfStock}
@@ -202,6 +199,22 @@ export default function ShopPage({ params }: { params: { id: string } }) {
                     Ocultar agotados
                 </Label>
             </div>
+        </div>
+
+        <div className="lg:col-span-4">
+            <div className="flex justify-between items-center mb-2">
+                <Label>Rango de precios</Label>
+                <span className="text-sm text-muted-foreground font-medium">
+                    {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                </span>
+            </div>
+            <Slider
+                value={priceRange}
+                onValueChange={setPriceRange}
+                min={0}
+                max={maxPrice}
+                step={1}
+            />
         </div>
       </div>
 
@@ -435,7 +448,7 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
             <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
             <AlertDialogContent>
                 <AlertDialogHeader>
-                    <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                    <AlertDialogTitle>¿Estás absolutely seguro?</AlertDialogTitle>
                     <AlertDialogDescription>
                         Esta acción no se puede deshacer. Esto eliminará permanentemente el producto de la base de datos.
                     </AlertDialogDescription>
@@ -448,3 +461,5 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
         </AlertDialog>
     );
 }
+
+    
