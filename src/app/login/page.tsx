@@ -4,10 +4,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/use-auth';
 import { LogIn, ShoppingCart } from 'lucide-react';
 import { getUserByEmail } from '@/lib/data';
@@ -25,6 +24,7 @@ export default function LoginPage() {
     
     const user = getUserByEmail(email);
 
+    // For this mock app, we'll just check if a user exists and a password is provided
     if (user && password) { 
       login(user);
       router.push('/');
@@ -34,17 +34,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full h-full">
-      <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
-        <div className="relative hidden bg-muted lg:block">
+    <div className="w-full min-h-screen">
+      <div className="w-full h-full lg:grid lg:min-h-screen lg:grid-cols-2">
+        <div className="relative hidden bg-muted lg:block h-full">
           <Image
-            src="https://picsum.photos/seed/loginpage/1200/900"
+            src="https://picsum.photos/seed/loginpage/1200/1800"
             alt="Imagen de fondo del login"
             fill
-            className="object-cover opacity-50"
+            priority
+            className="object-cover opacity-30"
             data-ai-hint="warehouse inventory"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent z-10"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10"></div>
           <div className="absolute bottom-0 left-0 p-12 z-20">
               <div className="flex items-center gap-3 text-foreground">
                   <ShoppingCart className="h-10 w-10 text-primary" />
@@ -55,15 +56,15 @@ export default function LoginPage() {
               </p>
           </div>
         </div>
-        <div className="flex items-center justify-center py-12">
-          <div className="mx-auto grid w-[350px] gap-6">
+        <div className="flex items-center justify-center py-12 px-4 h-full">
+          <div className="mx-auto grid w-[380px] gap-8">
             <div className="grid gap-2 text-center">
               <h1 className="text-3xl font-bold">Bienvenido de Nuevo</h1>
               <p className="text-balance text-muted-foreground">
                 Ingresa tus credenciales para acceder al sistema.
               </p>
             </div>
-            <form onSubmit={handleLogin} className="grid gap-4">
+            <form onSubmit={handleLogin} className="grid gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Correo Electrónico</Label>
                 <Input
@@ -93,8 +94,8 @@ export default function LoginPage() {
               {error && (
                 <p className="text-sm font-medium text-destructive">{error}</p>
               )}
-              <Button type="submit" className="w-full">
-                 <LogIn className="mr-2 h-4 w-4" />
+              <Button type="submit" className="w-full text-base py-6">
+                 <LogIn className="mr-2 h-5 w-5" />
                 Acceder
               </Button>
             </form>
