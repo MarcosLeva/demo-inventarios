@@ -24,6 +24,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from '@/components/ui/label';
 import type { LucideIcon } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 
 const SHOPS_PER_PAGE = 8;
@@ -166,7 +167,7 @@ function ShopCard({ shop }: { shop: Shop }) {
   return (
     <Link href={`/shop/${shop.id}`} className="group block">
       <Card className="h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-primary/50">
-        <CardHeader className="p-0">
+        <CardHeader className="p-0 relative">
           <div className="relative h-40 w-full">
             <Image
               src={shop.logoSrc}
@@ -176,6 +177,9 @@ function ShopCard({ shop }: { shop: Shop }) {
               data-ai-hint={shop.logoHint}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
+             <Badge variant={shop.status === 'activo' ? 'secondary' : 'outline'} className="absolute top-2 right-2 capitalize">
+                {shop.status}
+            </Badge>
           </div>
         </CardHeader>
         <CardContent className="p-6 flex flex-col">
@@ -371,5 +375,6 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
         </Dialog>
     );
 }
+
 
 
