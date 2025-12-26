@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { getShopById } from '@/lib/data';
 import type { Product, Shop } from '@/lib/data';
 import { notFound } from 'next/navigation';
@@ -9,7 +9,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -53,6 +53,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const ITEMS_PER_PAGE = 10;
 
@@ -611,11 +612,66 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
     );
 }
 
+function ImageUploader({ value, onChange }: { value: string, onChange: (value: string) => void }) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                onChange(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleButtonClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    return (
+        <Tabs defaultValue="url" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="url">URL</TabsTrigger>
+                <TabsTrigger value="upload">Subir</TabsTrigger>
+            </TabsList>
+            <TabsContent value="url">
+                <div className="flex items-center gap-2">
+                    <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                    <Input id="shop-image-url" value={value.startsWith('data:') ? '' : value} onChange={(e) => onChange(e.target.value)} placeholder="https://ejemplo.com/logo.png" />
+                </div>
+            </TabsContent>
+            <TabsContent value="upload">
+                <Input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    className="hidden"
+                    accept="image/*"
+                />
+                <Button variant="outline" className="w-full" onClick={handleButtonClick}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Seleccionar Archivo
+                </Button>
+            </TabsContent>
+        </Tabs>
+    );
+}
+
 function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpdate: (shop: Shop) => void, children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState(shop.name);
     const [specialization, setSpecialization] = useState(shop.specialization);
     const [logoSrc, setLogoSrc] = useState(shop.logoSrc);
+
+    useEffect(() => {
+        if (isOpen) {
+            setName(shop.name);
+            setSpecialization(shop.specialization);
+            setLogoSrc(shop.logoSrc);
+        }
+    }, [isOpen, shop]);
 
     const handleSave = () => {
         if (!name || !specialization) {
@@ -648,11 +704,10 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
                         <Label htmlFor="shop-specialization" className="text-right">Especialización</Label>
                         <Input id="shop-specialization" value={specialization} onChange={(e) => setSpecialization(e.target.value)} className="col-span-3" />
                     </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="shop-image" className="text-right">URL de la Imagen</Label>
-                        <div className="col-span-3 flex items-center gap-2">
-                           <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                           <Input id="shop-image" value={logoSrc} onChange={(e) => setLogoSrc(e.target.value)} placeholder="https://ejemplo.com/logo.png" />
+                    <div className="grid grid-cols-4 items-start gap-4 pt-2">
+                        <Label className="text-right pt-2">Logo</Label>
+                        <div className="col-span-3">
+                            <ImageUploader value={logoSrc} onChange={setLogoSrc} />
                         </div>
                     </div>
                     {logoSrc && (
@@ -660,7 +715,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
                             <Label className="text-right">Previsualización</Label>
                             <div className="col-span-3">
                                 <div className="relative h-24 w-24 rounded-md overflow-hidden border">
-                                    <Image src={logoSrc} alt="Previsualización del logo" fill className="object-cover" />
+                                    <Image src={logoSrc} alt="Previsualización del logo" fill className="object-cover" sizes="96px" />
                                 </div>
                             </div>
                         </div>
