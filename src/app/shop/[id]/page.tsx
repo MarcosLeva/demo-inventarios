@@ -70,16 +70,43 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
   const [priceRange, setPriceRange] = useState([0, 100]);
 
+  const filteredInventory = useMemo(() => {
+    setCurrentPage(1); // Reset page when filters change
+    if (!shop) return([]);
+    return shop.inventory.filter((product) => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
+      const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
+      const matchesStock = !hideOutOfStock || product.stock > 0;
+      return matchesSearch && matchesPrice && matchesStatus && matchesStock;
+    });
+  }, [shop, searchTerm, priceRange, statusFilter, hideOutOfStock]);
+
+  const totalPages = Math.ceil(filteredInventory.length / ITEMS_PER_PAGE);
+
+  const paginatedInventory = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredInventory.slice(startIndex, endIndex);
+  }, [filteredInventory, currentPage]);
+
+  const maxPrice = useMemo(() => {
+    if (!shop || shop.inventory.length === 0) {
+      return 100;
+    }
+    return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
+  }, [shop]);
+
   useEffect(() => {
     // Simulate fetching shop data
     setTimeout(() => {
       const fetchedShop = getShopById(resolvedParams.id);
       if (fetchedShop) {
         setShop(fetchedShop);
-        const maxPrice = fetchedShop.inventory.length > 0
+        const initialMaxPrice = fetchedShop.inventory.length > 0
           ? Math.ceil(Math.max(...fetchedShop.inventory.map((p) => p.price)))
           : 100;
-        setPriceRange([0, maxPrice]);
+        setPriceRange([0, initialMaxPrice]);
       } else {
         notFound();
       }
@@ -93,8 +120,6 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   }
 
   if (!shop) {
-    // This will be caught by notFound in production builds.
-    // In dev, it might show an error before redirecting.
     useEffect(() => {
         notFound();
     }, []);
@@ -121,40 +146,12 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     setShop(getShopById(resolvedParams.id));
   }
 
-  const filteredInventory = useMemo(() => {
-    setCurrentPage(1); // Reset page when filters change
-    if (!shop) return([]);
-    return shop.inventory.filter((product) => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
-      const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
-      const matchesStock = !hideOutOfStock || product.stock > 0;
-      return matchesSearch && matchesPrice && matchesStatus && matchesStock;
-    });
-  }, [shop, searchTerm, priceRange, statusFilter, hideOutOfStock]);
-
-  const totalPages = Math.ceil(filteredInventory.length / ITEMS_PER_PAGE);
-
-  const paginatedInventory = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    const endIndex = startIndex + ITEMS_PER_PAGE;
-    return filteredInventory.slice(startIndex, endIndex);
-  }, [filteredInventory, currentPage]);
-
-
   const Icon = shop.icon;
 
   const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
   }).format(price);
-  
-  const maxPrice = useMemo(() => {
-    if (!shop || shop.inventory.length === 0) {
-      return 100;
-    }
-    return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
-  }, [shop]);
 
 
   return (
@@ -828,11 +825,3 @@ setStatus(shop.status);
         </Dialog>
     );
 }
-
-    
-
-    
-
-
-
-    
