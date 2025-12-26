@@ -149,7 +149,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       </div>
 
       <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 mb-12 p-6 bg-card rounded-lg border shadow-sm overflow-hidden">
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-card/50">
           <Image
             src={shop.logoSrc}
             alt={`Fondo de ${shop.name}`}
