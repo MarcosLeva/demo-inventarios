@@ -16,11 +16,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, Package, Tag, PackageCheck, PackageX } from 'lucide-react';
+import { Search, Package, Tag, PackageCheck, PackageX, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+
+const PRODUCTS_PER_PAGE = 10;
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -28,6 +31,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedShop, setSelectedShop] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -45,12 +49,22 @@ export default function ProductsPage() {
   }
 
   const filteredProducts = useMemo(() => {
+    setCurrentPage(1);
     return products.filter(product => {
       const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesShop = selectedShop === 'all' || product.shopId === selectedShop;
       return matchesSearchTerm && matchesShop;
     });
   }, [products, searchTerm, selectedShop]);
+  
+  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+    const endIndex = startIndex + PRODUCTS_PER_PAGE;
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [filteredProducts, currentPage]);
+
 
   const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -108,7 +122,7 @@ export default function ProductsPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                Array.from({ length: 10 }).map((_, index) => (
+                Array.from({ length: PRODUCTS_PER_PAGE }).map((_, index) => (
                     <TableRow key={index}>
                         <TableCell><Skeleton className="h-16 w-16 rounded-md" /></TableCell>
                         <TableCell><Skeleton className="h-5 w-32" /></TableCell>
@@ -118,8 +132,8 @@ export default function ProductsPage() {
                         <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
                     </TableRow>
                 ))
-              ) : filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
+              ) : paginatedProducts.length > 0 ? (
+                paginatedProducts.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <div className="relative h-16 w-16 rounded-md overflow-hidden">
@@ -159,6 +173,32 @@ export default function ProductsPage() {
           </Table>
         </CardContent>
       </Card>
+      
+      {totalPages > 1 && !loading && (
+        <div className="flex items-center justify-center gap-4 mt-4">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">Página anterior</span>
+          </Button>
+          <span className="text-sm font-medium">
+            Página {currentPage} de {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+            <span className="sr-only">Página siguiente</span>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
