@@ -30,7 +30,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     if (!shop || shop.inventory.length === 0) {
       return 100;
     }
-    return Math.max(...shop.inventory.map((p) => p.price));
+    return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
   }, [shop]);
 
   const [priceRange, setPriceRange] = useState([0, maxPrice]);
@@ -45,12 +45,13 @@ export default function ShopPage({ params }: { params: { id: string } }) {
 
 
   const filteredInventory = useMemo(() => {
+    if (!shop) return [];
     return shop.inventory.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       return matchesSearch && matchesPrice;
     });
-  }, [shop.inventory, searchTerm, priceRange]);
+  }, [shop, searchTerm, priceRange]);
 
   const Icon = shop.icon;
 
@@ -94,43 +95,36 @@ export default function ShopPage({ params }: { params: { id: string } }) {
         </div>
       </div>
       
-      <div className="mb-8 p-6 bg-card rounded-lg border">
-        <h3 className="text-xl font-bold mb-6">Filtrar Inventario</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-4">
-                <Label htmlFor="search-product">Nombre del producto</Label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input
-                    id="search-product"
-                    type="text"
-                    placeholder="Buscar en el inventario..."
-                    className="pl-10 w-full"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
+      <div className="flex flex-col md:flex-row gap-6 items-center mb-8">
+        <div className="relative w-full md:w-1/3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Buscar en el inventario..."
+              className="pl-10 w-full"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+        </div>
+        <div className="w-full md:flex-1">
+            <div className="flex justify-between items-center mb-2">
+                <Label className="text-sm">Rango de precios</Label>
+                <span className="text-sm text-muted-foreground font-medium">
+                    {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
+                </span>
             </div>
-            <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                    <Label>Rango de precios</Label>
-                    <span className="text-sm text-muted-foreground font-medium">
-                        {formatPrice(priceRange[0])} - {formatPrice(priceRange[1])}
-                    </span>
-                </div>
-                 <Slider
-                    value={priceRange}
-                    onValueChange={setPriceRange}
-                    min={0}
-                    max={maxPrice}
-                    step={1}
-                />
-            </div>
+             <Slider
+                value={priceRange}
+                onValueChange={setPriceRange}
+                min={0}
+                max={maxPrice}
+                step={1}
+            />
         </div>
       </div>
 
 
-      <h2 className="text-3xl font-bold font-headline mb-8">Inventario ({filteredInventory.length})</h2>
+      <h2 className="text-3xl font-bold font-headline mb-4">Inventario ({filteredInventory.length})</h2>
       <Card>
           <Table>
             <TableHeader>
