@@ -3,17 +3,16 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Package, Upload, Users, ShoppingCart, Building, Link2 } from 'lucide-react';
+import { Home, Package, Upload, Users, ShoppingCart, Link2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 
 const navLinksConfig = [
-  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
-  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
-  { href: '/organizations', label: 'Organizaciones', icon: Building, roles: ['Admin'], disabled: false },
-  { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin', 'Editor'], disabled: false },
-  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Editor', 'Vendedor'], disabled: false },
-  { href: '/connections', label: 'Conexiones', icon: Link2, roles: ['Admin', 'Editor', 'Vendedor'], disabled: true },
+  { href: '/', label: 'Tiendas', icon: Home, roles: ['Admin', 'Vendedor'], disabled: false },
+  { href: '/products', label: 'Productos', icon: Package, roles: ['Admin', 'Vendedor'], disabled: false },
+  { href: '/users', label: 'Usuarios', icon: Users, roles: ['Admin'], disabled: false },
+  { href: '/import', label: 'Importar', icon: Upload, roles: ['Admin', 'Vendedor'], disabled: false },
+  { href: '/connections', label: 'Conexiones', icon: Link2, roles: ['Admin', 'Vendedor'], disabled: true },
 ];
 
 export default function Sidebar({ isMobile = false }) {
@@ -93,3 +92,5 @@ export default function Sidebar({ isMobile = false }) {
     </div>
   );
 }
+
+    

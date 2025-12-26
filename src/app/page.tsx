@@ -85,7 +85,7 @@ export default function Home() {
   }, [filteredShops, currentPage]);
 
   const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => {
-    addShopAndAssignUsers(newShopData, assignedUserIds, user || undefined); 
+    addShopAndAssignUsers(newShopData, assignedUserIds); 
     fetchData(); // Refreshes shops and users
   };
 
@@ -99,8 +99,8 @@ export default function Home() {
             Explora y gestiona el inventario de las tiendas.
           </p>
         </header>
-        {user?.role !== 'Vendedor' && (
-          <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers} userRole={user?.role}>
+        {user?.role === 'Admin' && (
+          <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers}>
                <Button className="hidden sm:flex">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Agregar Tienda
@@ -141,8 +141,8 @@ export default function Home() {
                 <SelectItem value="inactivo">Inactivas</SelectItem>
             </SelectContent>
         </Select>
-         {user?.role !== 'Vendedor' && (
-            <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers} userRole={user?.role}>
+         {user?.role === 'Admin' && (
+            <AddShopModal onShopAdd={handleShopAdd} allUsers={allUsers}>
                <Button className="w-full sm:hidden">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Agregar Tienda
@@ -308,7 +308,7 @@ function ImageUploader({ value, onChange }: { value: string, onChange: (value: s
     );
 }
 
-function AddShopModal({ onShopAdd, allUsers, userRole, children }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], userRole?: AppUser['role'], children: React.ReactNode }) {
+function AddShopModal({ onShopAdd, allUsers, children }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [specialization, setSpecialization] = useState('');
@@ -317,7 +317,7 @@ function AddShopModal({ onShopAdd, allUsers, userRole, children }: { onShopAdd: 
     const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
     const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
 
-    const assignableUsers = useMemo(() => allUsers.filter(u => u.role === 'Vendedor' || (userRole === 'Editor' && u.role === 'Editor' && u.id === allUsers.find(editor => editor.role === 'Editor')?.id)), [allUsers, userRole]);
+    const assignableUsers = useMemo(() => allUsers.filter(u => u.role === 'Vendedor'), [allUsers]);
 
     const handleSave = () => {
         if (!name || !specialization || !iconName) {
@@ -420,7 +420,7 @@ function AddShopModal({ onShopAdd, allUsers, userRole, children }: { onShopAdd: 
                         </div>
                     )}
                     <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">Asignar Usuarios</Label>
+                        <Label className="text-right pt-2">Asignar Vendedores</Label>
                         <div className="col-span-3">
                             <UserSelector allUsers={assignableUsers} selectedUserIds={assignedUserIds} onChange={setAssignedUserIds} />
                         </div>
@@ -474,3 +474,5 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
         </DropdownMenu>
     );
 }
+
+    

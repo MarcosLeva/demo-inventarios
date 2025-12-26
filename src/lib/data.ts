@@ -1,5 +1,5 @@
 
-import { Shirt, Laptop, Cookie, BookOpen, Wrench, Sprout, Dumbbell, Guitar, Dog, Coffee, Pill, Building } from 'lucide-react';
+import { Shirt, Laptop, Cookie, BookOpen, Wrench, Sprout, Dumbbell, Guitar, Dog, Coffee, Pill } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export type ProductProperty = {
@@ -31,17 +31,10 @@ export const icons = {
     Dog,
     Coffee,
     Pill,
-    Building,
 };
 
 export type IconMap = typeof icons;
 export type IconName = keyof IconMap;
-
-export type Organization = {
-    id: string;
-    name: string;
-    userIds: string[];
-}
 
 export type Shop = {
   id: string;
@@ -52,25 +45,16 @@ export type Shop = {
   icon: IconName;
   inventory: Product[];
   status: 'activo' | 'inactivo';
-  organizationId?: string;
 };
 
 export type AppUser = {
   id: string;
   name: string;
   email: string;
-  role: 'Admin' | 'Editor' | 'Vendedor';
+  role: 'Admin' | 'Vendedor';
   status: 'activo' | 'inactivo';
   shopIds: string[];
-  organizationId?: string;
 }
-
-const organizations: Organization[] = [
-    { id: 'org-1', name: 'Grupo Textil ModaGlobal', userIds: ['user-3', 'user-4', 'user-11', 'user-15'] },
-    { id: 'org-2', name: 'Electrónica del Futuro Inc.', userIds: ['user-7', 'user-16'] },
-    { id: 'org-3', name: 'Soluciones Automotrices Avanzadas', userIds: ['user-8', 'user-17'] },
-    { id: 'org-4', name: 'Retail Diversificado Sur', userIds: ['user-10', 'user-13', 'user-18'] },
-];
 
 const shops: Shop[] = [
   {
@@ -81,7 +65,6 @@ const shops: Shop[] = [
     logoHint: 'tienda de ropa',
     icon: 'Shirt',
     status: 'activo',
-    organizationId: 'org-1',
     inventory: [
       { id: 'p1', name: 'Camiseta Clásica de Algodón', properties: [{key: 'Descripción', value: 'Una camiseta cómoda y elegante para el día a día.'}, {key: 'Talla', value: 'M'}, {key: 'Color', value: 'Blanco'}], price: 24.99, imageSrc: 'https://picsum.photos/seed/prod1/400/300', imageHint: 'camiseta', stock: 50, status: 'activo' },
       { id: 'p2', name: 'Vaqueros Slim Fit', properties: [{key: 'Descripción', value: 'Vaqueros duraderos y a la moda que sientan genial.'}, {key: 'Talla', value: '32'}, {key: 'Color', value: 'Azul Oscuro'}], price: 79.99, imageSrc: 'https://picsum.photos/seed/prod2/400/300', imageHint: 'vaqueros', stock: 25, status: 'activo' },
@@ -95,7 +78,6 @@ const shops: Shop[] = [
     logoHint: 'tienda de electrónica',
     icon: 'Laptop',
     status: 'activo',
-    organizationId: 'org-2',
     inventory: [
       { id: 'p4', name: 'UltraBook Pro', properties: [{key: 'Descripción', value: 'Portátil potente y ligero para profesionales.'}, {key: 'Procesador', value: 'Intel Core i7'}, {key: 'RAM', value: '16GB'}], price: 1299.99, imageSrc: 'https://picsum.photos/seed/prod3/400/300', imageHint: 'portátil', stock: 10, status: 'activo' },
       { id: 'p5', name: 'Teléfono Galaxy X', properties: [{key: 'Descripción', value: 'El último smartphone con una pantalla impresionante.'}, {key: 'Almacenamiento', value: '256GB'}, {key: 'Color', value: 'Negro espacial'}], price: 999.99, imageSrc: 'https://picsum.photos/seed/prod4/400/300', imageHint: 'smartphone', stock: 0, status: 'activo' },
@@ -109,7 +91,6 @@ const shops: Shop[] = [
     logoHint: 'panadería',
     icon: 'Cookie',
     status: 'activo',
-    organizationId: 'org-4',
     inventory: [
       { id: 'p7', name: 'Croissant de Mantequilla', properties: [{key: 'Descripción', value: 'Hojaldrado, mantecoso y recién horneado a diario.'}, {key: 'Alérgenos', value: 'Gluten, Lácteos'}], price: 3.5, imageSrc: 'https://picsum.photos/seed/prod5/400/300', imageHint: 'croissant', stock: 200, status: 'activo' },
       { id: 'p8', name: 'Cupcake de Terciopelo', properties: [{key: 'Descripción', value: 'Un capricho decadente con un rico glaseado de queso crema.'}, {key: 'Alérgenos', value: 'Gluten, Lácteos, Huevos'}], price: 4.75, imageSrc: 'https://picsum.photos/seed/prod6/400/300', imageHint: 'cupcake', stock: 75, status: 'activo' },
@@ -123,7 +104,6 @@ const shops: Shop[] = [
     logoHint: 'librería',
     icon: 'BookOpen',
     status: 'inactivo',
-    organizationId: 'org-4',
     inventory: [
       { id: 'p10', name: "El Heredero del Dragón", properties: [{key: 'Autor', value: 'J.R.R. Tolkien'}, {key: 'Género', value: 'Fantasía'}], price: 18.99, imageSrc: 'https://picsum.photos/seed/prod7/400/300', imageHint: 'libro', stock: 40, status: 'activo' },
       { id: 'p11', name: 'Deriva Cósmica', properties: [{key: 'Autor', value: 'Isaac Asimov'}, {key: 'Género', value: 'Ciencia Ficción'}], price: 16.99, imageSrc: 'https://picsum.photos/seed/prod8/400/300', imageHint: 'libro espacio', stock: 15, status: 'activo' },
@@ -137,7 +117,6 @@ const shops: Shop[] = [
     logoHint: 'autopartes',
     icon: 'Wrench',
     status: 'activo',
-    organizationId: 'org-3',
     inventory: [
         { id: 'p21', name: 'Filtro de Aceite Gohner G-28', properties: [{key: 'Descripción', value: 'Alta eficiencia para motores a gasolina.'}, {key: 'Compatibilidad', value: 'Modelos 2010-2020'}], price: 12.50, imageSrc: 'https://picsum.photos/seed/prod21/400/300', imageHint: 'filtro aceite', stock: 150, status: 'activo' },
     ]
@@ -145,94 +124,37 @@ const shops: Shop[] = [
 ];
 
 const users: AppUser[] = [
-    // Admins (Global)
     { id: 'user-1', name: 'Admin Principal', email: 'admin@example.com', role: 'Admin', status: 'activo', shopIds: [] },
     { id: 'user-2', name: 'Laura Méndez', email: 'laura.mendez@example.com', role: 'Admin', status: 'activo', shopIds: [] },
-    
-    // Org 1: Grupo Textil ModaGlobal
-    { id: 'user-3', name: 'Carlos Pérez', email: 'carlos.perez@example.com', role: 'Editor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
-    { id: 'user-4', name: 'Ana García', email: 'ana.garcia@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['1'], organizationId: 'org-1' },
-    { id: 'user-11', name: 'Patricia Moreno', email: 'patricia.moreno@example.com', role: 'Vendedor', status: 'activo', shopIds: [], organizationId: 'org-1' },
-    { id: 'user-15', name: 'Roberto Gómez', email: 'roberto.gomez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
-
-    // Org 2: Electrónica del Futuro Inc.
-    { id: 'user-7', name: 'Sofía Reyes', email: 'sofia.reyes@example.com', role: 'Editor', status: 'activo', shopIds: ['2'], organizationId: 'org-2' },
-    { id: 'user-16', name: 'Fernando Díaz', email: 'fernando.diaz@example.com', role: 'Vendedor', status: 'activo', shopIds: ['2'], organizationId: 'org-2' },
-
-    // Org 3: Soluciones Automotrices Avanzadas
-    { id: 'user-8', name: 'Luis Fernández', email: 'luis.fernandez@example.com', role: 'Editor', status: 'activo', shopIds: ['5'], organizationId: 'org-3' },
-    { id: 'user-17', name: 'Mónica Sánchez', email: 'monica.sanchez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['5'], organizationId: 'org-3' },
-
-    // Org 4: Retail Diversificado Sur
-    { id: 'user-10', name: 'Miguel Ángel', email: 'miguel.angel@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['3', '4'], organizationId: 'org-4' },
-    { id: 'user-13', name: 'Marina Torres', email: 'marina.torres@example.com', role: 'Editor', status: 'activo', shopIds: ['3', '4'], organizationId: 'org-4' },
-    { id: 'user-18', name: 'Óscar Romero', email: 'oscar.romero@example.com', role: 'Vendedor', status: 'activo', shopIds: ['3'], organizationId: 'org-4' },
-
-    // No assigned org
-    { id: 'user-5', name: 'Jorge Martín (Sin Asignar)', email: 'jorge.martin@example.com', role: 'Editor', status: 'inactivo', shopIds: [] },
-    { id: 'user-6', name: 'Vendedor (Sin Asignar)', email: 'vendedor@example.com', role: 'Vendedor', status: 'activo', shopIds: [] },
-    { id: 'user-14', name: 'Javier Ramos (Sin Asignar)', email: 'javier.ramos@example.com', role: 'Vendedor', status: 'activo', shopIds: [] },
+    { id: 'user-admin3', name: 'Ricardo P.', email: 'ricardo@example.com', role: 'Admin', status: 'activo', shopIds: [] },
+    { id: 'user-admin4', name: 'Susana H.', email: 'susana@example.com', role: 'Admin', status: 'inactivo', shopIds: [] },
+    { id: 'user-admin5', name: 'Felipe N.', email: 'felipe@example.com', role: 'Admin', status: 'activo', shopIds: [] },
+    { id: 'user-3', name: 'Carlos Pérez', email: 'carlos.perez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'] },
+    { id: 'user-4', name: 'Ana García', email: 'ana.garcia@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['1', '2'] },
+    { id: 'user-5', name: 'Jorge Martín', email: 'jorge.martin@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['3'] },
+    { id: 'user-6', name: 'Vendedor Ejemplo', email: 'vendedor@example.com', role: 'Vendedor', status: 'activo', shopIds: ['4'] },
+    { id: 'user-7', name: 'Sofía Reyes', email: 'sofia.reyes@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '3', '4'] },
+    { id: 'user-8', name: 'Luis Fernández', email: 'luis.fernandez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['2', '4'] },
+    { id: 'user-vendedor1', name: 'Vendedor 1', email: 'vendedor1@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'] },
+    { id: 'user-vendedor2', name: 'Vendedor 2', email: 'vendedor2@example.com', role: 'Vendedor', status: 'activo', shopIds: ['2'] },
+    { id: 'user-vendedor3', name: 'Vendedor 3', email: 'vendedor3@example.com', role: 'Vendedor', status: 'activo', shopIds: ['3'] },
+    { id: 'user-vendedor4', name: 'Vendedor 4', email: 'vendedor4@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['4'] },
+    { id: 'user-vendedor5', name: 'Vendedor 5', email: 'vendedor5@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '2'] },
+    { id: 'user-vendedor6', name: 'Vendedor 6', email: 'vendedor6@example.com', role: 'Vendedor', status: 'activo', shopIds: ['3', '4'] },
+    { id: 'user-vendedor7', name: 'Vendedor 7', email: 'vendedor7@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '3'] },
+    { id: 'user-vendedor8', name: 'Vendedor 8', email: 'vendedor8@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['2', '4'] },
+    { id: 'user-vendedor9', name: 'Vendedor 9', email: 'vendedor9@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '2', '3'] },
+    { id: 'user-vendedor10', name: 'Vendedor 10', email: 'vendedor10@example.com', role: 'Vendedor', status: 'activo', shopIds: ['4', '1'] },
 ];
 
 let shopsStore: Shop[] = JSON.parse(JSON.stringify(shops));
 let usersStore: AppUser[] = JSON.parse(JSON.stringify(users));
-let organizationsStore: Organization[] = JSON.parse(JSON.stringify(organizations));
-
-
-export function getOrganizations(user?: AppUser | null) {
-  if (user?.role === 'Admin') {
-    return JSON.parse(JSON.stringify(organizationsStore));
-  }
-  if (user?.organizationId) {
-    return JSON.parse(JSON.stringify(organizationsStore.filter(org => org.id === user.organizationId)));
-  }
-  return [];
-}
-
-export function addOrganization(name: string, assignedUserIds: string[]) {
-    const newOrg: Organization = {
-        id: `org-${Date.now()}`,
-        name,
-        userIds: assignedUserIds,
-    };
-    organizationsStore.unshift(newOrg);
-
-    assignedUserIds.forEach(userId => {
-        const user = usersStore.find(u => u.id === userId);
-        if (user) {
-            user.organizationId = newOrg.id;
-        }
-    });
-}
-
-export function updateOrganization(updatedOrg: Organization) {
-    const index = organizationsStore.findIndex(org => org.id === updatedOrg.id);
-    if (index !== -1) {
-        const oldOrg = organizationsStore[index];
-
-        const usersToRemove = oldOrg.userIds.filter(id => !updatedOrg.userIds.includes(id));
-        usersToRemove.forEach(userId => {
-             const user = usersStore.find(u => u.id === userId);
-             if (user) user.organizationId = undefined;
-        });
-
-        const usersToAdd = updatedOrg.userIds.filter(id => !oldOrg.userIds.includes(id));
-        usersToAdd.forEach(userId => {
-            const user = usersStore.find(u => u.id === userId);
-            if (user) user.organizationId = updatedOrg.id;
-        });
-        
-        organizationsStore[index] = updatedOrg;
-    }
-}
 
 export function getShops(user?: AppUser | null) {
   if (!user) return [];
   switch (user.role) {
     case 'Admin':
       return JSON.parse(JSON.stringify(shopsStore));
-    case 'Editor':
-      return JSON.parse(JSON.stringify(shopsStore.filter(shop => shop.organizationId === user.organizationId)));
     case 'Vendedor':
       if (user.shopIds.length > 0) {
         return JSON.parse(JSON.stringify(shopsStore.filter(shop => user.shopIds.includes(shop.id))));
@@ -270,9 +192,6 @@ export function getUsers(user?: AppUser | null) {
     if (user.role === 'Admin') {
         return JSON.parse(JSON.stringify(usersStore));
     }
-    if (user.role === 'Editor') {
-        return JSON.parse(JSON.stringify(usersStore.filter(u => u.organizationId === user.organizationId)));
-    }
     return [JSON.parse(JSON.stringify(user))];
 }
 
@@ -282,83 +201,30 @@ export function getUserByEmail(email: string): AppUser | undefined {
     return JSON.parse(JSON.stringify(user));
 }
 
-export function addUser(user: Omit<AppUser, 'id'>, actor?: AppUser) {
-    const newUser: AppUser = {
+export function addUser(user: Omit<AppUser, 'id'>) {
+    usersStore.unshift({
         ...user,
         id: `user-${Date.now()}`,
-    }
-
-    if (actor?.role === 'Editor' && newUser.role !== 'Admin') {
-        newUser.organizationId = actor.organizationId;
-    }
-
-    usersStore.unshift(newUser);
-    
-    if (newUser.organizationId) {
-        const org = organizationsStore.find(o => o.id === newUser.organizationId);
-        if (org && !org.userIds.includes(newUser.id)) {
-            org.userIds.push(newUser.id);
-        }
-    }
+    });
 }
 
 export function updateUser(updatedUser: AppUser) {
     const index = usersStore.findIndex(user => user.id === updatedUser.id);
     if (index !== -1) {
-        const oldUser = usersStore[index];
-
-        // If organization changed, update organizations
-        if(oldUser.organizationId !== updatedUser.organizationId) {
-            const oldOrg = organizationsStore.find(o => o.id === oldUser.organizationId);
-            if (oldOrg) {
-                oldOrg.userIds = oldOrg.userIds.filter(id => id !== oldUser.id);
-            }
-            const newOrg = organizationsStore.find(o => o.id === updatedUser.organizationId);
-            if (newOrg && !newOrg.userIds.includes(updatedUser.id)) {
-                newOrg.userIds.push(updatedUser.id);
-            }
-        }
-        
         usersStore[index] = updatedUser;
     }
 }
 
 export function deleteUser(userId: string) {
-    const user = usersStore.find(u => u.id === userId);
-    if (user && user.organizationId) {
-        const org = organizationsStore.find(o => o.id === user.organizationId);
-        if (org) {
-            org.userIds = org.userIds.filter(id => id !== userId);
-        }
-    }
     usersStore = usersStore.filter(u => u.id !== userId);
 }
 
 
-export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'>, assignedUserIds: string[], actor?: AppUser) {
-    const newShop: Shop = {
+export function addShop(shopData: Omit<Shop, 'id'|'inventory'>) {
+    shopsStore.unshift({
         ...shopData,
         id: `shop-${Date.now()}`,
         inventory: []
-    }
-
-    if (actor?.role === 'Editor') {
-        newShop.organizationId = actor.organizationId;
-        if (!assignedUserIds.includes(actor.id)) {
-            assignedUserIds.push(actor.id);
-        }
-    }
-    
-    shopsStore.unshift(newShop);
-
-    assignedUserIds.forEach(userId => {
-        const user = usersStore.find(u => u.id === userId);
-        if (user && user.role === 'Vendedor' && !user.shopIds.includes(newShop.id)) {
-            user.shopIds.push(newShop.id);
-        }
-         if (user && user.role === 'Editor' && !user.shopIds.includes(newShop.id)) {
-            user.shopIds.push(newShop.id);
-        }
     });
 }
 
@@ -398,3 +264,21 @@ export function deleteProduct(shopId: string, productId: string) {
         shop.inventory = shop.inventory.filter(p => p.id !== productId);
     }
 }
+
+export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'>, assignedUserIds: string[]) {
+    const newShop: Shop = {
+        ...shopData,
+        id: `shop-${Date.now()}`,
+        inventory: []
+    }
+    shopsStore.unshift(newShop);
+
+    assignedUserIds.forEach(userId => {
+        const user = usersStore.find(u => u.id === userId);
+        if (user && !user.shopIds.includes(newShop.id)) {
+            user.shopIds.push(newShop.id);
+        }
+    });
+}
+
+    
