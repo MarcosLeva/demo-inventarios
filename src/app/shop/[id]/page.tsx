@@ -53,35 +53,46 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 const ITEMS_PER_PAGE = 10;
 
 export default function ShopPage({ params }: { params: { id: string } }) {
-  const [shop, setShop] = useState<Shop | undefined>(() => getShopById(params.id));
+  const [shop, setShop] = useState<Shop | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const maxPrice = useMemo(() => {
-    if (!shop || shop.inventory.length === 0) {
-      return 100;
-    }
-    return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
-  }, [shop]);
-
-  const [priceRange, setPriceRange] = useState([0, maxPrice]);
+  const [priceRange, setPriceRange] = useState([0, 100]);
 
   useEffect(() => {
-    if (shop) {
-        setPriceRange([0, Math.ceil(Math.max(...shop.inventory.map((p) => p.price))) || 100]);
-    }
-  }, [shop]);
+    // Simulate fetching shop data
+    setTimeout(() => {
+      const fetchedShop = getShopById(params.id);
+      if (fetchedShop) {
+        setShop(fetchedShop);
+        const maxPrice = fetchedShop.inventory.length > 0
+          ? Math.ceil(Math.max(...fetchedShop.inventory.map((p) => p.price)))
+          : 100;
+        setPriceRange([0, maxPrice]);
+      } else {
+        notFound();
+      }
+      setLoading(false);
+    }, 500); // Simulate 0.5 second load time
+  }, [params.id]);
 
+
+  if (loading) {
+    return <ShopPageSkeleton />;
+  }
 
   if (!shop) {
-    // This will be caught by notFound in production builds. 
+    // This will be caught by notFound in production builds.
     // In dev, it might show an error before redirecting.
     useEffect(() => {
         notFound();
@@ -136,6 +147,14 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     style: 'currency',
     currency: 'EUR',
   }).format(price);
+  
+  const maxPrice = useMemo(() => {
+    if (!shop || shop.inventory.length === 0) {
+      return 100;
+    }
+    return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
+  }, [shop]);
+
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -281,12 +300,13 @@ export default function ShopPage({ params }: { params: { id: string } }) {
             </TableHeader>
             <TableBody>
               {paginatedInventory.length > 0 ? (
-                paginatedInventory.map((product) => (
+                paginatedInventory.map((product, index) => (
                   <ProductRow 
                     key={product.id} 
                     product={product}
                     onProductUpdate={handleProductUpdate}
                     onProductDelete={handleProductDelete}
+                    index={index}
                   />
                 ))
               ) : (
@@ -329,7 +349,61 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   );
 }
 
-function ProductRow({ product, onProductUpdate, onProductDelete }: { product: Product, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void }) {
+
+function ShopPageSkeleton() {
+    return (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-pulse">
+            <div className="mb-8">
+                <Skeleton className="h-8 w-48" />
+            </div>
+
+            <div className="relative mb-12 overflow-hidden rounded-lg border h-[180px] md:h-auto">
+                 <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6">
+                    <Skeleton className="h-32 w-32 rounded-full shrink-0" />
+                    <div className="space-y-3">
+                        <Skeleton className="h-12 w-64" />
+                        <Skeleton className="h-6 w-48" />
+                    </div>
+                 </div>
+            </div>
+
+            <div className="mb-8">
+                 <Skeleton className="h-10 w-40" />
+            </div>
+            
+            <Card>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                             <TableHead className="w-[100px]"><Skeleton className="h-5 w-full" /></TableHead>
+                            <TableHead><Skeleton className="h-5 w-full" /></TableHead>
+                            <TableHead><Skeleton className="h-5 w-full" /></TableHead>
+                            <TableHead className="text-center"><Skeleton className="h-5 w-full" /></TableHead>
+                            <TableHead className="text-right"><Skeleton className="h-5 w-full" /></TableHead>
+                            <TableHead className="text-right"><Skeleton className="h-5 w-full" /></TableHead>
+                            <TableHead className="text-right"><Skeleton className="h-5 w-full" /></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {Array.from({ length: 5 }).map((_, index) => (
+                             <TableRow key={index}>
+                                <TableCell><Skeleton className="h-16 w-16 rounded-md" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                                <TableCell><Skeleton className="h-6 w-20 mx-auto" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
+                                <TableCell><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                                <TableCell><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                             </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </Card>
+        </div>
+    )
+}
+
+function ProductRow({ product, onProductUpdate, onProductDelete, index }: { product: Product, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void, index: number }) {
   const formatPrice = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -338,7 +412,13 @@ function ProductRow({ product, onProductUpdate, onProductDelete }: { product: Pr
   const isOutOfStock = product.stock === 0;
 
   return (
-    <TableRow className={isOutOfStock && product.status === 'activo' ? 'bg-destructive/5' : ''}>
+    <TableRow 
+      className={cn(
+        isOutOfStock && product.status === 'activo' ? 'bg-destructive/5' : '',
+        "animate-in fade-in-0"
+      )}
+      style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}
+    >
       <TableCell>
         <div className="relative h-16 w-16 rounded-md overflow-hidden">
           <Image
@@ -747,24 +827,5 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
-    
-
-    
-
-
-
-
-
-
-    
-
-
-    
-
-
-
-
-
-
 
     

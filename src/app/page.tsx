@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { getShops, icons } from '@/lib/data';
 import type { Shop, IconMap } from '@/lib/data';
 import Link from 'next/link';
@@ -25,16 +25,28 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from '@/components/ui/label';
 import type { LucideIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 
 const SHOPS_PER_PAGE = 8;
 
 export default function Home() {
-  const [initialShops, setInitialShops] = useState(getShops());
+  const [initialShops, setInitialShops] = useState<Shop[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    // Simulate fetching data
+    setTimeout(() => {
+      setInitialShops(getShops());
+      setLoading(false);
+    }, 500); // Simulate 0.5 second loading time
+  }, []);
+
 
   const specializations = useMemo(() => {
     const allSpecs = initialShops.map((shop) => shop.specialization);
@@ -122,18 +134,20 @@ export default function Home() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {paginatedShops.map((shop) => (
-          <ShopCard key={shop.id} shop={shop} />
+        {loading ? (
+          Array.from({ length: SHOPS_PER_PAGE }).map((_, index) => <ShopCardSkeleton key={index} />)
+        ) : paginatedShops.map((shop, index) => (
+            <ShopCard key={shop.id} shop={shop} index={index} />
         ))}
       </div>
 
-      {filteredShops.length === 0 && (
+      {!loading && filteredShops.length === 0 && (
           <p className="text-muted-foreground col-span-full text-center py-10">
               No se encontraron tiendas que coincidan con tus criterios.
           </p>
       )}
 
-      {totalPages > 1 && (
+      {totalPages > 1 && !loading && (
         <div className="flex items-center justify-center gap-4 mt-12">
           <Button
             variant="outline"
@@ -162,11 +176,29 @@ export default function Home() {
   );
 }
 
-function ShopCard({ shop }: { shop: Shop }) {
+function ShopCardSkeleton() {
+    return (
+        <div className="flex flex-col space-y-3">
+            <Skeleton className="h-[160px] w-full rounded-lg" />
+            <div className="space-y-2 p-2">
+                <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+            </div>
+        </div>
+    );
+}
+
+
+function ShopCard({ shop, index }: { shop: Shop, index: number }) {
   const Icon = shop.icon;
   return (
     <Link href={`/shop/${shop.id}`} className="group block">
-      <Card className="h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-primary/50">
+      <Card 
+        className={cn(
+            "h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 animate-in fade-in-0",
+        )}
+        style={{ animationDelay: `${index * 50}ms` }}
+      >
         <CardHeader className="p-0 relative">
           <div className="relative h-40 w-full">
             <Image
@@ -376,6 +408,4 @@ function AddShopModal({ onShopAdd, children }: { onShopAdd: (shop: Omit<Shop, 'i
     );
 }
 
-
-
-
+    
