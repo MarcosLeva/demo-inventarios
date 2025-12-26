@@ -50,6 +50,7 @@ export default function RootLayout({
           <footer className="bg-card/50 border-t border-border mt-auto py-6">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-muted-foreground text-sm">
               <p>&copy; {new Date().getFullYear()} Visor de Inventarios. Todos los derechos reservados.</p>
+              <p>Powered by COCOCO Ventures</p>
             </div>
           </footer>
           <Toaster />
