@@ -14,9 +14,7 @@ import AuthHeader from '@/components/AuthHeader';
 function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
-      <div className="hidden md:block h-screen sticky top-0">
-        <Sidebar />
-      </div>
+      <Sidebar />
       <div className="flex flex-col">
         <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6 sticky top-0 z-30">
           <Sheet>

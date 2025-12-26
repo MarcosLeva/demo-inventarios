@@ -2,17 +2,34 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Home, Package, Upload, Users, ShoppingCart, Link2, Building } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Home, Package, Upload, Users, ShoppingCart, Link2, Building, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 export default function Sidebar({ isMobile = false }) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const router = useRouter();
   
   if (!user) {
     return null;
+  }
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1 && names[0] && names[names.length - 1]) {
+        return names[0][0] + names[names.length - 1][0];
+    }
+    return name.substring(0, 2);
   }
 
   const navLinksConfig = [
@@ -36,15 +53,15 @@ export default function Sidebar({ isMobile = false }) {
     
     const linkContent = (
        <>
-        <link.icon className="h-4 w-4" />
+        <link.icon className="h-5 w-5" />
         {link.label}
        </>
     );
     
     const linkClasses = cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all",
-        !link.disabled && "hover:text-primary",
-        isActive && "bg-muted text-primary",
+        "flex items-center gap-4 rounded-lg px-4 py-3 text-foreground/70 transition-all",
+        !link.disabled && "hover:text-foreground hover:bg-muted",
+        isActive && "bg-secondary text-foreground font-semibold",
         link.disabled && "cursor-not-allowed opacity-50"
     );
 
@@ -63,39 +80,39 @@ export default function Sidebar({ isMobile = false }) {
     );
   };
   
-  const header = (
-     <div className="flex h-14 shrink-0 items-center border-b px-4 lg:h-[60px] lg:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-            <ShoppingCart className="h-6 w-6 text-primary" />
-            <span className="">Visor de Inventarios</span>
-        </Link>
-    </div>
-  );
-
-  const content = (
-    <div className="flex-1 overflow-y-auto">
-      <nav className="grid items-start px-2 text-sm font-medium lg:px-4 py-4">
-        {navLinks.map(renderLink)}
-      </nav>
-    </div>
-  );
-
-
-  if (isMobile) {
-    return (
-      <>
-        {header}
-        {content}
-      </>
-    );
-  }
-
   return (
-    <div className="hidden border-r bg-card md:block h-full">
-        <div className="flex h-full flex-col">
-            {header}
-            {content}
+    <div className={cn("hidden border-r bg-card md:block h-full", isMobile && "block")}>
+      <div className="flex h-full max-h-screen flex-col">
+        <div className="flex h-14 shrink-0 items-center border-b bg-card px-4 lg:h-[60px] lg:px-6">
+            <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
+                <ShoppingCart className="h-6 w-6 text-primary" />
+                <span className="">Visor de Inventarios</span>
+            </Link>
         </div>
+        <div className="flex-1 overflow-y-auto">
+          <nav className="grid items-start p-2 text-base font-medium sm:p-4">
+            {navLinks.map(renderLink)}
+          </nav>
+        </div>
+        <div className="mt-auto border-t p-4">
+            <div className="flex items-center justify-between">
+                 <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9">
+                        <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${user.name}`} alt={user.name} />
+                        <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-medium leading-none">{user.name}</span>
+                        <span className="text-xs text-muted-foreground leading-none">{user.role}</span>
+                    </div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-foreground">
+                    <LogOut className="h-5 w-5" />
+                    <span className="sr-only">Cerrar sesión</span>
+                </Button>
+            </div>
+        </div>
+      </div>
     </div>
   );
 }
