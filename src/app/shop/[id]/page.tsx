@@ -85,6 +85,20 @@ export default function ShopPage({ params }: { params: { id: string } }) {
     notFound();
   }
 
+  const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => {
+    setShop(prevShop => {
+        if (!prevShop) return prevShop;
+        const productToAdd: Product = {
+            ...newProduct,
+            id: `p${Date.now()}`,
+            imageSrc: `https://picsum.photos/seed/new${Date.now()}/400/300`,
+            imageHint: 'nuevo producto',
+        };
+        const newInventory = [productToAdd, ...prevShop.inventory];
+        return {...prevShop, inventory: newInventory};
+    });
+  }
+
   const handleProductUpdate = (updatedProduct: Product) => {
     setShop(prevShop => {
         if (!prevShop) return prevShop;
@@ -230,7 +244,16 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       </div>
 
 
-      <h2 className="text-3xl font-bold font-headline mb-4">Inventario ({filteredInventory.length})</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
+        <AddProductModal onProductAdd={handleProductAdd}>
+            <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Agregar Producto
+            </Button>
+        </AddProductModal>
+      </div>
+
       <Card>
           <Table>
             <TableHeader>
@@ -379,6 +402,85 @@ function ProductActionsCell({ product, onProductUpdate, onProductDelete }: { pro
   );
 }
 
+function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => void, children: React.ReactNode }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [price, setPrice] = useState(0);
+    const [stock, setStock] = useState(0);
+    const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
+
+    const handleSave = () => {
+        if (!name || price <= 0 || stock < 0) {
+            // Basic validation
+            alert('Por favor completa los campos requeridos (Nombre, Precio > 0, Stock >= 0)');
+            return;
+        }
+        onProductAdd({
+            name,
+            description,
+            price,
+            stock,
+            status,
+        });
+        setIsOpen(false);
+        // Reset form
+        setName('');
+        setDescription('');
+        setPrice(0);
+        setStock(0);
+        setStatus('activo');
+    }
+
+    return (
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Agregar Nuevo Producto</DialogTitle>
+                    <DialogDescription>Completa los detalles para agregar un nuevo producto al inventario.</DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="name-add" className="text-right">Nombre</Label>
+                        <Input id="name-add" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="description-add" className="text-right">Descripción</Label>
+                        <Input id="description-add" value={description} onChange={(e) => setDescription(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="price-add" className="text-right">Precio (€)</Label>
+                        <Input id="price-add" type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="col-span-3" />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="stock-add" className="text-right">Stock</Label>
+                        <Input id="stock-add" type="number" value={stock} onChange={(e) => setStock(Number(e.target.value))} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="status-add" className="text-right">Estatus</Label>
+                        <Select value={status} onValueChange={(value: 'activo' | 'inactivo') => setStatus(value)}>
+                            <SelectTrigger className="col-span-3">
+                                <SelectValue placeholder="Selecciona un estatus" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button variant="outline">Cancelar</Button>
+                    </DialogClose>
+                    <Button onClick={handleSave}>Guardar Producto</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 function EditProductModal({ product, onProductUpdate, children }: { product: Product, onProductUpdate: (product: Product) => void, children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState(product.name);
@@ -498,3 +600,5 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
         </AlertDialog>
     );
 }
+
+    
