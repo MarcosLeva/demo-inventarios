@@ -70,9 +70,10 @@ export default function ShopPage({ params }: { params: { id: string } }) {
   const [priceRange, setPriceRange] = useState([0, 100]);
 
   useEffect(() => {
+    const { id } = params;
     // Simulate fetching shop data
     setTimeout(() => {
-      const fetchedShop = getShopById(params.id);
+      const fetchedShop = getShopById(id);
       if (fetchedShop) {
         setShop(fetchedShop);
         const maxPrice = fetchedShop.inventory.length > 0
@@ -84,7 +85,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       }
       setLoading(false);
     }, 500); // Simulate 0.5 second load time
-  }, [params.id]);
+  }, [params]);
 
 
   if (loading) {
@@ -168,6 +169,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
       </div>
 
       <div className="relative mb-12 overflow-hidden rounded-lg border shadow-sm">
+        <div className="absolute inset-0 bg-background/80 z-10"></div>
         <Image
             src={shop.logoSrc}
             alt={`${shop.name} background`}
@@ -177,8 +179,7 @@ export default function ShopPage({ params }: { params: { id: string } }) {
             data-ai-hint={shop.logoHint}
             sizes="100vw"
         />
-        <div className="absolute inset-0 bg-background/80"></div>
-        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6">
+        <div className="relative flex flex-col md:flex-row items-start md:items-center gap-6 p-6 z-20">
             <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
                 <Image
                   src={shop.logoSrc}
