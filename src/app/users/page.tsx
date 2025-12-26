@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
 import { getUsers, addUser, updateUser, deleteUser, getShops } from '@/lib/data';
 import type { AppUser, Shop } from '@/lib/data';
 import {
@@ -52,7 +53,6 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<AppUser[]>([]);
@@ -183,19 +183,29 @@ export default function UsersPage() {
                     <TableCell>{user.role}</TableCell>
                      <TableCell>
                       {user.shopIds.length > 0 ? (
-                         <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Badge variant="outline">
-                                <Store className="mr-1.5 h-3 w-3" />
-                                {user.shopIds.length}
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>{user.shopIds.map(id => shops.find(s => s.id === id)?.name).join(', ')}</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-8 px-2">
+                                     <Store className="mr-1.5 h-3 w-3" />
+                                     <span>{user.shopIds.length} Tienda(s)</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuLabel>Tiendas Asignadas</DropdownMenuLabel>
+                                <DropdownMenuSeparator/>
+                                {user.shopIds.map(id => {
+                                    const shop = shops.find(s => s.id === id);
+                                    if (!shop) return null;
+                                    return (
+                                        <DropdownMenuItem key={id} asChild>
+                                            <Link href={`/shop/${id}`} className="cursor-pointer">
+                                                {shop.name}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    )
+                                })}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                       ) : (
                         <span className="text-xs text-muted-foreground">Ninguna</span>
                       )}
@@ -487,3 +497,5 @@ function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, o
         </AlertDialog>
     );
 }
+
+    
