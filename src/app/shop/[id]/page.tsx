@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ProductFilters } from '@/components/ProductFilters';
 import { ProductActionsCell, AddProductModal } from '@/components/ProductActions';
+import { Input } from '@/components/ui/input';
 
 
 const ITEMS_PER_PAGE = 10;
@@ -154,27 +155,15 @@ export default function ShopPage() {
   const canEdit = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop.organizationId);
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      <div className="mb-8">
-        <Button asChild variant="ghost">
+    <div className="flex flex-col gap-8">
+      <Button asChild variant="ghost" className="self-start -mb-4">
           <Link href="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
             Volver a todas las tiendas
           </Link>
         </Button>
-      </div>
       
-      <div className="relative mb-12 overflow-hidden rounded-lg">
-        <div className="absolute inset-0 bg-background/80 z-10"></div>
-        <Image
-            src={shop.logoSrc}
-            alt={`${shop.name} background`}
-            fill
-            className="object-cover"
-            style={{filter: 'blur(4px)'}}
-            data-ai-hint={shop.logoHint}
-            sizes="100vw"
-        />
+      <div className="relative overflow-hidden rounded-lg">
         <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 p-6 z-20 justify-between">
             <div className="flex items-center gap-6">
                 <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
@@ -344,12 +333,10 @@ export default function ShopPage() {
 
 function ShopPageSkeleton() {
     return (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 animate-pulse">
-            <div className="mb-8">
-                <Skeleton className="h-8 w-48" />
-            </div>
+        <div className="flex flex-col gap-8 animate-pulse">
+             <Skeleton className="h-8 w-48" />
 
-            <div className="relative mb-12 overflow-hidden rounded-lg h-[220px] md:h-auto">
+            <div className="relative overflow-hidden rounded-lg">
                  <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 p-6 justify-between">
                     <div className="flex items-center gap-6">
                         <Skeleton className="h-32 w-32 rounded-full shrink-0" />
@@ -569,5 +556,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
+
+    
 
     
