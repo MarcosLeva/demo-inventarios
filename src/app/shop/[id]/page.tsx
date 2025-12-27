@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons, getUsers, getOrganizations } from '@/lib/data';
+import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons, getUsers, getOrganizations, assignUsersToShop } from '@/lib/data';
 import type { Product, Shop, ProductProperty, AppUser, Organization, IconName } from '@/lib/data';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
@@ -46,6 +46,8 @@ import { ProductActionsCell } from '@/components/ProductActions';
 import { AddProductModal } from '@/components/AddProductModal';
 import { Input } from '@/components/ui/input';
 import { ImageUploader } from '@/components/ImageUploader';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 
 const ITEMS_PER_PAGE = 10;
@@ -133,8 +135,9 @@ export default function ShopPage() {
     fetchData();
   }
   
-  const handleShopUpdate = (updatedShopData: Shop) => {
+  const handleShopUpdate = (updatedShopData: Shop, assignedUserIds: string[]) => {
     updateShopInData(updatedShopData);
+    assignUsersToShop(updatedShopData.id, assignedUserIds);
     handleDataUpdate();
   }
 
@@ -154,6 +157,9 @@ export default function ShopPage() {
   }
 
   const canEdit = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop.organizationId);
+
+  const organizationUsers = getUsers(user).filter(u => u.organizationId === shop.organizationId && u.role === 'Vendedor');
+
 
   return (
     <div className="flex flex-col gap-8">
@@ -240,7 +246,7 @@ export default function ShopPage() {
               )}
 
               {canEdit && (
-                <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
+                <EditShopModal shop={shop} members={members} organizationUsers={organizationUsers} onShopUpdate={handleShopUpdate}>
                     <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4 mr-2" />
                         Editar Tienda
@@ -433,7 +439,7 @@ function ProductRow({ product, canEdit, onProductUpdate, onProductDelete, index 
 }
 
 
-function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpdate: (shop: Shop) => void, children: React.ReactNode }) {
+function EditShopModal({ shop, members, organizationUsers, onShopUpdate, children }: { shop: Shop, members: AppUser[], organizationUsers: AppUser[], onShopUpdate: (shop: Shop, assignedUserIds: string[]) => void, children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState(shop.name);
     const [specialization, setSpecialization] = useState(shop.specialization);
@@ -441,7 +447,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     const [bannerSrc, setBannerSrc] = useState(shop.bannerSrc);
     const [status, setStatus] = useState(shop.status);
     const [iconName, setIconName] = useState<IconName>(shop.icon);
-
+    const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
 
     useEffect(() => {
         if (isOpen) {
@@ -451,8 +457,9 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             setBannerSrc(shop.bannerSrc);
             setStatus(shop.status);
             setIconName(shop.icon);
+            setAssignedUserIds(members.map(m => m.id));
         }
-    }, [isOpen, shop]);
+    }, [isOpen, shop, members]);
 
     const handleSave = () => {
         if (!name || !specialization) {
@@ -467,10 +474,18 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             bannerSrc,
             status,
             icon: iconName,
-        });
+        }, assignedUserIds);
         setIsOpen(false);
     }
     
+    const handleUserToggle = (userId: string) => {
+        setAssignedUserIds(
+            assignedUserIds.includes(userId)
+                ? assignedUserIds.filter(id => id !== userId)
+                : [...assignedUserIds, userId]
+        );
+    }
+
     const IconPreview = icons[iconName] || null;
 
     return (
@@ -479,9 +494,9 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Editar Tienda</DialogTitle>
-                    <DialogDescription>Realiza cambios en los detalles de la tienda.</DialogDescription>
+                    <DialogDescription>Realiza cambios en los detalles de la tienda y sus usuarios asignados.</DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
+                <div className="grid gap-6 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="shop-name" className="text-right">Nombre</Label>
                         <Input id="shop-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
@@ -552,6 +567,26 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
                             )}
                         </div>
                     </div>
+                     <div className="grid grid-cols-4 items-start gap-4 pt-2">
+                        <Label className="text-right pt-2">Vendedores Asignados</Label>
+                         <div className="col-span-3">
+                            <ScrollArea className="h-40 border rounded-md p-2">
+                                {organizationUsers.map(user => (
+                                    <div key={user.id} className="flex items-center space-x-2 p-2 hover:bg-muted rounded-md">
+                                        <Checkbox
+                                            id={`assign-user-${user.id}`}
+                                            checked={assignedUserIds.includes(user.id)}
+                                            onCheckedChange={() => handleUserToggle(user.id)}
+                                        />
+                                        <Label htmlFor={`assign-user-${user.id}`} className="flex-1 cursor-pointer">
+                                            {user.name}
+                                        </Label>
+                                    </div>
+                                ))}
+                                {organizationUsers.length === 0 && <p className="text-sm text-muted-foreground p-2">No hay vendedores en la organización.</p>}
+                            </ScrollArea>
+                        </div>
+                    </div>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
@@ -563,7 +598,3 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
-
-    
-
-    

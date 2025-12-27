@@ -231,8 +231,10 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
     useEffect(() => {
         // If organization changes while modal is open, reset shop selections.
         // This is primarily for Admins changing a user's organization.
-        setSelectedShopIds([]);
-    }, [organizationId]);
+        if (organizationId !== user.organizationId) {
+          setSelectedShopIds([]);
+        }
+    }, [organizationId, user.organizationId]);
 
     const handleSave = () => {
         if (role !== 'Admin' && !organizationId) {

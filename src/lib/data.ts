@@ -395,7 +395,7 @@ const users: AppUser[] = [
     { id: 'user-editor-4', name: 'Stephen King (Editor)', email: 'editor4@example.com', role: 'Editor', status: 'activo', shopIds: ['4', '8', '11'], organizationId: 'org-4' },
     
     { id: 'user-3', name: 'Carlos Pérez', email: 'carlos.perez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
-    { id: 'user-4', name: 'Ana García', email: 'ana.garcia@example.com', role: 'inactivo', status: 'inactivo', shopIds: ['1', '6'], organizationId: 'org-1' },
+    { id: 'user-4', name: 'Ana García', email: 'ana.garcia@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['1', '6'], organizationId: 'org-1' },
     { id: 'user-5', name: 'Jorge Martín', email: 'jorge.martin@example.com', role: 'Vendedor', status: 'inactivo', shopIds: ['2', '5', '7'], organizationId: 'org-2' },
     { id: 'user-6', name: 'Vendedor Ejemplo', email: 'vendedor@example.com', role: 'Vendedor', status: 'activo', shopIds: ['4', '11', '8'], organizationId: 'org-4' },
     { id: 'user-7', name: 'Sofía Reyes', email: 'sofia.reyes@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '6'], organizationId: 'org-1' },
@@ -693,5 +693,26 @@ export function assignShopToUsers(shopId: string, userIds: string[]) {
       if (user && user.role === 'Vendedor' && user.organizationId === shop.organizationId && !user.shopIds.includes(shopId)) {
         user.shopIds.push(shopId);
       }
+    });
+}
+
+export function assignUsersToShop(shopId: string, assignedUserIds: string[]) {
+    const shop = shopsStore.find(s => s.id === shopId);
+    if (!shop) return;
+
+    // Get all vendors from the same organization
+    const orgVendors = usersStore.filter(u => u.organizationId === shop.organizationId && u.role === 'Vendedor');
+
+    orgVendors.forEach(vendor => {
+        const isAssigned = assignedUserIds.includes(vendor.id);
+        const hasShop = vendor.shopIds.includes(shopId);
+
+        if (isAssigned && !hasShop) {
+            // Add shop to user
+            vendor.shopIds.push(shopId);
+        } else if (!isAssigned && hasShop) {
+            // Remove shop from user
+            vendor.shopIds = vendor.shopIds.filter(id => id !== shopId);
+        }
     });
 }
