@@ -1,4 +1,5 @@
 
+
 import { Shirt, Laptop, Cookie, BookOpen, Wrench, Sprout, Dumbbell, Guitar, Dog, Coffee, Pill, Building } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -453,13 +454,13 @@ export function updateShop(updatedShop: Shop) {
     }
 }
 
-export function addProduct(shopId: string, product: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) {
+export function addProduct(shopId: string, product: Omit<Product, 'id' | 'imageHint'>) {
     const shop = shopsStore.find(s => s.id === shopId);
     if (shop) {
         const newProduct: Product = {
             ...product,
             id: `p${Date.now()}`,
-            imageSrc: `https://picsum.photos/seed/new${Date.now()}/400/300`,
+            imageSrc: product.imageSrc || `https://picsum.photos/seed/new${Date.now()}/400/300`,
             imageHint: 'nuevo producto',
         };
         shop.inventory.unshift(newProduct);

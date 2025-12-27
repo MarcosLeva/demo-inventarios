@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -42,6 +43,7 @@ import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
+import { ImageUploader } from './AddShopModal';
 
 
 export function ProductActionsCell({ product, canEdit, onProductUpdate, onProductDelete }: { product: Product, canEdit: boolean, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void }) {
@@ -189,13 +191,14 @@ function DynamicPropertiesEditor({ properties, setProperties }: { properties: Pr
     );
 }
 
-export function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: Omit<Product, 'id' | 'imageSrc' | 'imageHint'>) => void, children: React.ReactNode }) {
+export function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: Omit<Product, 'id' | 'imageHint'>) => void, children: React.ReactNode }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [properties, setProperties] = useState<ProductProperty[]>([{ key: 'Descripción', value: '' }]);
     const [price, setPrice] = useState(0);
     const [stock, setStock] = useState(0);
     const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
+    const [imageSrc, setImageSrc] = useState('');
 
     const handleSave = () => {
         if (!name || price <= 0 || stock < 0) {
@@ -208,6 +211,7 @@ export function AddProductModal({ onProductAdd, children }: { onProductAdd: (pro
             price,
             stock,
             status,
+            imageSrc
         });
         setIsOpen(false);
         // Reset form
@@ -216,6 +220,7 @@ export function AddProductModal({ onProductAdd, children }: { onProductAdd: (pro
         setPrice(0);
         setStock(0);
         setStatus('activo');
+        setImageSrc('');
     }
 
     return (
@@ -252,6 +257,17 @@ export function AddProductModal({ onProductAdd, children }: { onProductAdd: (pro
                         </Select>
                     </div>
                     <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Imagen</Label>
+                         <div className="col-span-3">
+                             <ImageUploader value={imageSrc} onChange={setImageSrc} />
+                             {imageSrc && (
+                                <div className="mt-4 relative h-24 w-24 rounded-md overflow-hidden border">
+                                    <Image src={imageSrc} alt="Previsualización" fill className="object-cover" sizes="96px" />
+                                </div>
+                            )}
+                         </div>
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
                         <Label className="text-right pt-2">Propiedades</Label>
                          <div className="col-span-3">
                              <DynamicPropertiesEditor properties={properties} setProperties={setProperties} />
@@ -275,6 +291,7 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
     const [properties, setProperties] = useState<ProductProperty[]>(product.properties);
     const [price, setPrice] = useState(product.price);
     const [status, setStatus] = useState(product.status);
+    const [imageSrc, setImageSrc] = useState(product.imageSrc);
 
     useEffect(() => {
       if (isOpen) {
@@ -282,6 +299,7 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
         setPrice(product.price);
         setStatus(product.status);
         setProperties(product.properties);
+        setImageSrc(product.imageSrc);
       }
     }, [isOpen, product])
     
@@ -292,6 +310,7 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
             properties,
             price,
             status,
+            imageSrc,
         });
         setIsOpen(false);
     }
@@ -324,6 +343,17 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
                                 <SelectItem value="inactivo">Inactivo</SelectItem>
                             </SelectContent>
                         </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-start gap-4">
+                        <Label className="text-right pt-2">Imagen</Label>
+                         <div className="col-span-3">
+                             <ImageUploader value={imageSrc} onChange={setImageSrc} />
+                             {imageSrc && (
+                                <div className="mt-4 relative h-24 w-24 rounded-md overflow-hidden border">
+                                    <Image src={imageSrc} alt="Previsualización" fill className="object-cover" sizes="96px" />
+                                </div>
+                            )}
+                         </div>
                     </div>
                      <div className="grid grid-cols-4 items-start gap-4">
                         <Label className="text-right pt-2">Propiedades</Label>

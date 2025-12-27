@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
@@ -25,7 +26,7 @@ import { Image as ImageIcon, Upload, Users } from 'lucide-react';
 import Image from 'next/image';
 import { icons } from '@/lib/data';
 
-function ImageUploader({ value, onChange }: { value: string, onChange: (value: string) => void }) {
+export function ImageUploader({ value, onChange }: { value: string, onChange: (value: string) => void }) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
