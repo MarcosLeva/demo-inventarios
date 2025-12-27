@@ -229,11 +229,10 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
     }, [isOpen, user]);
 
     useEffect(() => {
-        // If organization changes, reset shop selections as they belong to the old org
-        if (organizationId !== user.organizationId) {
-            setSelectedShopIds([]);
-        }
-    }, [organizationId, user.organizationId]);
+        // If organization changes while modal is open, reset shop selections.
+        // This is primarily for Admins changing a user's organization.
+        setSelectedShopIds([]);
+    }, [organizationId]);
 
     const handleSave = () => {
         if (role !== 'Admin' && !organizationId) {
@@ -350,12 +349,12 @@ function ShopSelector({allShops, selectedShopIds, onChange, disabled = false}: {
                     {allShops.map(shop => (
                         <DropdownMenuItem key={shop.id} onSelect={(e) => e.preventDefault()}>
                             <Checkbox
-                                id={`shop-${shop.id}`}
+                                id={`shop-${shop.id}-${Math.random()}`}
                                 checked={selectedShopIds.includes(shop.id)}
                                 onCheckedChange={() => handleShopToggle(shop.id)}
                                 className="mr-2"
                             />
-                            <Label htmlFor={`shop-${shop.id}`} className="flex-1 cursor-pointer">{shop.name}</Label>
+                            <Label htmlFor={`shop-${shop.id}-${Math.random()}`} className="flex-1 cursor-pointer">{shop.name}</Label>
                         </DropdownMenuItem>
                     ))}
                      {allShops.length === 0 && <DropdownMenuItem disabled>No hay tiendas disponibles.</DropdownMenuItem>}
@@ -387,5 +386,3 @@ function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, o
         </AlertDialog>
     );
 }
-
-    
