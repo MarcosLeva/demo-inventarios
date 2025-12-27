@@ -104,6 +104,11 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
         }
     }, [currentUser, isOpen, defaultOrganizationId]);
 
+    useEffect(() => {
+        setAssignedUserIds([]);
+    }, [organizationId]);
+
+
     const handleSave = () => {
         if (!name || !specialization || !iconName || !organizationId) {
             alert('Por favor completa todos los campos requeridos, incluyendo la organización.');
@@ -136,9 +141,9 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
                     <DialogDescription>Completa los detalles para crear una nueva tienda.</DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                    {currentUser?.role === 'Admin' && (
+                    {currentUser?.role === 'Admin' && !defaultOrganizationId && (
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="shop-organization" className="text-right">Organización</Label>
+                            <Label htmlFor="shop-organization" className="text-right">Organización *</Label>
                              <Select value={organizationId} onValueChange={(value) => setOrganizationId(value)} disabled={!!defaultOrganizationId}>
                                 <SelectTrigger className="col-span-3">
                                     <SelectValue placeholder="Selecciona una organización" />
@@ -250,5 +255,3 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
         </Dialog>
     );
 }
-
-    

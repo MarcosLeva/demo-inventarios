@@ -555,7 +555,7 @@ export function updateUser(updatedUser: AppUser) {
     if (index !== -1) {
         const oldUser = usersStore[index];
 
-        // Handle org change
+        // If organization has changed, remove user from old org and add to new one
         if (oldUser.organizationId !== updatedUser.organizationId) {
             // Remove from old org
             const oldOrg = organizationsStore.find(o => o.id === oldUser.organizationId);
@@ -567,6 +567,8 @@ export function updateUser(updatedUser: AppUser) {
              if (newOrg && !newOrg.userIds.includes(updatedUser.id)) {
                 newOrg.userIds.push(updatedUser.id);
             }
+            // Clear shopIds as they belong to the previous organization
+            updatedUser.shopIds = [];
         }
         
         usersStore[index] = updatedUser;

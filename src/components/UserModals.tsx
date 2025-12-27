@@ -223,6 +223,13 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
         }
     }, [isOpen, user]);
 
+    useEffect(() => {
+        // If organization changes, reset shop selections as they belong to the old org
+        if (organizationId !== user.organizationId) {
+            setSelectedShopIds([]);
+        }
+    }, [organizationId, user.organizationId]);
+
     const handleSave = () => {
         if (role !== 'Admin' && !organizationId) {
             alert('Debes seleccionar una organización para este rol.');
@@ -375,5 +382,3 @@ function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, o
         </AlertDialog>
     );
 }
-
-    
