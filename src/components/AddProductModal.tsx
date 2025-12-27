@@ -60,7 +60,7 @@ export function AddProductModal({ onProductAdd, children }: { onProductAdd: (pro
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>Agregar Nuevo Producto</DialogTitle>
                     <DialogDescription>Completa los detalles para agregar un nuevo producto al inventario.</DialogDescription>
@@ -182,7 +182,7 @@ export function AddGlobalProductModal({ onProductAdd, allShops, allOrganizations
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>Agregar Nuevo Producto</DialogTitle>
                     <DialogDescription>Completa los detalles para agregar un nuevo producto al inventario de una tienda.</DialogDescription>
@@ -276,3 +276,5 @@ export function AddGlobalProductModal({ onProductAdd, allShops, allOrganizations
         </Dialog>
     );
 }
+
+    

@@ -130,7 +130,7 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-xl">
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Agregar Nueva Tienda</DialogTitle>
                     <DialogDescription>Completa los detalles para crear una nueva tienda.</DialogDescription>
@@ -250,3 +250,5 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
         </Dialog>
     );
 }
+
+    

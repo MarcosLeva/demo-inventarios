@@ -393,7 +393,7 @@ function ManageMembersModal({ organizationId, allUsers, currentMemberIds, onUpda
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>Gestionar Miembros de la Organización</DialogTitle>
                     <DialogDescription>Selecciona los usuarios que pertenecerán a esta organización.</DialogDescription>
@@ -452,7 +452,7 @@ function AssignUsersToShopModal({ shop, members, onAssign, children }: { shop: S
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>Asignar Vendedores a {shop.name}</DialogTitle>
                     <DialogDescription>Selecciona los vendedores de la organización para asignarles esta tienda.</DialogDescription>
@@ -544,3 +544,5 @@ function OrganizationDetailSkeleton() {
     </div>
   );
 }
+
+    

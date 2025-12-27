@@ -102,7 +102,7 @@ function ViewProductModal({ product, children }: { product: Product, children: R
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-xl">
+            <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>{product.name}</DialogTitle>
                 </DialogHeader>
@@ -171,7 +171,7 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
+            <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>Editar Producto</DialogTitle>
                     <DialogDescription>Realiza cambios en los detalles del producto.</DialogDescription>
@@ -288,3 +288,5 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
         </AlertDialog>
     );
 }
+
+    
