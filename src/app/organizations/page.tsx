@@ -25,6 +25,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 const ORGS_PER_PAGE = 10;
 
@@ -145,13 +146,14 @@ export default function OrganizationsPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {paginatedOrgs.map(org => (
+            {paginatedOrgs.map((org, index) => (
                 <OrganizationCard 
                   key={org.id} 
                   org={org} 
                   onOrgUpdate={handleOrgUpdate} 
                   getUserById={getUserById}
                   shopCount={getShopCountByOrgId(org.id)}
+                  index={index}
                 />
             ))}
              {paginatedOrgs.length === 0 && (
@@ -189,51 +191,60 @@ export default function OrganizationsPage() {
   );
 }
 
-function OrganizationCard({ org, onOrgUpdate, getUserById, shopCount }: { org: Organization, onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined, shopCount: number }) {
+function OrganizationCard({ org, onOrgUpdate, getUserById, shopCount, index }: { org: Organization, onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined, shopCount: number, index: number }) {
 
   const handleNameUpdate = (newName: string) => {
     onOrgUpdate({...org, name: newName});
   };
 
   return (
-    <Card className="flex flex-col group">
-      <CardHeader className="flex-grow">
-          <CardTitle className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2">
-                  <Building className="text-primary" />
-                   <EditableOrgName name={org.name} onUpdate={handleNameUpdate} />
-              </span>
-          </CardTitle>
-           <div className="flex items-center gap-4 text-sm text-muted-foreground pt-1">
-              <div className="flex items-center gap-1.5">
-                  <Users className="h-4 w-4" />
-                  <span>{org.userIds.length} miembro(s)</span>
-              </div>
-               <div className="flex items-center gap-1.5">
-                  <Store className="h-4 w-4" />
-                  <span>{shopCount} tienda(s)</span>
-              </div>
-          </div>
-      </CardHeader>
-      <CardContent className="flex-grow">
-          <p className="font-semibold text-sm mb-2">Miembros Clave:</p>
-           <div className="flex flex-wrap gap-1">
-              {org.userIds.slice(0, 5).map(userId => {
-                  const member = getUserById(userId);
-                  return member ? <Badge key={userId} variant="secondary">{member.name}</Badge> : null;
-              })}
-              {org.userIds.length > 5 && <Badge variant="outline">+{org.userIds.length - 5} más</Badge>}
-              {org.userIds.length === 0 && <p className="text-xs text-muted-foreground">Sin miembros asignados.</p>}
-          </div>
-      </CardContent>
-      <div className="p-6 pt-0 mt-auto">
-          <Button asChild variant="outline" className="w-full">
-              <Link href={`/organizations/${org.id}`}>
-                  Gestionar Organización <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-          </Button>
-      </div>
-    </Card>
+      <Link href={`/organizations/${org.id}`} className="group block h-full">
+        <Card 
+            className={cn(
+                "h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 animate-in fade-in-0 flex flex-col",
+            )}
+            style={{ animationDelay: `${index * 50}ms` }}
+        >
+            <CardHeader className="p-6">
+                <div className="flex items-start gap-4">
+                    <div className="bg-accent/10 text-accent p-3 rounded-lg">
+                        <Building className="h-6 w-6" />
+                    </div>
+                    <div className="flex-1">
+                        <EditableOrgName name={org.name} onUpdate={handleNameUpdate} />
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2">
+                            <div className="flex items-center gap-1.5">
+                                <Users className="h-4 w-4" />
+                                <span>{org.userIds.length} miembro(s)</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <Store className="h-4 w-4" />
+                                <span>{shopCount} tienda(s)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="p-6 pt-0 flex-grow">
+                <p className="font-semibold text-sm mb-2">Miembros Clave:</p>
+                <div className="flex flex-wrap gap-1">
+                    {org.userIds.slice(0, 5).map(userId => {
+                        const member = getUserById(userId);
+                        return member ? <Badge key={userId} variant="secondary">{member.name}</Badge> : null;
+                    })}
+                    {org.userIds.length > 5 && <Badge variant="outline">+{org.userIds.length - 5} más</Badge>}
+                    {org.userIds.length === 0 && <p className="text-xs text-muted-foreground">Sin miembros asignados.</p>}
+                </div>
+            </CardContent>
+            <div className="p-6 pt-0 mt-auto">
+                <div className="flex justify-end items-center mt-4 pt-4 border-t">
+                    <div className="text-sm font-medium text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Gestionar <ArrowRight className="h-4 w-4 transform -translate-x-1 group-hover:translate-x-0 transition-transform duration-300" />
+                    </div>
+                </div>
+            </div>
+        </Card>
+      </Link>
   )
 }
 
@@ -242,16 +253,27 @@ function EditableOrgName({ name, onUpdate }: { name: string, onUpdate: (newName:
     const [currentName, setCurrentName] = useState(name);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
+    const handleEditClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsEditing(true);
+    };
+
     const handleBlur = () => {
         setIsEditing(false);
-        if (currentName !== name) {
+        if (currentName.trim() && currentName !== name) {
             onUpdate(currentName);
+        } else {
+            setCurrentName(name);
         }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             inputRef.current?.blur();
+        } else if (e.key === 'Escape') {
+            setCurrentName(name);
+            setIsEditing(false);
         }
     };
     
@@ -268,17 +290,21 @@ function EditableOrgName({ name, onUpdate }: { name: string, onUpdate: (newName:
                 ref={inputRef}
                 value={currentName}
                 onChange={(e) => setCurrentName(e.target.value)}
+                onClick={(e) => e.stopPropagation()}
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className="text-2xl font-semibold leading-none tracking-tight h-auto p-0 border-0 focus-visible:ring-0"
+                className="text-xl font-bold h-auto p-0 border-0 focus-visible:ring-0"
             />
         );
     }
 
     return (
-        <span onClick={() => setIsEditing(true)} className="cursor-pointer hover:bg-muted p-1 rounded-md text-2xl font-semibold leading-none tracking-tight">
-            {name}
-        </span>
+        <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold font-headline mb-0">{name}</h2>
+            <Button variant="ghost" size="icon" onClick={handleEditClick} className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Edit className="h-4 w-4" />
+            </Button>
+        </div>
     );
 }
 
