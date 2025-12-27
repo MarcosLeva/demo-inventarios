@@ -82,7 +82,7 @@ export default function Sidebar({ isMobile = false }) {
   
   return (
     <div className={cn("hidden border-r bg-card md:block", isMobile && "block")}>
-      <div className="flex h-full flex-col">
+      <div className="flex h-full max-h-screen flex-col">
         <div className="flex h-14 shrink-0 items-center border-b bg-card px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
                 <ShoppingCart className="h-6 w-6 text-primary" />
@@ -94,7 +94,7 @@ export default function Sidebar({ isMobile = false }) {
             {navLinks.map(renderLink)}
           </nav>
         </div>
-        <div className="mt-auto border-t p-4">
+        <div className="mt-auto shrink-0 border-t p-4">
             <div className="flex items-center justify-between">
                  <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
