@@ -70,8 +70,8 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [specialization, setSpecialization] = useState('');
-    const [logoSrc, setLogoSrc] = useState('https://picsum.photos/seed/newlogo/400/400');
-    const [bannerSrc, setBannerSrc] = useState('https://picsum.photos/seed/newbanner/1200/400');
+    const [logoSrc, setLogoSrc] = useState('');
+    const [bannerSrc, setBannerSrc] = useState('');
     const [iconName, setIconName] = useState<IconName>('Shirt');
     const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
     const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
@@ -88,8 +88,8 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
             // Reset form
             setName('');
             setSpecialization('');
-            setLogoSrc('https://picsum.photos/seed/newlogo/400/400');
-            setBannerSrc('https://picsum.photos/seed/newbanner/1200/400');
+            setLogoSrc('');
+            setBannerSrc('');
             setIconName('Shirt');
             setStatus('activo');
             setAssignedUserIds([]);
@@ -118,9 +118,9 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
         onShopAdd({
             name,
             specialization,
-            logoSrc,
+            logoSrc: logoSrc || `https://picsum.photos/seed/${name.replace(/\s/g, '')}/400/400`,
             logoHint: `${name} ${specialization}`,
-            bannerSrc,
+            bannerSrc: bannerSrc || `https://picsum.photos/seed/${name.replace(/\s/g, '')}bg/1200/400`,
             bannerHint: `${name} ${specialization} interior`,
             icon: iconName,
             status,
