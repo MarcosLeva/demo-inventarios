@@ -50,6 +50,8 @@ export type Shop = {
   specialization: string;
   logoSrc: string;
   logoHint: string;
+  bannerSrc: string;
+  bannerHint: string;
   icon: IconName;
   inventory: Product[];
   status: 'activo' | 'inactivo';
@@ -80,6 +82,8 @@ const shops: Shop[] = [
     specialization: 'Ropa Moderna',
     logoSrc: 'https://picsum.photos/seed/shop1/400/400',
     logoHint: 'tienda de ropa',
+    bannerSrc: 'https://picsum.photos/seed/shop1bg/1200/400',
+    bannerHint: 'clothing store interior',
     icon: 'Shirt',
     status: 'activo',
     organizationId: 'org-1',
@@ -95,6 +99,8 @@ const shops: Shop[] = [
     specialization: 'Electrónica de Vanguardia',
     logoSrc: 'https://picsum.photos/seed/shop2/400/400',
     logoHint: 'tienda de electrónica',
+    bannerSrc: 'https://picsum.photos/seed/shop2bg/1200/400',
+    bannerHint: 'electronics store interior',
     icon: 'Laptop',
     status: 'activo',
     organizationId: 'org-2',
@@ -110,6 +116,8 @@ const shops: Shop[] = [
     specialization: 'Panadería Artesanal',
     logoSrc: 'https://picsum.photos/seed/shop3/400/400',
     logoHint: 'panadería',
+    bannerSrc: 'https://picsum.photos/seed/shop3bg/1200/400',
+    bannerHint: 'bakery interior',
     icon: 'Cookie',
     status: 'activo',
     organizationId: 'org-3',
@@ -125,6 +133,8 @@ const shops: Shop[] = [
     specialization: 'Literatura Selecta',
     logoSrc: 'https://picsum.photos/seed/shop4/400/400',
     logoHint: 'librería',
+    bannerSrc: 'https://picsum.photos/seed/shop4bg/1200/400',
+    bannerHint: 'bookstore interior',
     icon: 'BookOpen',
     status: 'inactivo',
     organizationId: 'org-4',
@@ -140,6 +150,8 @@ const shops: Shop[] = [
     specialization: 'Refacciones y Accesorios Automotrices',
     logoSrc: 'https://picsum.photos/seed/gohner/400/400',
     logoHint: 'autopartes',
+    bannerSrc: 'https://picsum.photos/seed/gohnerbg/1200/400',
+    bannerHint: 'auto parts interior',
     icon: 'Wrench',
     status: 'activo',
     organizationId: 'org-2',
@@ -154,6 +166,8 @@ const shops: Shop[] = [
     specialization: 'Plantas y Jardinería',
     logoSrc: 'https://picsum.photos/seed/shop6/400/400',
     logoHint: 'jardinería',
+    bannerSrc: 'https://picsum.photos/seed/shop6bg/1200/400',
+    bannerHint: 'gardening interior',
     icon: 'Sprout',
     status: 'activo',
     organizationId: 'org-1',
@@ -168,6 +182,8 @@ const shops: Shop[] = [
     specialization: 'Equipo de Gimnasio',
     logoSrc: 'https://picsum.photos/seed/shop7/400/400',
     logoHint: 'gimnasio',
+    bannerSrc: 'https://picsum.photos/seed/shop7bg/1200/400',
+    bannerHint: 'gym interior',
     icon: 'Dumbbell',
     status: 'activo',
     organizationId: 'org-2',
@@ -181,6 +197,8 @@ const shops: Shop[] = [
     specialization: 'Instrumentos Musicales',
     logoSrc: 'https://picsum.photos/seed/shop8/400/400',
     logoHint: 'tienda de música',
+    bannerSrc: 'https://picsum.photos/seed/shop8bg/1200/400',
+    bannerHint: 'music store interior',
     icon: 'Guitar',
     status: 'inactivo',
     organizationId: 'org-4',
@@ -194,6 +212,8 @@ const shops: Shop[] = [
     specialization: 'Suministros para Mascotas',
     logoSrc: 'https://picsum.photos/seed/shop9/400/400',
     logoHint: 'tienda de mascotas',
+    bannerSrc: 'https://picsum.photos/seed/shop9bg/1200/400',
+    bannerHint: 'pet store interior',
     icon: 'Dog',
     status: 'activo',
     organizationId: 'org-3',
@@ -207,6 +227,8 @@ const shops: Shop[] = [
     specialization: 'Café de Especialidad',
     logoSrc: 'https://picsum.photos/seed/shop10/400/400',
     logoHint: 'cafetería',
+    bannerSrc: 'https://picsum.photos/seed/shop10bg/1200/400',
+    bannerHint: 'coffee shop interior',
     icon: 'Coffee',
     status: 'activo',
     organizationId: 'org-3',
@@ -220,6 +242,8 @@ const shops: Shop[] = [
     specialization: 'Salud y Cuidado Personal',
     logoSrc: 'https://picsum.photos/seed/shop11/400/400',
     logoHint: 'farmacia',
+    bannerSrc: 'https://picsum.photos/seed/shop11bg/1200/400',
+    bannerHint: 'pharmacy interior',
     icon: 'Pill',
     status: 'activo',
     organizationId: 'org-4',
@@ -484,11 +508,13 @@ export function deleteProduct(shopId: string, productId: string) {
     }
 }
 
-export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'|'organizationId'> & { organizationId: string }, assignedUserIds: string[], currentUser: AppUser) {
+export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'|'organizationId'|'bannerSrc'|'bannerHint'> & { organizationId: string }, assignedUserIds: string[], currentUser: AppUser) {
     const newShop: Shop = {
         ...shopData,
         id: `shop-${Date.now()}`,
         inventory: [],
+        bannerSrc: `https://picsum.photos/seed/${Date.now()}bg/1200/400`,
+        bannerHint: 'new store interior',
     };
 
     if (!newShop.organizationId) {

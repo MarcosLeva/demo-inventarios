@@ -169,11 +169,11 @@ export default function ShopPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10"></div>
         <div className="relative h-48 w-full">
             <Image
-                src={`https://picsum.photos/seed/${shop.id}bg/1200/400`}
+                src={shop.bannerSrc}
                 alt={`${shop.name} background`}
                 fill
                 className="object-cover"
-                data-ai-hint={`${shop.specialization} interior`}
+                data-ai-hint={shop.bannerHint}
                 priority
             />
         </div>
@@ -439,6 +439,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     const [name, setName] = useState(shop.name);
     const [specialization, setSpecialization] = useState(shop.specialization);
     const [logoSrc, setLogoSrc] = useState(shop.logoSrc);
+    const [bannerSrc, setBannerSrc] = useState(shop.bannerSrc);
     const [status, setStatus] = useState(shop.status);
 
     useEffect(() => {
@@ -446,6 +447,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             setName(shop.name);
             setSpecialization(shop.specialization);
             setLogoSrc(shop.logoSrc);
+            setBannerSrc(shop.bannerSrc);
             setStatus(shop.status);
         }
     }, [isOpen, shop]);
@@ -460,6 +462,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             name,
             specialization,
             logoSrc,
+            bannerSrc,
             status,
         });
         setIsOpen(false);
@@ -468,7 +471,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Editar Tienda</DialogTitle>
                     <DialogDescription>Realiza cambios en los detalles de la tienda.</DialogDescription>
@@ -498,18 +501,24 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
                         <Label className="text-right pt-2">Logo</Label>
                         <div className="col-span-3">
                             <ImageUploader value={logoSrc} onChange={setLogoSrc} />
-                        </div>
-                    </div>
-                    {logoSrc && (
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right">Previsualización</Label>
-                            <div className="col-span-3">
-                                <div className="relative h-24 w-24 rounded-md overflow-hidden border">
+                             {logoSrc && (
+                                <div className="mt-4 relative h-24 w-24 rounded-md overflow-hidden border">
                                     <Image src={logoSrc} alt="Previsualización del logo" fill className="object-cover" sizes="96px" />
                                 </div>
-                            </div>
+                            )}
                         </div>
-                    )}
+                    </div>
+                     <div className="grid grid-cols-4 items-start gap-4 pt-2">
+                        <Label className="text-right pt-2">Banner</Label>
+                        <div className="col-span-3">
+                            <ImageUploader value={bannerSrc} onChange={setBannerSrc} />
+                            {bannerSrc && (
+                                <div className="mt-4 relative aspect-video w-full rounded-md overflow-hidden border">
+                                    <Image src={bannerSrc} alt="Previsualización del banner" fill className="object-cover" sizes="100%" />
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
                 <DialogFooter>
                     <DialogClose asChild>
