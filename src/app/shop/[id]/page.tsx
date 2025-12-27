@@ -44,9 +44,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ProductFilters } from '@/components/ProductFilters';
-import { ProductActionsCell, AddProductModal } from '@/components/ProductActions';
+import { ProductActionsCell } from '@/components/ProductActions';
+import { AddProductModal } from '@/components/AddProductModal';
 import { Input } from '@/components/ui/input';
-import { ImageUploader } from '@/components/AddShopModal';
+import { ImageUploader } from '@/components/ImageUploader';
 
 
 const ITEMS_PER_PAGE = 10;
@@ -416,7 +417,7 @@ function ProductRow({ product, canEdit, onProductUpdate, onProductDelete, index 
           </div>
       </TableCell>
       <TableCell className="text-right">
-        <ProductActionsCell product={product} canEdit={canEdit} onProductUpdate={handleProductUpdate} onProductDelete={onProductDelete} />
+        <ProductActionsCell product={product} canEdit={canEdit} onProductUpdate={onProductUpdate} onProductDelete={onProductDelete} />
       </TableCell>
     </TableRow>
   );
@@ -510,7 +511,3 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
-
-    
-
-    

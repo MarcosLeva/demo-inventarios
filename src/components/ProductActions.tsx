@@ -34,7 +34,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { MoreHorizontal, Eye, Edit, Trash2, PlusCircle, X } from 'lucide-react';
+import { MoreHorizontal, Eye, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Card, CardContent } from './ui/card';
@@ -43,7 +43,8 @@ import { Label } from './ui/label';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
-import { ImageUploader } from './AddShopModal';
+import { ImageUploader } from './ImageUploader';
+import { DynamicPropertiesEditor } from './DynamicPropertiesEditor';
 
 
 export function ProductActionsCell({ product, canEdit, onProductUpdate, onProductDelete }: { product: Product, canEdit: boolean, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void }) {
@@ -135,154 +136,6 @@ function ViewProductModal({ product, children }: { product: Product, children: R
             </DialogContent>
         </Dialog>
     )
-}
-
-function DynamicPropertiesEditor({ properties, setProperties }: { properties: ProductProperty[], setProperties: (properties: ProductProperty[]) => void }) {
-    
-    const handleKeyChange = (index: number, newKey: string) => {
-        const newProps = [...properties];
-        newProps[index].key = newKey;
-        setProperties(newProps);
-    };
-
-    const handleValueChange = (index: number, newValue: string) => {
-        const newProps = [...properties];
-        newProps[index].value = newValue;
-        setProperties(newProps);
-    };
-    
-    const addProperty = () => {
-        setProperties([...properties, { key: '', value: '' }]);
-    };
-
-    const removeProperty = (index: number) => {
-        const newProps = properties.filter((_, i) => i !== index);
-        setProperties(newProps);
-    };
-
-    return (
-        <div className="space-y-4">
-            {properties.map((prop, index) => (
-                <div key={index} className="flex gap-2 items-center">
-                    <Input
-                        placeholder="Nombre (ej. Talla)"
-                        value={prop.key}
-                        onChange={(e) => handleKeyChange(index, e.target.value)}
-                        className="flex-1"
-                        disabled={prop.key === 'Descripción'}
-                    />
-                    <Textarea
-                        placeholder="Valor (ej. M)"
-                        value={prop.value}
-                        onChange={(e) => handleValueChange(index, e.target.value)}
-                        className="flex-1"
-                        rows={1}
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => removeProperty(index)} disabled={prop.key === 'Descripción'}>
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-            ))}
-            <Button variant="outline" size="sm" onClick={addProperty}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Agregar Propiedad
-            </Button>
-        </div>
-    );
-}
-
-export function AddProductModal({ onProductAdd, children }: { onProductAdd: (product: Omit<Product, 'id' | 'imageHint'>) => void, children: React.ReactNode }) {
-    const [isOpen, setIsOpen] = useState(false);
-    const [name, setName] = useState('');
-    const [properties, setProperties] = useState<ProductProperty[]>([{ key: 'Descripción', value: '' }]);
-    const [price, setPrice] = useState(0);
-    const [stock, setStock] = useState(0);
-    const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
-    const [imageSrc, setImageSrc] = useState('');
-
-    const handleSave = () => {
-        if (!name || price <= 0 || stock < 0) {
-            alert('Por favor completa los campos requeridos (Nombre, Precio > 0, Stock >= 0)');
-            return;
-        }
-        onProductAdd({
-            name,
-            properties,
-            price,
-            stock,
-            status,
-            imageSrc
-        });
-        setIsOpen(false);
-        // Reset form
-        setName('');
-        setProperties([{ key: 'Descripción', value: '' }]);
-        setPrice(0);
-        setStock(0);
-        setStatus('activo');
-        setImageSrc('');
-    }
-
-    return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>Agregar Nuevo Producto</DialogTitle>
-                    <DialogDescription>Completa los detalles para agregar un nuevo producto al inventario.</DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name-add" className="text-right">Nombre</Label>
-                        <Input id="name-add" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
-                    </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="price-add" className="text-right">Precio (€)</Label>
-                        <Input id="price-add" type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} className="col-span-3" />
-                    </div>
-                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="stock-add" className="text-right">Stock</Label>
-                        <Input id="stock-add" type="number" value={stock} onChange={(e) => setStock(Number(e.target.value))} className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="status-add" className="text-right">Estatus</Label>
-                        <Select value={status} onValueChange={(value: 'activo' | 'inactivo') => setStatus(value)}>
-                            <SelectTrigger className="col-span-3">
-                                <SelectValue placeholder="Selecciona un estatus" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="activo">Activo</SelectItem>
-                                <SelectItem value="inactivo">Inactivo</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">Imagen</Label>
-                         <div className="col-span-3">
-                             <ImageUploader value={imageSrc} onChange={setImageSrc} />
-                             {imageSrc && (
-                                <div className="mt-4 relative h-24 w-24 rounded-md overflow-hidden border">
-                                    <Image src={imageSrc} alt="Previsualización" fill className="object-cover" sizes="96px" />
-                                </div>
-                            )}
-                         </div>
-                    </div>
-                    <div className="grid grid-cols-4 items-start gap-4">
-                        <Label className="text-right pt-2">Propiedades</Label>
-                         <div className="col-span-3">
-                             <DynamicPropertiesEditor properties={properties} setProperties={setProperties} />
-                         </div>
-                    </div>
-                </div>
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="outline">Cancelar</Button>
-                    </DialogClose>
-                    <Button onClick={handleSave}>Guardar Producto</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
 }
 
 function EditProductModal({ product, onProductUpdate, children }: { product: Product, onProductUpdate: (product: Product) => void, children: React.ReactNode }) {
@@ -377,6 +230,12 @@ function UpdateStockModal({ product, onProductUpdate, children }: { product: Pro
     const [isOpen, setIsOpen] = useState(false);
     const [stock, setStock] = useState(product.stock);
     
+    useEffect(() => {
+        if (isOpen) {
+            setStock(product.stock);
+        }
+    }, [isOpen, product]);
+
     const handleSave = () => {
         onProductUpdate({ ...product, stock });
         setIsOpen(false);
@@ -429,5 +288,3 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
         </AlertDialog>
     );
 }
-
-    
