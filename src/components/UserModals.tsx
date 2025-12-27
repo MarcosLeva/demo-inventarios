@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -254,7 +255,7 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
             email, 
             role, 
             status, 
-            shopIds: role === 'Vendedor' ? selectedShopIds : [],
+            shopIds: (role === 'Vendedor' || role === 'Editor') ? selectedShopIds : [],
             organizationId: role !== 'Admin' ? organizationId : undefined
         };
         onUserUpdate(updatedUser);
@@ -304,7 +305,7 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
                          </div>
                     )}
 
-                     {role === 'Vendedor' && (
+                     {(role === 'Vendedor' || role === 'Editor') && (
                        <div className="grid grid-cols-4 items-start gap-4">
                           <Label className="text-right pt-2">Tiendas</Label>
                           <ShopSelector allShops={assignableShops} selectedShopIds={selectedShopIds} onChange={setSelectedShopIds} disabled={currentUser?.role !== 'Admin' && currentUser?.role !== 'Editor'} />
@@ -394,3 +395,5 @@ function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, o
         </AlertDialog>
     );
 }
+
+    
