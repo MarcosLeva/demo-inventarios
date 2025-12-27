@@ -153,13 +153,13 @@ export default function UsersPage() {
       
       <Card>
         <CardHeader>
-            <div className="flex flex-col gap-4">
-              <div className="relative">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="relative w-full md:max-w-sm">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <Input
                       type="text"
                       placeholder="Buscar por nombre o correo..."
-                      className="pl-10 w-full max-w-sm"
+                      className="pl-10 w-full"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -167,18 +167,18 @@ export default function UsersPage() {
               <div className="flex flex-wrap items-center gap-2">
                  {currentUser?.role === 'Admin' && (
                     <Select value={orgFilter} onValueChange={setOrgFilter}>
-                        <SelectTrigger className="w-full sm:w-auto min-w-[180px]">
-                            <SelectValue placeholder="Filtrar por organización..." />
+                        <SelectTrigger className="w-full sm:w-auto min-w-[150px]">
+                            <SelectValue placeholder="Organización" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">Todas las Organizaciones</SelectItem>
+                            <SelectItem value="all">Todas las Org.</SelectItem>
                             {organizations.map(org => <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                  )}
                  <Select value={shopFilter} onValueChange={setShopFilter}>
-                    <SelectTrigger className="w-full sm:w-auto min-w-[180px]">
-                        <SelectValue placeholder="Filtrar por tienda..." />
+                    <SelectTrigger className="w-full sm:w-auto min-w-[150px]">
+                        <SelectValue placeholder="Tienda" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Todas las Tiendas</SelectItem>
@@ -186,8 +186,8 @@ export default function UsersPage() {
                     </SelectContent>
                  </Select>
                  <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as any)}>
-                    <SelectTrigger className="w-full sm:w-auto min-w-[150px]">
-                        <SelectValue placeholder="Filtrar por rol..." />
+                    <SelectTrigger className="w-full sm:w-auto min-w-[120px]">
+                        <SelectValue placeholder="Rol" />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">Todos los Roles</SelectItem>
@@ -195,11 +195,11 @@ export default function UsersPage() {
                     </SelectContent>
                  </Select>
                  <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
-                    <SelectTrigger className="w-full sm:w-auto min-w-[150px]">
-                        <SelectValue placeholder="Filtrar por estatus..." />
+                    <SelectTrigger className="w-full sm:w-auto min-w-[120px]">
+                        <SelectValue placeholder="Estatus" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="all">Todos los Estatus</SelectItem>
+                        <SelectItem value="all">Todos</SelectItem>
                         <SelectItem value="activo">Activo</SelectItem>
                         <SelectItem value="inactivo">Inactivo</SelectItem>
                     </SelectContent>
