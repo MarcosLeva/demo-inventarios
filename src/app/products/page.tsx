@@ -3,6 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { getAllProducts, getShops, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, addProduct as addProductToData, getOrganizations } from '@/lib/data';
 import type { Product, Shop, Organization } from '@/lib/data';
 import {
@@ -213,7 +214,15 @@ export default function ProductsPage() {
                             </div>
                             </TableCell>
                             <TableCell className="font-medium">{product.name}</TableCell>
-                            <TableCell className="text-muted-foreground">{getShopName(product.shopId)}</TableCell>
+                            <TableCell>
+                              {product.shopId ? (
+                                <Link href={`/shop/${product.shopId}`} className="text-muted-foreground hover:text-primary hover:underline">
+                                  {getShopName(product.shopId)}
+                                </Link>
+                              ) : (
+                                <span className="text-muted-foreground">{getShopName(product.shopId)}</span>
+                              )}
+                            </TableCell>
                             <TableCell>
                             <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
                                 {product.status === 'activo' ? <PackageCheck className="mr-1.5 h-3 w-3" /> : <PackageX className="mr-1.5 h-3 w-3" />}
