@@ -171,7 +171,7 @@ export default function ShopPage() {
     handleDataUpdate();
   }
 
-  const canEditShop = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop.organizationId);
+  const canEdit = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop.organizationId);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
@@ -213,7 +213,7 @@ export default function ShopPage() {
                         {shop.name}
                     </h1>
                      <p className="text-lg text-muted-foreground mt-1">{shop.specialization}</p>
-                     {canEditShop && organization ? (
+                     {canEdit && organization ? (
                         <Button variant="link" asChild className="p-0 h-auto font-semibold text-base text-muted-foreground hover:text-primary mt-1">
                             <Link href={`/organizations/${organization.id}`} className="flex items-center gap-1.5">
                                 <Building className="h-4 w-4" /> {organization.name}
@@ -223,7 +223,7 @@ export default function ShopPage() {
                 </div>
             </div>
             <div className="flex items-center gap-4">
-              {canEditShop && (
+              {canEdit && (
                 <div className="flex items-center">
                     <TooltipProvider>
                       <div className="flex items-center -space-x-2">
@@ -258,7 +258,7 @@ export default function ShopPage() {
                 </div>
               )}
 
-              {canEditShop && (
+              {canEdit && (
                 <EditShopModal shop={shop} onShopUpdate={handleShopUpdate}>
                     <Button variant="outline" size="sm">
                         <Edit className="h-4 w-4 mr-2" />
@@ -273,7 +273,7 @@ export default function ShopPage() {
        <main className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
-            {canEditShop && (
+            {canEdit && (
               <AddProductModal onProductAdd={handleProductAdd}>
                   <Button>
                       <PlusCircle className="mr-2 h-4 w-4" />
@@ -314,7 +314,7 @@ export default function ShopPage() {
                       <ProductRow 
                         key={product.id} 
                         product={product}
-                        canEdit={canEditShop}
+                        canEdit={canEdit}
                         onProductUpdate={handleProductUpdate}
                         onProductDelete={handleProductDelete}
                         index={index}
@@ -947,5 +947,8 @@ function DynamicPropertiesEditor({ properties, setProperties }: { properties: Pr
     
 
     
+
+    
+
 
     
