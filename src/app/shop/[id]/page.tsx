@@ -8,8 +8,8 @@ import type { Product, Shop, ProductProperty, AppUser, Organization } from '@/li
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, MoreHorizontal, Edit, Trash2, PlusCircle, ChevronLeft, ChevronRight, Image as ImageIcon, Upload, Eye, X, Building, Users as UsersIcon } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, PlusCircle, ChevronLeft, ChevronRight, Edit, Building } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -32,7 +32,6 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
