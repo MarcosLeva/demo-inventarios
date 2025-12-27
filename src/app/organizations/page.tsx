@@ -6,7 +6,7 @@ import React from 'react';
 import { getOrganizations, addOrganization, updateOrganization, getUsers, getShops } from '@/lib/data';
 import type { Organization, AppUser, Shop } from '@/lib/data';
 import { useAuth } from '@/hooks/use-auth';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,10 +22,17 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 const ORGS_PER_PAGE = 10;
 
@@ -192,59 +199,85 @@ export default function OrganizationsPage() {
 }
 
 function OrganizationCard({ org, onOrgUpdate, getUserById, shopCount, index }: { org: Organization, onOrgUpdate: (org: Organization) => void, getUserById: (id: string) => AppUser | undefined, shopCount: number, index: number }) {
-
   const handleNameUpdate = (newName: string) => {
     onOrgUpdate({...org, name: newName});
   };
 
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1 && names[0] && names[names.length - 1]) {
+        return names[0][0] + names[names.length - 1][0];
+    }
+    return name.substring(0, 2);
+  }
+
+  const members = org.userIds.map(getUserById).filter(Boolean) as AppUser[];
+
   return (
-      <Link href={`/organizations/${org.id}`} className="group block h-full">
-        <Card 
-            className={cn(
-                "h-full overflow-hidden transition-all duration-300 ease-in-out hover:shadow-xl hover:-translate-y-1 hover:border-primary/50 animate-in fade-in-0 flex flex-col",
-            )}
-            style={{ animationDelay: `${index * 50}ms` }}
-        >
-            <CardHeader className="p-6">
-                <div className="flex items-start gap-4">
-                    <div className="bg-accent/10 text-accent p-3 rounded-lg">
-                        <Building className="h-6 w-6" />
-                    </div>
-                    <div className="flex-1">
-                        <EditableOrgName name={org.name} onUpdate={handleNameUpdate} />
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground pt-2">
-                            <div className="flex items-center gap-1.5">
-                                <Users className="h-4 w-4" />
-                                <span>{org.userIds.length} miembro(s)</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <Store className="h-4 w-4" />
-                                <span>{shopCount} tienda(s)</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="p-6 pt-0 flex-grow">
-                <p className="font-semibold text-sm mb-2">Miembros Clave:</p>
-                <div className="flex flex-wrap gap-1">
-                    {org.userIds.slice(0, 5).map(userId => {
-                        const member = getUserById(userId);
-                        return member ? <Badge key={userId} variant="secondary">{member.name}</Badge> : null;
-                    })}
-                    {org.userIds.length > 5 && <Badge variant="outline">+{org.userIds.length - 5} más</Badge>}
-                    {org.userIds.length === 0 && <p className="text-xs text-muted-foreground">Sin miembros asignados.</p>}
-                </div>
-            </CardContent>
-            <div className="p-6 pt-0 mt-auto">
-                <div className="flex justify-end items-center mt-4 pt-4 border-t">
-                    <div className="text-sm font-medium text-primary flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        Gestionar <ArrowRight className="h-4 w-4 transform -translate-x-1 group-hover:translate-x-0 transition-transform duration-300" />
-                    </div>
-                </div>
+    <Card 
+      className={cn(
+        "flex flex-col h-full transition-all duration-300 ease-in-out hover:shadow-lg animate-in fade-in-0"
+      )}
+      style={{ animationDelay: `${index * 50}ms` }}
+    >
+      <CardHeader className="flex flex-col items-center text-center p-6">
+        <div className="p-4 bg-muted rounded-full mb-4">
+          <Building className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <EditableOrgName name={org.name} onUpdate={handleNameUpdate} />
+      </CardHeader>
+      <CardContent className="flex-grow p-6 pt-0 text-center">
+        <div className="bg-secondary/50 rounded-lg p-3 flex justify-around text-sm mb-6">
+            <div className="flex flex-col items-center">
+                <span className="font-bold text-lg">{org.userIds.length}</span>
+                <span className="text-muted-foreground">Miembro(s)</span>
             </div>
-        </Card>
-      </Link>
+             <div className="border-l mx-2"></div>
+            <div className="flex flex-col items-center">
+                <span className="font-bold text-lg">{shopCount}</span>
+                <span className="text-muted-foreground">Tienda(s)</span>
+            </div>
+        </div>
+        
+        <div>
+          <p className="font-semibold text-sm mb-3">Miembros Clave:</p>
+          <TooltipProvider>
+            <div className="flex justify-center -space-x-2">
+                {members.slice(0, 5).map(member => (
+                    <Tooltip key={member.id}>
+                        <TooltipTrigger>
+                           <Avatar className="h-9 w-9 border-2 border-background">
+                                <AvatarImage src={`https://api.dicebear.com/8.x/initials/svg?seed=${member.name}`} alt={member.name} />
+                                <AvatarFallback>{getInitials(member.name)}</AvatarFallback>
+                            </Avatar>
+                        </TooltipTrigger>
+                        <TooltipContent>{member.name}</TooltipContent>
+                    </Tooltip>
+                ))}
+                 {members.length > 5 && (
+                    <Tooltip>
+                        <TooltipTrigger>
+                           <Avatar className="h-9 w-9 border-2 border-background">
+                                <AvatarFallback>+{members.length - 5}</AvatarFallback>
+                            </Avatar>
+                        </TooltipTrigger>
+                         <TooltipContent>{members.length - 5} más</TooltipContent>
+                    </Tooltip>
+                )}
+            </div>
+          </TooltipProvider>
+           {members.length === 0 && <p className="text-xs text-muted-foreground mt-2">Sin miembros asignados.</p>}
+        </div>
+      </CardContent>
+      <CardFooter className="p-4 border-t bg-muted/50 mt-auto">
+        <Button asChild variant="link" className="w-full text-sm font-semibold">
+           <Link href={`/organizations/${org.id}`}>
+              Gestionar Organización <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }
 
@@ -290,16 +323,16 @@ function EditableOrgName({ name, onUpdate }: { name: string, onUpdate: (newName:
                 ref={inputRef}
                 value={currentName}
                 onChange={(e) => setCurrentName(e.target.value)}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {e.preventDefault(); e.stopPropagation();}}
                 onBlur={handleBlur}
                 onKeyDown={handleKeyDown}
-                className="text-xl font-bold h-auto p-0 border-0 focus-visible:ring-0"
+                className="text-xl font-bold h-auto p-0 border-0 focus-visible:ring-0 text-center"
             />
         );
     }
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="group flex items-center justify-center gap-2">
             <h2 className="text-xl font-bold font-headline mb-0">{name}</h2>
             <Button variant="ghost" size="icon" onClick={handleEditClick} className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Edit className="h-4 w-4" />
