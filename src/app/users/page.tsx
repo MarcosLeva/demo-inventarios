@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { AddUserModal, UserActionsCell } from '@/components/UserModals';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const USERS_PER_PAGE = 10;
 
@@ -38,9 +39,16 @@ export default function UsersPage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const { user: currentUser } = useAuth();
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | AppUser['role']>('all');
+  const [orgFilter, setOrgFilter] = useState('all');
+  const [shopFilter, setShopFilter] = useState('all');
+
 
   useEffect(() => {
     if (currentUser) {
@@ -78,13 +86,28 @@ export default function UsersPage() {
     return org?.name || 'Desconocida';
   }
 
+  const filteredShops = useMemo(() => {
+    if (orgFilter === 'all') {
+      return shops;
+    }
+    return shops.filter(shop => shop.organizationId === orgFilter);
+  }, [orgFilter, shops]);
+  
+  const availableRoles = currentUser?.role === 'Admin' ? ['Admin', 'Editor', 'Vendedor'] : ['Editor', 'Vendedor'];
+
   const filteredUsers = useMemo(() => {
     setCurrentPage(1);
-    return users.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [users, searchTerm]);
+    return users.filter(user => {
+        const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                              user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
+        const matchesRole = roleFilter === 'all' || user.role === roleFilter;
+        const matchesOrg = orgFilter === 'all' || user.organizationId === orgFilter;
+        const matchesShop = shopFilter === 'all' || user.shopIds.includes(shopFilter);
+
+        return matchesSearch && matchesStatus && matchesRole && matchesOrg && matchesShop;
+    });
+  }, [users, searchTerm, statusFilter, roleFilter, orgFilter, shopFilter]);
 
   const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
 
@@ -130,15 +153,58 @@ export default function UsersPage() {
       
       <Card>
         <CardHeader>
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                    type="text"
-                    placeholder="Buscar por nombre o correo..."
-                    className="pl-10 w-full max-w-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+            <div className="flex flex-col gap-4">
+              <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                      type="text"
+                      placeholder="Buscar por nombre o correo..."
+                      className="pl-10 w-full max-w-sm"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                 {currentUser?.role === 'Admin' && (
+                    <Select value={orgFilter} onValueChange={setOrgFilter}>
+                        <SelectTrigger className="w-full sm:w-auto min-w-[180px]">
+                            <SelectValue placeholder="Filtrar por organización..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todas las Organizaciones</SelectItem>
+                            {organizations.map(org => <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+                 )}
+                 <Select value={shopFilter} onValueChange={setShopFilter}>
+                    <SelectTrigger className="w-full sm:w-auto min-w-[180px]">
+                        <SelectValue placeholder="Filtrar por tienda..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todas las Tiendas</SelectItem>
+                        {filteredShops.map(shop => <SelectItem key={shop.id} value={shop.id}>{shop.name}</SelectItem>)}
+                    </SelectContent>
+                 </Select>
+                 <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value as any)}>
+                    <SelectTrigger className="w-full sm:w-auto min-w-[150px]">
+                        <SelectValue placeholder="Filtrar por rol..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos los Roles</SelectItem>
+                        {availableRoles.map(role => <SelectItem key={role} value={role}>{role}</SelectItem>)}
+                    </SelectContent>
+                 </Select>
+                 <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
+                    <SelectTrigger className="w-full sm:w-auto min-w-[150px]">
+                        <SelectValue placeholder="Filtrar por estatus..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos los Estatus</SelectItem>
+                        <SelectItem value="activo">Activo</SelectItem>
+                        <SelectItem value="inactivo">Inactivo</SelectItem>
+                    </SelectContent>
+                 </Select>
+              </div>
             </div>
         </CardHeader>
         <CardContent>
