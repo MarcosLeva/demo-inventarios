@@ -82,14 +82,14 @@ export default function Sidebar({ isMobile = false }) {
   
   return (
     <div className={cn("hidden border-r bg-card md:block h-full", isMobile && "block")}>
-      <div className="flex h-full max-h-screen flex-col">
+      <div className="flex h-full flex-col">
         <div className="flex h-14 shrink-0 items-center border-b bg-card px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
                 <ShoppingCart className="h-6 w-6 text-primary" />
                 <span className="">Visor de Inventarios</span>
             </Link>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <nav className="grid items-start p-2 text-base font-medium sm:p-4">
             {navLinks.map(renderLink)}
           </nav>
