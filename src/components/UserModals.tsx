@@ -105,6 +105,11 @@ export function AddUserModal({ onUserAdd, allShops, allOrganizations, currentUse
             setOrganizationId(defaultOrganizationId ?? (currentUser?.role === 'Editor' ? currentUser.organizationId : undefined));
         }
     }, [isOpen, currentUser, defaultOrganizationId]);
+    
+    useEffect(() => {
+        setSelectedShopIds([]);
+    }, [organizationId]);
+
 
     const handleSave = () => {
         if (!name || !email || !role) {
@@ -382,3 +387,5 @@ function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, o
         </AlertDialog>
     );
 }
+
+    
