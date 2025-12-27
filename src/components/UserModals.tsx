@@ -211,9 +211,15 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
     const availableRoles = currentUser?.role === 'Admin' ? ['Admin', 'Editor', 'Vendedor'] : ['Editor', 'Vendedor'];
 
     const assignableShops = useMemo(() => {
-        const orgId = currentUser?.role === 'Editor' ? currentUser.organizationId : organizationId;
-        if (!orgId) return [];
-        return allShops.filter(s => s.organizationId === orgId);
+        if (currentUser?.role === 'Admin') {
+            if (!organizationId) return [];
+            return allShops.filter(s => s.organizationId === organizationId);
+        }
+        if (currentUser?.role === 'Editor') {
+            if (!currentUser.organizationId) return [];
+            return allShops.filter(s => s.organizationId === currentUser.organizationId);
+        }
+        return [];
     }, [allShops, organizationId, currentUser]);
 
 
@@ -229,11 +235,11 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
     }, [isOpen, user]);
 
     useEffect(() => {
-        // If organization changes while modal is open, reset shop selections.
-        // This is primarily for Admins changing a user's organization.
-        if (organizationId !== user.organizationId) {
-          setSelectedShopIds([]);
-        }
+      // If organization changes while modal is open, reset shop selections if the new org is different.
+      // This is primarily for Admins changing a user's organization.
+      if (organizationId !== user.organizationId) {
+        setSelectedShopIds([]);
+      }
     }, [organizationId, user.organizationId]);
 
     const handleSave = () => {
@@ -301,7 +307,7 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
                      {role === 'Vendedor' && (
                        <div className="grid grid-cols-4 items-start gap-4">
                           <Label className="text-right pt-2">Tiendas</Label>
-                          <ShopSelector allShops={assignableShops} selectedShopIds={selectedShopIds} onChange={setSelectedShopIds} disabled={!organizationId && currentUser?.role !== 'Editor'} />
+                          <ShopSelector allShops={assignableShops} selectedShopIds={selectedShopIds} onChange={setSelectedShopIds} disabled={currentUser?.role !== 'Admin' && currentUser?.role !== 'Editor'} />
                         </div>
                     )}
                      <div className="grid grid-cols-4 items-center gap-4">
