@@ -66,11 +66,12 @@ function UserSelector({allUsers, selectedUserIds, onChange, disabled = false}: {
 }
 
 
-export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUser, children, defaultOrganizationId }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'|'bannerSrc'|'bannerHint'>, assignedUserIds: string[]) => void, allUsers: AppUser[], allOrganizations: Organization[], currentUser: AppUser | null, children: React.ReactNode, defaultOrganizationId?: string }) {
+export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUser, children, defaultOrganizationId }: { onShopAdd: (shop: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], allOrganizations: Organization[], currentUser: AppUser | null, children: React.ReactNode, defaultOrganizationId?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [name, setName] = useState('');
     const [specialization, setSpecialization] = useState('');
-    const [logoSrc, setLogoSrc] = useState('https://picsum.photos/seed/newshop/400/400');
+    const [logoSrc, setLogoSrc] = useState('https://picsum.photos/seed/newlogo/400/400');
+    const [bannerSrc, setBannerSrc] = useState('https://picsum.photos/seed/newbanner/1200/400');
     const [iconName, setIconName] = useState<IconName>('Shirt');
     const [status, setStatus] = useState<'activo' | 'inactivo'>('activo');
     const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
@@ -87,7 +88,8 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
             // Reset form
             setName('');
             setSpecialization('');
-            setLogoSrc('https://picsum.photos/seed/newshop/400/400');
+            setLogoSrc('https://picsum.photos/seed/newlogo/400/400');
+            setBannerSrc('https://picsum.photos/seed/newbanner/1200/400');
             setIconName('Shirt');
             setStatus('activo');
             setAssignedUserIds([]);
@@ -113,6 +115,8 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
             specialization,
             logoSrc,
             logoHint: `${name} ${specialization}`,
+            bannerSrc,
+            bannerHint: `${name} ${specialization} interior`,
             icon: iconName,
             status,
             organizationId,
@@ -126,7 +130,7 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>Agregar Nueva Tienda</DialogTitle>
                     <DialogDescription>Completa los detalles para crear una nueva tienda.</DialogDescription>
@@ -209,6 +213,22 @@ export function AddShopModal({ onShopAdd, allUsers, allOrganizations, currentUse
                             <div className="col-span-3">
                                 <div className="relative h-24 w-24 rounded-md overflow-hidden border">
                                     <Image src={logoSrc} alt="Previsualización del logo" fill className="object-cover" sizes="96px" />
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                     <div className="grid grid-cols-4 items-start gap-4 pt-2">
+                        <Label className="text-right pt-2">Banner</Label>
+                        <div className="col-span-3">
+                            <ImageUploader value={bannerSrc} onChange={setBannerSrc} />
+                        </div>
+                    </div>
+                     {bannerSrc && (
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Previsualización</Label>
+                            <div className="col-span-3">
+                                <div className="relative aspect-video w-full rounded-md overflow-hidden border">
+                                    <Image src={bannerSrc} alt="Previsualización del banner" fill className="object-cover" sizes="100%" />
                                 </div>
                             </div>
                         </div>

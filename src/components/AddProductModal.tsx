@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogClose,
-} from "@/components/ui/dialog";
+} from "@/components/ui/dialog"
 import { Button } from './ui/button';
 import { Label } from './ui/label';
 import { Input } from './ui/input';
@@ -276,4 +276,3 @@ export function AddGlobalProductModal({ onProductAdd, allShops, allOrganizations
         </Dialog>
     );
 }
-

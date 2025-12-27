@@ -102,7 +102,7 @@ function ViewProductModal({ product, children }: { product: Product, children: R
     return (
         <Dialog>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>{product.name}</DialogTitle>
                 </DialogHeader>
@@ -244,7 +244,7 @@ function UpdateStockModal({ product, onProductUpdate, children }: { product: Pro
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Actualizar Stock</DialogTitle>
                     <DialogDescription>Ajusta la cantidad de stock para <strong>{product.name}</strong>.</DialogDescription>

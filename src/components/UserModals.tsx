@@ -124,7 +124,7 @@ export function AddUserModal({ onUserAdd, allShops, allOrganizations, currentUse
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>Agregar Nuevo Usuario</DialogTitle>
                     <DialogDescription>Completa los detalles para crear un nuevo usuario.</DialogDescription>
@@ -245,7 +245,7 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent>
+            <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>Editar Usuario</DialogTitle>
                     <DialogDescription>Realiza cambios en los detalles del usuario.</DialogDescription>

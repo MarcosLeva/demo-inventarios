@@ -471,7 +471,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Editar Tienda</DialogTitle>
                     <DialogDescription>Realiza cambios en los detalles de la tienda.</DialogDescription>
@@ -530,7 +530,3 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
-
-    
-
-    

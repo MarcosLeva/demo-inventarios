@@ -508,13 +508,11 @@ export function deleteProduct(shopId: string, productId: string) {
     }
 }
 
-export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'|'organizationId'|'bannerSrc'|'bannerHint'> & { organizationId: string }, assignedUserIds: string[], currentUser: AppUser) {
+export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'inventory'|'organizationId'> & { organizationId: string }, assignedUserIds: string[], currentUser: AppUser) {
     const newShop: Shop = {
         ...shopData,
         id: `shop-${Date.now()}`,
         inventory: [],
-        bannerSrc: `https://picsum.photos/seed/${Date.now()}bg/1200/400`,
-        bannerHint: 'new store interior',
     };
 
     if (!newShop.organizationId) {
