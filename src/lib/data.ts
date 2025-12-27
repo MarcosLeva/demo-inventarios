@@ -608,7 +608,10 @@ export function addShop(shopData: Omit<Shop, 'id'|'inventory'>, currentUser: App
 export function updateShop(updatedShop: Shop) {
     const index = shopsStore.findIndex(shop => shop.id === updatedShop.id);
     if (index !== -1) {
-        shopsStore[index] = updatedShop;
+        shopsStore[index] = {
+            ...shopsStore[index],
+            ...updatedShop
+        };
     }
 }
 

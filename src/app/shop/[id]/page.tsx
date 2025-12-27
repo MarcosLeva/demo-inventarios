@@ -383,7 +383,7 @@ function ProductRow({ product, canEdit, onProductUpdate, onProductDelete, index 
   }).format(product.price);
   
   const isOutOfStock = product.stock === 0;
-  const description = product.properties.find(p => p.key.toLowerCase() === 'descripción')?.value || 'Sin descripción';
+  const description = product.properties.find(p => p.key?.toLowerCase() === 'descripción')?.value || 'Sin descripción';
 
   return (
     <TableRow 
