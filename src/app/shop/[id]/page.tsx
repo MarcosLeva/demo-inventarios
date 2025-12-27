@@ -167,7 +167,18 @@ export default function ShopPage() {
         </Button>
       
       <div className="relative overflow-hidden rounded-lg">
-        <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 p-6 z-20 justify-between">
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10"></div>
+        <div className="relative h-48 w-full">
+            <Image
+                src={`https://picsum.photos/seed/${shop.id}bg/1200/400`}
+                alt={`${shop.name} background`}
+                fill
+                className="object-cover"
+                data-ai-hint={`${shop.specialization} interior`}
+                priority
+            />
+        </div>
+        <div className="relative flex flex-col md:flex-row items-start md:items-end gap-6 p-6 z-20 justify-between -mt-20">
             <div className="flex items-center gap-6">
                 <div className="relative h-32 w-32 rounded-full overflow-hidden shrink-0 border-4 border-background ring-4 ring-primary/20 shadow-md">
                     <Image
@@ -179,13 +190,13 @@ export default function ShopPage() {
                       sizes="128px"
                     />
                 </div>
-                <div className="relative">
-                    <Badge variant={shop.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize absolute -top-6 left-0">{shop.status}</Badge>
+                <div className="relative pt-16">
+                    <Badge variant={shop.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize absolute top-8 left-0">{shop.status}</Badge>
                     <h1 className="text-4xl font-bold tracking-tight font-headline text-foreground sm:text-5xl">
                         {shop.name}
                     </h1>
                      <p className="text-lg text-muted-foreground mt-1">{shop.specialization}</p>
-                     {canEdit && organization ? (
+                     {organization ? (
                         <Button variant="link" asChild className="p-0 h-auto font-semibold text-base text-muted-foreground hover:text-primary mt-1">
                             <Link href={`/organizations/${organization.id}`} className="flex items-center gap-1.5">
                                 <Building className="h-4 w-4" /> {organization.name}
@@ -511,3 +522,5 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
+
+    
