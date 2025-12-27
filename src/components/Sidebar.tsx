@@ -81,7 +81,7 @@ export default function Sidebar({ isMobile = false }) {
   };
   
   return (
-    <div className={cn("hidden border-r bg-card md:block h-full", isMobile && "block")}>
+    <div className={cn("hidden border-r bg-card md:block", isMobile && "block")}>
       <div className="flex h-full flex-col">
         <div className="flex h-14 shrink-0 items-center border-b bg-card px-4 lg:h-[60px] lg:px-6">
             <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
