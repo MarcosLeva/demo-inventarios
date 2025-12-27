@@ -1,10 +1,9 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons, getUsers, getOrganizations } from '@/lib/data';
-import type { Product, Shop, ProductProperty, AppUser, Organization } from '@/lib/data';
+import type { Product, Shop, ProductProperty, AppUser, Organization, IconName } from '@/lib/data';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -165,7 +164,7 @@ export default function ShopPage() {
           </Link>
         </Button>
       
-      <div className="relative overflow-hidden rounded-lg">
+      <div className="relative overflow-hidden rounded-lg -mx-4 lg:-mx-6">
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10"></div>
         <div className="relative h-48 w-full">
             <Image
@@ -441,6 +440,8 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
     const [logoSrc, setLogoSrc] = useState(shop.logoSrc);
     const [bannerSrc, setBannerSrc] = useState(shop.bannerSrc);
     const [status, setStatus] = useState(shop.status);
+    const [iconName, setIconName] = useState<IconName>(shop.icon);
+
 
     useEffect(() => {
         if (isOpen) {
@@ -449,6 +450,7 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             setLogoSrc(shop.logoSrc);
             setBannerSrc(shop.bannerSrc);
             setStatus(shop.status);
+            setIconName(shop.icon);
         }
     }, [isOpen, shop]);
 
@@ -464,14 +466,17 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
             logoSrc,
             bannerSrc,
             status,
+            icon: iconName,
         });
         setIsOpen(false);
     }
+    
+    const IconPreview = icons[iconName] || null;
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Editar Tienda</DialogTitle>
                     <DialogDescription>Realiza cambios en los detalles de la tienda.</DialogDescription>
@@ -484,6 +489,34 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="shop-specialization" className="text-right">Especialización</Label>
                         <Input id="shop-specialization" value={specialization} onChange={(e) => setSpecialization(e.target.value)} className="col-span-3" />
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="shop-icon-edit" className="text-right">Icono</Label>
+                        <div className="col-span-3 flex items-center gap-2">
+                             <Select value={iconName} onValueChange={(value: IconName) => setIconName(value)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecciona un icono" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {Object.keys(icons).map(key => {
+                                        const Icon = icons[key as IconName];
+                                        return (
+                                            <SelectItem key={key} value={key}>
+                                               <div className="flex items-center gap-2">
+                                                 <Icon className="h-4 w-4" />
+                                                 <span>{key}</span>
+                                               </div>
+                                            </SelectItem>
+                                        )
+                                    })}
+                                </SelectContent>
+                            </Select>
+                            {IconPreview && (
+                                <div className="bg-accent/10 text-accent p-2 rounded-md">
+                                    <IconPreview className="h-6 w-6" />
+                                </div>
+                            )}
+                        </div>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="shop-status-edit" className="text-right">Estatus</Label>
@@ -530,3 +563,5 @@ function EditShopModal({ shop, onShopUpdate, children }: { shop: Shop, onShopUpd
         </Dialog>
     );
 }
+
+    
