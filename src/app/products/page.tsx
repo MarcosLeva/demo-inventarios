@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
-import { getAllProducts, getShops } from '@/lib/data';
+import { getAllProducts, getShops, updateProduct as updateProductInData, deleteProduct as deleteProductFromData } from '@/lib/data';
 import type { Product, Shop } from '@/lib/data';
 import {
   Table,
@@ -31,6 +31,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog"
 import { ProductFilters } from '@/components/ProductFilters';
+import { ProductActionsCell } from '@/components/ProductActions';
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -53,7 +54,8 @@ export default function ProductsPage() {
     return Math.ceil(Math.max(...products.map((p) => p.price)));
   }, [products]);
 
-  useEffect(() => {
+  const fetchData = () => {
+    setLoading(true);
     setTimeout(() => {
       const allProducts = getAllProducts(user);
       setProducts(allProducts);
@@ -64,7 +66,24 @@ export default function ProductsPage() {
       setPriceRange([0, initialMaxPrice]);
       setLoading(false);
     }, 500);
+  };
+  
+  useEffect(() => {
+    fetchData();
   }, [user]);
+
+  const handleProductUpdate = (updatedProduct: Product) => {
+    if(!updatedProduct.shopId) return;
+    updateProductInData(updatedProduct.shopId, updatedProduct);
+    fetchData();
+  }
+
+  const handleProductDelete = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (!product || !product.shopId) return;
+    deleteProductFromData(product.shopId, productId);
+    fetchData();
+  }
 
   const getShopName = (shopId: string | undefined) => {
     if (!shopId) return 'N/A';
@@ -154,43 +173,47 @@ export default function ProductsPage() {
                       </TableRow>
                   ))
               ) : paginatedProducts.length > 0 ? (
-                  paginatedProducts.map((product) => (
-                  <TableRow key={product.id}>
-                      <TableCell>
-                      <div className="relative h-16 w-16 rounded-md overflow-hidden">
-                          <Image
-                          src={product.imageSrc}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                          sizes="64px"
-                          />
-                      </div>
-                      </TableCell>
-                      <TableCell className="font-medium">{product.name}</TableCell>
-                      <TableCell className="text-muted-foreground">{getShopName(product.shopId)}</TableCell>
-                      <TableCell>
-                      <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
-                          {product.status === 'activo' ? <PackageCheck className="mr-1.5 h-3 w-3" /> : <PackageX className="mr-1.5 h-3 w-3" />}
-                          {product.status}
-                      </Badge>
-                      </TableCell>
-                      <TableCell className={cn("text-right font-semibold", product.stock === 0 ? "text-destructive" : "")}>
-                      {product.stock === 0 ? 'Agotado' : product.stock}
-                      </TableCell>
-                      <TableCell className="text-right font-semibold text-primary">
-                      {formatPrice(product.price)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                          <ViewProductModal product={product} shopName={getShopName(product.shopId)}>
-                              <Button variant="ghost" size="icon">
-                                  <Eye className="h-4 w-4" />
-                                  <span className="sr-only">Ver Detalles</span>
-                              </Button>
-                          </ViewProductModal>
-                      </TableCell>
-                  </TableRow>
-                  ))
+                  paginatedProducts.map((product) => {
+                    const shop = shops.find(s => s.id === product.shopId);
+                    const canEdit = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop?.organizationId);
+                    return (
+                        <TableRow key={product.id}>
+                            <TableCell>
+                            <div className="relative h-16 w-16 rounded-md overflow-hidden">
+                                <Image
+                                src={product.imageSrc}
+                                alt={product.name}
+                                fill
+                                className="object-cover"
+                                sizes="64px"
+                                />
+                            </div>
+                            </TableCell>
+                            <TableCell className="font-medium">{product.name}</TableCell>
+                            <TableCell className="text-muted-foreground">{getShopName(product.shopId)}</TableCell>
+                            <TableCell>
+                            <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
+                                {product.status === 'activo' ? <PackageCheck className="mr-1.5 h-3 w-3" /> : <PackageX className="mr-1.5 h-3 w-3" />}
+                                {product.status}
+                            </Badge>
+                            </TableCell>
+                            <TableCell className={cn("text-right font-semibold", product.stock === 0 ? "text-destructive" : "")}>
+                            {product.stock === 0 ? 'Agotado' : product.stock}
+                            </TableCell>
+                            <TableCell className="text-right font-semibold text-primary">
+                            {formatPrice(product.price)}
+                            </TableCell>
+                            <TableCell className="text-center">
+                                <ProductActionsCell
+                                  product={product}
+                                  canEdit={!!canEdit}
+                                  onProductUpdate={handleProductUpdate}
+                                  onProductDelete={handleProductDelete}
+                                />
+                            </TableCell>
+                        </TableRow>
+                    )
+                })
               ) : (
                   <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center">
@@ -279,3 +302,5 @@ function ViewProductModal({ product, shopName, children }: { product: Product, s
         </Dialog>
     )
 }
+
+    
