@@ -89,7 +89,7 @@ export default function Sidebar({ isMobile = false }) {
                 <span className="">Visor de Inventarios</span>
             </Link>
         </div>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1">
           <nav className="grid items-start p-2 text-base font-medium sm:p-4">
             {navLinks.map(renderLink)}
           </nav>
