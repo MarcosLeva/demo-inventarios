@@ -8,7 +8,7 @@ import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, PlusCircle, ChevronLeft, ChevronRight, Edit, Building } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, PlusCircle, ChevronLeft, ChevronRight, Edit, Building, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -48,6 +48,7 @@ import { Input } from '@/components/ui/input';
 import { ImageUploader } from '@/components/ImageUploader';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 
 const ITEMS_PER_PAGE = 10;
@@ -478,25 +479,17 @@ function EditShopModal({ shop, members, organizationUsers, onShopUpdate, childre
         setIsOpen(false);
     }
     
-    const handleUserToggle = (userId: string) => {
-        setAssignedUserIds(
-            assignedUserIds.includes(userId)
-                ? assignedUserIds.filter(id => id !== userId)
-                : [...assignedUserIds, userId]
-        );
-    }
-
     const IconPreview = icons[iconName] || null;
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
-            <DialogContent className="sm:max-w-3xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>Editar Tienda</DialogTitle>
                     <DialogDescription>Realiza cambios en los detalles de la tienda y sus usuarios asignados.</DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-6 py-4">
+                <div className="grid gap-6 py-4 max-h-[70vh] overflow-y-auto pr-4">
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="shop-name" className="text-right">Nombre</Label>
                         <Input id="shop-name" value={name} onChange={(e) => setName(e.target.value)} className="col-span-3" />
@@ -570,21 +563,11 @@ function EditShopModal({ shop, members, organizationUsers, onShopUpdate, childre
                      <div className="grid grid-cols-4 items-start gap-4 pt-2">
                         <Label className="text-right pt-2">Vendedores Asignados</Label>
                          <div className="col-span-3">
-                            <ScrollArea className="h-40 border rounded-md p-2">
-                                {organizationUsers.map(user => (
-                                    <div key={user.id} className="flex items-center space-x-2 p-2 hover:bg-muted rounded-md">
-                                        <Checkbox
-                                            id={`assign-user-${user.id}`}
-                                            checked={assignedUserIds.includes(user.id)}
-                                            onCheckedChange={() => handleUserToggle(user.id)}
-                                        />
-                                        <Label htmlFor={`assign-user-${user.id}`} className="flex-1 cursor-pointer">
-                                            {user.name}
-                                        </Label>
-                                    </div>
-                                ))}
-                                {organizationUsers.length === 0 && <p className="text-sm text-muted-foreground p-2">No hay vendedores en la organización.</p>}
-                            </ScrollArea>
+                            <UserSelector 
+                              allUsers={organizationUsers}
+                              selectedUserIds={assignedUserIds}
+                              onChange={setAssignedUserIds}
+                            />
                         </div>
                     </div>
                 </div>
@@ -598,3 +581,42 @@ function EditShopModal({ shop, members, organizationUsers, onShopUpdate, childre
         </Dialog>
     );
 }
+
+function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[], selectedUserIds: string[], onChange: (ids: string[]) => void}) {
+    
+    const handleUserToggle = (userId: string) => {
+        onChange(
+            selectedUserIds.includes(userId)
+                ? selectedUserIds.filter(id => id !== userId)
+                : [...selectedUserIds, userId]
+        );
+    }
+    
+    return (
+         <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left font-normal">
+                    <Users className="mr-2 h-4 w-4" />
+                    {selectedUserIds.length > 0 ? `${selectedUserIds.length} usuario(s) seleccionado(s)`: 'Seleccionar vendedores'}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                <ScrollArea className="h-48">
+                    {allUsers.map(user => (
+                        <DropdownMenuItem key={user.id} onSelect={(e) => e.preventDefault()}>
+                            <Checkbox
+                                id={`user-selector-edit-${user.id}`}
+                                checked={selectedUserIds.includes(user.id)}
+                                onCheckedChange={() => handleUserToggle(user.id)}
+                                className="mr-2"
+                            />
+                            <Label htmlFor={`user-selector-edit-${user.id}`} className="flex-1 cursor-pointer">{user.name}</Label>
+                        </DropdownMenuItem>
+                    ))}
+                    {allUsers.length === 0 && <DropdownMenuItem disabled>No hay vendedores en la organización.</DropdownMenuItem>}
+                </ScrollArea>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
