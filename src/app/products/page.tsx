@@ -125,6 +125,11 @@ export default function ProductsPage() {
   
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
 
+  const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(price);
+
   const paginatedProducts: DisplayProduct[] = useMemo(() => {
     const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
     const endIndex = startIndex + PRODUCTS_PER_PAGE;
@@ -153,12 +158,6 @@ export default function ProductsPage() {
     });
   }, [filteredProducts, currentPage]);
 
-
-  const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(price);
-  
   const canAddProduct = user?.role === 'Admin' || user?.role === 'Editor';
 
   return (
