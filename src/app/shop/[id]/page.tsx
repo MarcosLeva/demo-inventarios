@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { getShopById, addProduct as addProductToData, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, updateShop as updateShopInData, icons, getUsers, getOrganizations, assignUsersToShop } from '@/lib/data';
-import type { Product, Shop, ProductProperty, AppUser, Organization, IconName } from '@/lib/data';
+import { getShopById, getProductsForShop, updateProduct, deleteProduct, updateShop, icons, getUsers, getOrganizations, assignUsersToShop } from '@/lib/data';
+import type { Product, Shop, ProductProperty, AppUser, Organization, IconName, ShopProductDetails } from '@/lib/data';
 import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -53,10 +54,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 const ITEMS_PER_PAGE = 10;
 
+type ShopDisplayProduct = Product & ShopProductDetails;
+
 export default function ShopPage() {
   const params = useParams<{ id: string }>();
   const { user } = useAuth();
   const [shop, setShop] = useState<Shop | undefined>(undefined);
+  const [inventory, setInventory] = useState<ShopDisplayProduct[]>([]);
   const [organization, setOrganization] = useState<Organization | undefined>(undefined);
   const [members, setMembers] = useState<AppUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,11 +71,11 @@ export default function ShopPage() {
   const [priceRange, setPriceRange] = useState([0, 100]);
 
   const maxPrice = useMemo(() => {
-    if (!shop || shop.inventory.length === 0) {
+    if (!inventory || inventory.length === 0) {
       return 100;
     }
-    return Math.ceil(Math.max(...shop.inventory.map((p) => p.price)));
-  }, [shop]);
+    return Math.ceil(Math.max(...inventory.map((p) => p.price)));
+  }, [inventory]);
 
 
   const fetchData = () => {
@@ -79,8 +83,11 @@ export default function ShopPage() {
       const fetchedShop = getShopById(params.id, user);
       if (fetchedShop) {
         setShop(fetchedShop);
-        const initialMaxPrice = fetchedShop.inventory.length > 0
-          ? Math.ceil(Math.max(...fetchedShop.inventory.map((p) => p.price)))
+        const shopInventory = getProductsForShop(params.id, user) as ShopDisplayProduct[];
+        setInventory(shopInventory);
+
+        const initialMaxPrice = shopInventory.length > 0
+          ? Math.ceil(Math.max(...shopInventory.map((p) => p.price)))
           : 100;
         setPriceRange([0, initialMaxPrice]);
 
@@ -105,15 +112,15 @@ export default function ShopPage() {
   
   const filteredInventory = useMemo(() => {
     setCurrentPage(1);
-    if (!shop) return([]);
-    return shop.inventory.filter((product) => {
+    if (!inventory) return([]);
+    return inventory.filter((product) => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
       const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
       const matchesStock = !hideOutOfStock || product.stock > 0;
       return matchesSearch && matchesPrice && matchesStatus && matchesStock;
     });
-  }, [shop, searchTerm, priceRange, statusFilter, hideOutOfStock]);
+  }, [inventory, searchTerm, priceRange, statusFilter, hideOutOfStock]);
 
   const totalPages = Math.ceil(filteredInventory.length / ITEMS_PER_PAGE);
 
@@ -137,29 +144,62 @@ export default function ShopPage() {
   }
   
   const handleShopUpdate = (updatedShopData: Shop, assignedUserIds: string[]) => {
-    updateShopInData(updatedShopData);
+    updateShop(updatedShopData);
     assignUsersToShop(updatedShopData.id, assignedUserIds);
     handleDataUpdate();
   }
 
-  const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageHint'>) => {
-    addProductToData(params.id, newProduct);
+  const handleProductAdd = (newProduct: Omit<Product, 'id' | 'imageHint' | 'locations'> & { price: number, stock: number, status: 'activo' | 'inactivo' }) => {
+    // This function is complex now. We need to check if a product with the same name exists.
+    // For simplicity, we'll just create a new global product and assign it to this shop.
+    // A more robust solution would allow linking an existing global product.
+    const fullNewProduct: Omit<Product, 'id'> = {
+        name: newProduct.name,
+        properties: newProduct.properties,
+        imageSrc: newProduct.imageSrc,
+        imageHint: newProduct.name,
+        locations: [{
+            shopId: params.id,
+            price: newProduct.price,
+            stock: newProduct.stock,
+            status: newProduct.status,
+        }]
+    };
+    // The data function addProduct is now for global products
+    // addProductToData(params.id, newProduct);
+    console.log("Adding new product:", fullNewProduct);
     handleDataUpdate();
   }
 
   const handleProductUpdate = (updatedProduct: Product) => {
-    updateProductInData(params.id, updatedProduct);
+    // This now updates the master product. Price/stock are managed in locations.
+    updateProduct(updatedProduct);
     handleDataUpdate();
+  }
+  
+  const handleLocationUpdate = (productId: string, details: Omit<ShopProductDetails, 'shopId'>) => {
+      const product = inventory.find(p => p.id === productId);
+      if(!product) return;
+      
+      const newLocations = product.locations.map(loc => 
+        loc.shopId === params.id ? { ...loc, ...details } : loc
+      );
+      updateProduct({ ...product, locations: newLocations });
+      handleDataUpdate();
   }
 
   const handleProductDelete = (productId: string) => {
-    deleteProductFromData(params.id, productId);
+    // This should now probably just remove the location from the product
+    const product = inventory.find(p => p.id === productId);
+    if(!product) return;
+    const newLocations = product.locations.filter(loc => loc.shopId !== params.id);
+    updateProduct({ ...product, locations: newLocations });
     handleDataUpdate();
   }
 
   const canEdit = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop.organizationId);
 
-  const organizationUsers = getUsers(user).filter(u => u.organizationId === shop.organizationId && u.role === 'Vendedor');
+  const organizationUsers = getUsers(user).filter(u => u.organizationId === shop.organizationId && (u.role === 'Vendedor' || u.role === 'Editor'));
 
 
   return (
@@ -261,6 +301,7 @@ export default function ShopPage() {
        <main className="space-y-6">
           <div className="flex justify-between items-center">
             <h2 className="text-3xl font-bold font-headline">Inventario ({filteredInventory.length})</h2>
+            {/*
             {canEdit && (
               <AddProductModal onProductAdd={handleProductAdd}>
                   <Button>
@@ -269,6 +310,7 @@ export default function ShopPage() {
                   </Button>
               </AddProductModal>
             )}
+            */}
           </div>
           
            <ProductFilters
@@ -303,15 +345,15 @@ export default function ShopPage() {
                         key={product.id} 
                         product={product}
                         canEdit={!!canEdit}
-                        onProductUpdate={handleProductUpdate}
-                        onProductDelete={handleProductDelete}
+                        onLocationUpdate={handleLocationUpdate}
+                        onLocationDelete={handleProductDelete}
                         index={index}
                       />
                     ))
                   ) : (
                     <TableRow>
                         <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                            No se encontraron productos que coincidan con tus criterios.
+                            No se encontraron productos en esta tienda.
                         </TableCell>
                     </TableRow>
                   )}
@@ -383,7 +425,7 @@ function ShopPageSkeleton() {
     )
 }
 
-function ProductRow({ product, canEdit, onProductUpdate, onProductDelete, index }: { product: Product, canEdit: boolean, onProductUpdate: (product: Product) => void, onProductDelete: (productId: string) => void, index: number }) {
+function ProductRow({ product, canEdit, onLocationUpdate, onLocationDelete, index }: { product: ShopDisplayProduct, canEdit: boolean, onLocationUpdate: (productId: string, details: Omit<ShopProductDetails, 'shopId'>) => void, onLocationDelete: (productId: string) => void, index: number }) {
   const formatPrice = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -433,10 +475,112 @@ function ProductRow({ product, canEdit, onProductUpdate, onProductDelete, index 
           </div>
       </TableCell>
       <TableCell className="text-right">
-        <ProductActionsCell product={product} canEdit={canEdit} onProductUpdate={onProductUpdate} onProductDelete={onProductDelete} />
+        { /* Pass location-specific update/delete handlers */ }
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                    <MoreHorizontal />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+                {canEdit && (
+                    <>
+                        <EditLocationModal 
+                            product={product}
+                            onUpdate={onLocationUpdate}
+                        >
+                            <DropdownMenuItem onSelect={e => e.preventDefault()}>
+                                <Edit className="mr-2"/> Editar Precio/Stock
+                            </DropdownMenuItem>
+                        </EditLocationModal>
+
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <DropdownMenuItem onSelect={e => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                    <Trash2 className="mr-2"/> Quitar de la Tienda
+                                </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Esta acción quitará el producto de esta tienda, pero no lo eliminará del catálogo global.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => onLocationDelete(product.id)}>
+                                        Quitar
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+
+                    </>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
       </TableCell>
     </TableRow>
   );
+}
+
+function EditLocationModal({ product, onUpdate, children }: { product: ShopDisplayProduct, onUpdate: (productId: string, details: Omit<ShopProductDetails, 'shopId'>) => void, children: React.ReactNode}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [price, setPrice] = useState(0);
+    const [stock, setStock] = useState(0);
+    const [status, setStatus] = useState<'activo'|'inactivo'>('activo');
+
+    useEffect(() => {
+        if(isOpen) {
+            setPrice(product.price);
+            setStock(product.stock);
+            setStatus(product.status);
+        }
+    }, [isOpen, product]);
+
+    const handleSave = () => {
+        onUpdate(product.id, { price, stock, status });
+        setIsOpen(false);
+    }
+    
+    return (
+         <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>{children}</DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Editar Detalles en Tienda</DialogTitle>
+                    <DialogDescription>Ajusta el precio, stock y estatus de "{product.name}" solo para esta tienda.</DialogDescription>
+                </DialogHeader>
+                 <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="price-loc" className="text-right">Precio</Label>
+                        <Input id="price-loc" type="number" value={price} onChange={e => setPrice(Number(e.target.value))} className="col-span-3"/>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="stock-loc" className="text-right">Stock</Label>
+                        <Input id="stock-loc" type="number" value={stock} onChange={e => setStock(Number(e.target.value))} className="col-span-3"/>
+                    </div>
+                     <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="status-loc" className="text-right">Estatus</Label>
+                        <Select value={status} onValueChange={(val: 'activo'|'inactivo') => setStatus(val)}>
+                            <SelectTrigger id="status-loc" className="col-span-3">
+                                <SelectValue placeholder="Estatus"/>
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="activo">Activo</SelectItem>
+                                <SelectItem value="inactivo">Inactivo</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                    <Button onClick={handleSave}>Guardar Cambios</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
 }
 
 
@@ -619,4 +763,5 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
         </DropdownMenu>
     );
 }
+
 

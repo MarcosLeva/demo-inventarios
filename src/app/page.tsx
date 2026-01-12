@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { getShops, getUsers, addShopAndAssignUsers, getOrganizations } from '@/lib/data';
-import type { Shop, AppUser, Organization } from '@/lib/data';
+import { getShops, getUsers, addShopAndAssignUsers, getOrganizations, getAllProducts } from '@/lib/data';
+import type { Shop, AppUser, Organization, Product } from '@/lib/data';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -23,6 +24,7 @@ const SHOPS_PER_PAGE = 8;
 
 export default function Home() {
   const [initialShops, setInitialShops] = useState<Shop[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSpecialization, setSelectedSpecialization] = useState('all');
@@ -35,6 +37,7 @@ export default function Home() {
   const fetchData = () => {
       setInitialShops(getShops(user));
       setAllUsers(getUsers(user));
+      setProducts(getAllProducts(user));
       if (user?.role === 'Admin') {
         setAllOrganizations(getOrganizations(user));
       } else if (user?.role === 'Editor') {
@@ -75,9 +78,9 @@ export default function Home() {
     return filteredShops.slice(startIndex, endIndex);
   }, [filteredShops, currentPage]);
 
-  const handleShopAdd = (newShopData: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => {
+  const handleShopAdd = (newShopData: Omit<Shop, 'id'>, assignedUserIds: string[]) => {
     if (!user) return;
-    addShopAndAssignUsers(newShopData as Omit<Shop, 'id'|'inventory'|'organizationId'> & { organizationId: string }, assignedUserIds, user); 
+    addShopAndAssignUsers(newShopData as Omit<Shop, 'id'|'organizationId'> & { organizationId: string }, assignedUserIds, user); 
     fetchData();
   };
 
@@ -85,6 +88,10 @@ export default function Home() {
 
   const getMemberCountForShop = (shopId: string) => {
     return allUsers.filter(u => u.shopIds.includes(shopId)).length;
+  }
+  
+  const getProductCountForShop = (shopId: string) => {
+      return products.filter(p => p.locations.some(loc => loc.shopId === shopId)).length;
   }
 
 
@@ -158,6 +165,7 @@ export default function Home() {
                 shop={shop} 
                 index={index} 
                 memberCount={getMemberCountForShop(shop.id)}
+                productCount={getProductCountForShop(shop.id)}
             />
         ))}
       </div>
@@ -217,7 +225,7 @@ function ShopCardSkeleton() {
 }
 
 
-function ShopCard({ shop, index, memberCount }: { shop: Shop, index: number, memberCount: number }) {
+function ShopCard({ shop, index, memberCount, productCount }: { shop: Shop, index: number, memberCount: number, productCount: number }) {
   const Icon = icons[shop.icon];
   return (
     <Link href={`/shop/${shop.id}`} className="group block">
@@ -255,7 +263,7 @@ function ShopCard({ shop, index, memberCount }: { shop: Shop, index: number, mem
           <div className="mt-4 flex-grow space-y-2 text-sm text-muted-foreground">
              <div className="flex items-center gap-2">
                 <Package className="h-4 w-4" />
-                <span>{shop.inventory.length} producto(s)</span>
+                <span>{productCount} producto(s)</span>
              </div>
              <div className="flex items-center gap-2">
                 <Users className="h-4 w-4" />

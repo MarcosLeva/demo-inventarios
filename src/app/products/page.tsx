@@ -1,11 +1,12 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getAllProducts, getShops, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, addProduct as addProductToData, getOrganizations } from '@/lib/data';
-import type { Product, Shop, Organization } from '@/lib/data';
+import type { Product, Shop, Organization, ShopProductDetails } from '@/lib/data';
 import {
   Table,
   TableBody,
@@ -17,7 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, PackageCheck, PackageX, ChevronLeft, ChevronRight, Eye, PlusCircle } from 'lucide-react';
+import { Search, MapPin, ChevronLeft, ChevronRight, Eye, PlusCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -29,6 +30,13 @@ import { AddGlobalProductModal } from '@/components/AddProductModal';
 
 
 const PRODUCTS_PER_PAGE = 10;
+
+type DisplayProduct = Product & {
+    priceRange?: string;
+    stockSum?: number;
+    statusSummary?: string;
+};
+
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,7 +55,9 @@ export default function ProductsPage() {
     if (!products || products.length === 0) {
       return 100;
     }
-    return Math.ceil(Math.max(...products.map((p) => p.price)));
+    const allPrices = products.flatMap(p => p.locations.map(l => l.price));
+    if (allPrices.length === 0) return 100;
+    return Math.ceil(Math.max(...allPrices));
   }, [products]);
 
   const fetchData = () => {
@@ -62,10 +72,11 @@ export default function ProductsPage() {
       const allShops = getShops(user);
       setShops(allShops);
       setOrganizations(getOrganizations(user));
-      const initialMaxPrice = allProducts.length > 0
-          ? Math.ceil(Math.max(...allProducts.map((p) => p.price)))
-          : 100;
+      
+      const allPrices = allProducts.flatMap(p => p.locations.map(l => l.price));
+      const initialMaxPrice = allPrices.length > 0 ? Math.ceil(Math.max(...allPrices)) : 100;
       setPriceRange([0, initialMaxPrice]);
+
       setLoading(false);
     }, 500);
   };
@@ -75,20 +86,17 @@ export default function ProductsPage() {
   }, [user]);
 
   const handleProductUpdate = (updatedProduct: Product) => {
-    if(!updatedProduct.shopId) return;
-    updateProductInData(updatedProduct.shopId, updatedProduct);
+    updateProductInData(updatedProduct);
     fetchData();
   }
 
   const handleProductDelete = (productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (!product || !product.shopId) return;
-    deleteProductFromData(product.shopId, productId);
+    deleteProductFromData(productId);
     fetchData();
   }
 
-  const handleProductAdd = (shopId: string, newProductData: Omit<Product, 'id' | 'imageHint' | 'shopId'>) => {
-    addProductToData(shopId, newProductData);
+  const handleProductAdd = (newProductData: Omit<Product, 'id' | 'locations'>) => {
+    addProductToData(newProductData);
     fetchData();
   };
 
@@ -102,20 +110,47 @@ export default function ProductsPage() {
     setCurrentPage(1);
     return products.filter(product => {
       const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesShop = selectedShop === 'all' || product.shopId === selectedShop;
-      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
-      const matchesStatus = statusFilter === 'all' || product.status === statusFilter;
-      const matchesStock = !hideOutOfStock || product.stock > 0;
-      return matchesSearchTerm && matchesShop && matchesPrice && matchesStatus && matchesStock;
+      
+      const hasMatchingLocation = product.locations.some(loc => {
+          const matchesShop = selectedShop === 'all' || loc.shopId === selectedShop;
+          const matchesPrice = loc.price >= priceRange[0] && loc.price <= priceRange[1];
+          const matchesStatus = statusFilter === 'all' || loc.status === statusFilter;
+          const matchesStock = !hideOutOfStock || loc.stock > 0;
+          return matchesShop && matchesPrice && matchesStatus && matchesStock;
+      });
+
+      return matchesSearchTerm && hasMatchingLocation;
     });
   }, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock]);
   
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
 
-  const paginatedProducts = useMemo(() => {
+  const paginatedProducts: DisplayProduct[] = useMemo(() => {
     const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
     const endIndex = startIndex + PRODUCTS_PER_PAGE;
-    return filteredProducts.slice(startIndex, endIndex);
+    return filteredProducts.slice(startIndex, endIndex).map(p => {
+        const stockSum = p.locations.reduce((acc, loc) => acc + loc.stock, 0);
+        const prices = p.locations.map(l => l.price);
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+        const priceRange = prices.length > 1 && minPrice !== maxPrice 
+            ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` 
+            : prices.length > 0 ? formatPrice(minPrice) : 'N/A';
+
+        const activeCount = p.locations.filter(l => l.status === 'activo').length;
+        const inactiveCount = p.locations.filter(l => l.status === 'inactivo').length;
+        let statusSummary = 'No asignado';
+        if (activeCount > 0 && inactiveCount > 0) statusSummary = 'Mixto';
+        else if (activeCount > 0) statusSummary = 'Activo';
+        else if (inactiveCount > 0) statusSummary = 'Inactivo';
+        
+        return {
+            ...p,
+            stockSum,
+            priceRange,
+            statusSummary,
+        }
+    });
   }, [filteredProducts, currentPage]);
 
 
@@ -130,21 +165,16 @@ export default function ProductsPage() {
     <div className="flex flex-col gap-6">
       <header className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Productos</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Productos Globales</h1>
           <p className="text-muted-foreground">
-            Un listado de todos los productos disponibles en todas las tiendas.
+            Listado maestro de todos los productos. Desde aquí se asignan a las tiendas.
           </p>
         </div>
         {canAddProduct && (
-          <AddGlobalProductModal 
-            onProductAdd={handleProductAdd} 
-            allShops={shops} 
-            allOrganizations={organizations} 
-            currentUser={user}
-          >
+          <AddGlobalProductModal onProductAdd={handleProductAdd}>
             <Button>
               <PlusCircle className="mr-2" />
-              Agregar Producto
+              Crear Producto
             </Button>
           </AddGlobalProductModal>
         )}
@@ -176,10 +206,10 @@ export default function ProductsPage() {
               <TableRow>
                   <TableHead className="w-[80px]">Imagen</TableHead>
                   <TableHead>Producto</TableHead>
-                  <TableHead>Tienda</TableHead>
+                  <TableHead>Ubicaciones</TableHead>
                   <TableHead>Estatus</TableHead>
-                  <TableHead className="text-right">Stock</TableHead>
-                  <TableHead className="text-right">Precio</TableHead>
+                  <TableHead className="text-right">Stock Total</TableHead>
+                  <TableHead>Rango de Precio</TableHead>
                   <TableHead className="text-center">Acciones</TableHead>
               </TableRow>
               </TableHeader>
@@ -197,10 +227,7 @@ export default function ProductsPage() {
                       </TableRow>
                   ))
               ) : paginatedProducts.length > 0 ? (
-                  paginatedProducts.map((product) => {
-                    const shop = shops.find(s => s.id === product.shopId);
-                    const canEdit = user?.role === 'Admin' || (user?.role === 'Editor' && user.organizationId === shop?.organizationId);
-                    return (
+                  paginatedProducts.map((product) => (
                         <TableRow key={product.id}>
                             <TableCell>
                             <div className="relative h-16 w-16 rounded-md overflow-hidden">
@@ -215,37 +242,31 @@ export default function ProductsPage() {
                             </TableCell>
                             <TableCell className="font-medium">{product.name}</TableCell>
                             <TableCell>
-                              {product.shopId ? (
-                                <Link href={`/shop/${product.shopId}`} className="text-muted-foreground hover:text-primary hover:underline">
-                                  {getShopName(product.shopId)}
-                                </Link>
-                              ) : (
-                                <span className="text-muted-foreground">{getShopName(product.shopId)}</span>
-                              )}
+                                <div className="flex items-center gap-1.5 text-muted-foreground">
+                                    <MapPin className="h-4 w-4" />
+                                    <span>{product.locations.length} tienda(s)</span>
+                                </div>
                             </TableCell>
                             <TableCell>
-                            <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
-                                {product.status === 'activo' ? <PackageCheck className="mr-1.5 h-3 w-3" /> : <PackageX className="mr-1.5 h-3 w-3" />}
-                                {product.status}
+                            <Badge variant={product.statusSummary === 'Activo' ? 'secondary' : (product.statusSummary === 'Mixto' ? 'outline' : 'destructive')} className="capitalize">
+                                {product.statusSummary}
                             </Badge>
                             </TableCell>
-                            <TableCell className={cn("text-right font-semibold", product.stock === 0 ? "text-destructive" : "")}>
-                            {product.stock === 0 ? 'Agotado' : product.stock}
+                            <TableCell className={cn("text-right font-semibold", product.stockSum === 0 ? "text-destructive" : "")}>
+                            {product.stockSum}
                             </TableCell>
-                            <TableCell className="text-right font-semibold text-primary">
-                            {formatPrice(product.price)}
+                            <TableCell className="text-right font-semibold text-primary/80">
+                            {product.priceRange}
                             </TableCell>
                             <TableCell className="text-center">
                                 <ProductActionsCell
                                   product={product}
-                                  canEdit={!!canEdit}
                                   onProductUpdate={handleProductUpdate}
                                   onProductDelete={handleProductDelete}
                                 />
                             </TableCell>
                         </TableRow>
-                    )
-                })
+                    ))
               ) : (
                   <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center">
