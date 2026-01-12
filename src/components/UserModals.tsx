@@ -51,7 +51,7 @@ export function UserActionsCell({ user, allShops, allOrganizations, onUserUpdate
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Abrir menú</span>
@@ -65,12 +65,15 @@ export function UserActionsCell({ user, allShops, allOrganizations, onUserUpdate
               <Edit className="mr-2 h-4 w-4" />
               <span>Editar</span>
           </DropdownMenuItem>
-          <DeleteUserAlert userId={user.id} onUserDelete={onUserDelete}>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
               <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
                   <Trash2 className="mr-2 h-4 w-4" />
                   <span>Eliminar</span>
               </DropdownMenuItem>
-          </DeleteUserAlert>
+            </AlertDialogTrigger>
+            <DeleteUserAlertContent userId={user.id} onUserDelete={onUserDelete} />
+          </AlertDialog>
         </DropdownMenuContent>
       </DropdownMenu>
       <EditUserModal user={user} allShops={allShops} allOrganizations={allOrganizations} onUserUpdate={onUserUpdate} currentUser={currentUser} isOpen={isEditOpen} onOpenChange={setIsEditOpen} />
@@ -339,7 +342,7 @@ function ShopSelector({allShops, selectedShopIds, onChange, disabled = false}: {
     }
     
     return (
-         <DropdownMenu>
+         <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="col-span-3 w-full justify-start text-left font-normal" disabled={disabled}>
                      <Store className="mr-2 h-4 w-4" />
@@ -366,25 +369,19 @@ function ShopSelector({allShops, selectedShopIds, onChange, disabled = false}: {
     );
 }
 
-function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, onUserDelete: (userId: string) => void, children: React.ReactNode }) {
-    const handleDelete = () => {
-        onUserDelete(userId);
-    }
+function DeleteUserAlertContent({ userId, onUserDelete }: { userId: string, onUserDelete: (userId: string) => void }) {
     return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onUserDelete(userId)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
     );
 }

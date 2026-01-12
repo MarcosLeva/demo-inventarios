@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -258,7 +259,7 @@ export default function UsersPage() {
                      <TableCell>{user.role !== 'Admin' ? getOrganizationName(user.organizationId) : 'N/A'}</TableCell>
                      <TableCell>
                       {user.shopIds.length > 0 ? (
-                        <DropdownMenu>
+                        <DropdownMenu modal={false}>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="h-8 px-2">
                                      <Store className="mr-1.5 h-3 w-3" />

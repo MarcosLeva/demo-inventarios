@@ -487,7 +487,7 @@ function ProductRow({ product, canEdit, onLocationUpdate, onLocationDelete, inde
             </div>
         </TableCell>
         <TableCell className="text-right">
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
                       <MoreHorizontal />
@@ -741,7 +741,7 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
     }
     
     return (
-         <DropdownMenu>
+         <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full justify-start text-left font-normal">
                     <Users className="mr-2 h-4 w-4" />
@@ -767,3 +767,4 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
         </DropdownMenu>
     );
 }
+

@@ -553,5 +553,3 @@ function OrganizationDetailSkeleton() {
     </div>
   );
 }
-
-    

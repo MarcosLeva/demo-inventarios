@@ -67,7 +67,7 @@ export function ProductActionsCell({ product, onProductUpdate, onProductDelete }
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
             <span className="sr-only">Abrir menú</span>
@@ -94,12 +94,15 @@ export function ProductActionsCell({ product, onProductUpdate, onProductDelete }
                           <span>Editar Producto Maestro</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DeleteProductAlert productId={product.id} onProductDelete={onProductDelete}>
-                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Eliminar</span>
-                          </DropdownMenuItem>
-                      </DeleteProductAlert>
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Eliminar</span>
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <DeleteProductAlertContent productId={product.id} onProductDelete={onProductDelete} />
+                      </AlertDialog>
                     </>
                   )}
               </>
@@ -398,25 +401,19 @@ function ManageLocationsModal({ product, onProductUpdate, allShops, allOrganizat
     );
 }
 
-function DeleteProductAlert({ productId, onProductDelete, children }: { productId: string, onProductDelete: (productId: string) => void, children: React.ReactNode }) {
-    const handleDelete = () => {
-        onProductDelete(productId);
-    }
+function DeleteProductAlertContent({ productId, onProductDelete }: { productId: string, onProductDelete: (productId: string) => void}) {
     return (
-        <AlertDialog>
-            <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente el producto y todas sus ubicaciones de la base de datos.
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta acción no se puede deshacer. Esto eliminará permanentemente el producto y todas sus ubicaciones de la base de datos.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={() => onProductDelete(productId)} className="bg-destructive hover:bg-destructive/90">Eliminar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
     );
 }
