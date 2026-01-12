@@ -346,14 +346,9 @@ export function getShopById(id: string, user?: AppUser | null): Shop | undefined
 // --- Products ---
 export function getAllProducts(user?: AppUser | null) {
     if (!user) return [];
-    // Admins see all products
-    if (user.role === 'Admin') {
+    // Admins and Editors see all products at the data level. Filtering happens in the component.
+    if (user.role === 'Admin' || user.role === 'Editor') {
         return JSON.parse(JSON.stringify(productsStore));
-    }
-    // Editors see products available in shops within their organization
-    if (user.role === 'Editor') {
-        const orgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-        return JSON.parse(JSON.stringify(productsStore.filter(p => p.locations.some(loc => orgShops.includes(loc.shopId)))));
     }
     // Vendedores see products available in their assigned shops
     if (user.role === 'Vendedor') {

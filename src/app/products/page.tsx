@@ -116,24 +116,30 @@ export default function ProductsPage() {
 
  const filteredProducts = useMemo(() => {
     setCurrentPage(1);
-
-    if (user?.role === 'Editor' && editorView === 'all') {
-        // For editors in "All Products" view, only filter by search term on the entire product list
-        return products.filter(product =>
-            product.name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }
-    
     let productsToFilter = products;
 
-    if (user?.role === 'Editor' && editorView === 'my-shops') {
-        const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-        productsToFilter = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
+    // For Editors, first determine the pool of products to filter
+    if (user?.role === 'Editor') {
+        if (editorView === 'my-shops') {
+            const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+            productsToFilter = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
+        }
+        // If 'all', productsToFilter remains all products.
     }
     
     return productsToFilter.filter(product => {
         const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
         
+        // In 'all' view for editors, we only care about search term for products not in their org
+        if (user?.role === 'Editor' && editorView === 'all') {
+            const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+            const isInOrg = product.locations.some(loc => editorOrgShops.includes(loc.shopId));
+            if (!isInOrg) {
+                return matchesSearchTerm;
+            }
+        }
+        
+        // For products in the org (or for admin), apply all filters
         const relevantLocations = product.locations.filter(loc => {
             if (user?.role === 'Editor') {
                 const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
@@ -142,10 +148,12 @@ export default function ProductsPage() {
             return true; // For admin, all locations are relevant initially
         });
 
-        // If there are no relevant locations, the product shouldn't be in the filtered list
-        // (unless it's an admin viewing an unassigned product, or editor in 'all' view which is handled above)
         if (relevantLocations.length === 0) {
-            return user?.role === 'Admin' && matchesSearchTerm && selectedShop === 'all';
+             // For Admin, show unassigned products if no shop filter is applied
+             if (user?.role === 'Admin' && selectedShop === 'all' && statusFilter === 'all') {
+                 return matchesSearchTerm;
+             }
+             return false;
         }
 
         const passesLocationFilters = relevantLocations.some(loc => {
@@ -168,6 +176,7 @@ export default function ProductsPage() {
     const endIndex = startIndex + PRODUCTS_PER_PAGE;
     return filteredProducts.slice(startIndex, endIndex).map(p => {
         let relevantLocations = p.locations;
+        // For Editors, price/stock should only reflect their organization's shops
         if (user?.role === 'Editor') {
             const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
             relevantLocations = p.locations.filter(loc => editorOrgShops.includes(loc.shopId));
@@ -178,7 +187,7 @@ export default function ProductsPage() {
         const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
         const maxPriceVal = prices.length > 0 ? Math.max(...prices) : 0;
 
-        const priceRange = prices.length > 1 && minPrice !== maxPriceVal 
+        const priceRangeText = prices.length > 1 && minPrice !== maxPriceVal 
             ? `${formatPrice(minPrice)} - ${formatPrice(maxPriceVal)}` 
             : prices.length > 0 ? formatPrice(minPrice) : 'N/A';
 
@@ -189,14 +198,15 @@ export default function ProductsPage() {
             if (activeCount > 0 && inactiveCount > 0) statusSummary = 'Mixto';
             else if (activeCount > 0) statusSummary = 'Activo';
             else if (inactiveCount > 0) statusSummary = 'Inactivo';
-        } else if (p.locations.length > 0 && user?.role === 'Editor' && editorView === 'all') {
+        } else if (p.locations.length > 0 && user?.role === 'Editor') {
+             // If there are locations, but none are in the editor's org
             statusSummary = "Otras Orgs";
         }
         
         return {
             ...p,
-            stockSum,
-            priceRange,
+            stockSum: relevantLocations.length > 0 ? stockSum : undefined,
+            priceRange: relevantLocations.length > 0 ? priceRangeText : 'N/A',
             statusSummary,
         }
     });
@@ -310,10 +320,10 @@ export default function ProductsPage() {
                             </Badge>
                             </TableCell>
                             <TableCell className={cn("text-right font-semibold", product.stockSum === 0 && product.statusSummary !== 'No asignado' && product.statusSummary !== 'Otras Orgs' ? "text-destructive" : "")}>
-                            {product.statusSummary !== 'No asignado' && product.statusSummary !== 'Otras Orgs' ? product.stockSum : '-'}
+                            {product.stockSum !== undefined ? product.stockSum : '-'}
                             </TableCell>
                             <TableCell className="text-right font-semibold text-primary/80">
-                            {product.statusSummary !== 'Otras Orgs' ? product.priceRange : 'N/A'}
+                            {product.priceRange}
                             </TableCell>
                             <TableCell className="text-center">
                                 <ProductActionsCell
