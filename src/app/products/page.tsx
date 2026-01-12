@@ -5,7 +5,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getAllProducts, getShops, updateProduct as updateProductInData, deleteProduct as deleteProductFromData, addProductToData, getOrganizations } from '@/lib/data';
+import { getAllProducts, getShops, updateProduct as updateProductInData, deleteProductFromData, addProductToData, getOrganizations } from '@/lib/data';
 import type { Product, Shop, Organization, ShopProductDetails } from '@/lib/data';
 import {
   Table,
