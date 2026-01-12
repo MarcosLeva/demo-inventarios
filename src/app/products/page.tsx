@@ -44,15 +44,14 @@ export default function ProductsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedShop, setSelectedShop] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<'all' | 'activo' | 'inactivo'>('all');
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
   const [priceRange, setPriceRange] = useState([0, 100]);
   const { user } = useAuth();
   
-  // New state for editor's view filter
-  const [editorView, setEditorView] = useState<'my-shops' | 'all'>('my-shops');
+  // New combined filter state
+  const [viewFilter, setViewFilter] = useState('my-org-shops'); // Default for Editor
 
   const maxPrice = useMemo(() => {
     if (!products || products.length === 0) {
@@ -88,6 +87,14 @@ export default function ProductsPage() {
     fetchData();
   }, [user]);
 
+  useEffect(() => {
+    if (user?.role === 'Admin') {
+      setViewFilter('all-shops');
+    } else if (user?.role === 'Editor') {
+      setViewFilter('my-org-shops');
+    }
+  }, [user]);
+
   const handleProductUpdate = (updatedProduct: Product) => {
     updateProductInData(updatedProduct);
     fetchData();
@@ -118,55 +125,50 @@ export default function ProductsPage() {
     setCurrentPage(1);
     let productsToFilter = products;
 
-    // For Editors, first determine the pool of products to filter
-    if (user?.role === 'Editor') {
-        if (editorView === 'my-shops') {
-            const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-            productsToFilter = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
-        }
-        // If 'all', productsToFilter remains all products.
+    if (user?.role === 'Editor' && viewFilter !== 'all-products') {
+        const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+        productsToFilter = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
     }
     
     return productsToFilter.filter(product => {
         const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        // In 'all' view for editors, we only care about search term for products not in their org
-        if (user?.role === 'Editor' && editorView === 'all') {
-            const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-            const isInOrg = product.locations.some(loc => editorOrgShops.includes(loc.shopId));
-            if (!isInOrg) {
-                return matchesSearchTerm;
-            }
+
+        // For Editors in "All Products" view, only name search applies.
+        if (user?.role === 'Editor' && viewFilter === 'all-products') {
+            return matchesSearchTerm;
         }
-        
-        // For products in the org (or for admin), apply all filters
+
+        const passesShopFilter = viewFilter === 'all-shops' || 
+                                 viewFilter === 'my-org-shops' ||
+                                 product.locations.some(loc => loc.shopId === viewFilter);
+
+        if (!passesShopFilter) {
+            return false;
+        }
+
         const relevantLocations = product.locations.filter(loc => {
-            if (user?.role === 'Editor') {
-                const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-                return editorOrgShops.includes(loc.shopId);
-            }
-            return true; // For admin, all locations are relevant initially
+            if (viewFilter === 'all-shops' || viewFilter === 'my-org-shops') return true;
+            return loc.shopId === viewFilter;
         });
 
         if (relevantLocations.length === 0) {
-             // For Admin, show unassigned products if no shop filter is applied
-             if (user?.role === 'Admin' && selectedShop === 'all' && statusFilter === 'all') {
-                 return matchesSearchTerm;
-             }
-             return false;
+            // Show unassigned products if no shop-specific filter is active
+            if (viewFilter === 'all-shops' || viewFilter === 'all-products' || viewFilter === 'my-org-shops') {
+                return matchesSearchTerm;
+            }
+            return false;
         }
 
-        const passesLocationFilters = relevantLocations.some(loc => {
-            const matchesShop = selectedShop === 'all' || loc.shopId === selectedShop;
+        const passesOtherFilters = relevantLocations.some(loc => {
             const matchesPrice = loc.price >= priceRange[0] && loc.price <= priceRange[1];
             const matchesStatus = statusFilter === 'all' || loc.status === statusFilter;
             const matchesStock = !hideOutOfStock || loc.stock > 0;
-            return matchesShop && matchesPrice && matchesStatus && matchesStock;
+            return matchesPrice && matchesStatus && matchesStock;
         });
 
-        return matchesSearchTerm && passesLocationFilters;
+        return matchesSearchTerm && passesOtherFilters;
     });
-}, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock, user, editorView, shops]);
+}, [products, searchTerm, viewFilter, priceRange, statusFilter, hideOutOfStock, user, shops]);
 
   
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
@@ -199,7 +201,6 @@ export default function ProductsPage() {
             else if (activeCount > 0) statusSummary = 'Activo';
             else if (inactiveCount > 0) statusSummary = 'Inactivo';
         } else if (p.locations.length > 0 && user?.role === 'Editor') {
-             // If there are locations, but none are in the editor's org
             statusSummary = "Otras Orgs";
         }
         
@@ -210,7 +211,7 @@ export default function ProductsPage() {
             statusSummary,
         }
     });
-  }, [filteredProducts, currentPage, user, shops, editorView]);
+  }, [filteredProducts, currentPage, user, shops]);
 
   const canAddProduct = user?.role === 'Admin';
 
@@ -222,7 +223,8 @@ export default function ProductsPage() {
     maxPrice,
     // Pass shops based on user role
     shops: user?.role === 'Admin' ? shops : shops.filter(s => s.organizationId === user?.organizationId),
-    selectedShop, setSelectedShop
+    viewFilter, setViewFilter,
+    user,
   }
 
   return (
@@ -249,17 +251,6 @@ export default function ProductsPage() {
       
       <div className="flex flex-col sm:flex-row gap-4 items-center">
         <ProductFilters {...productFiltersProps} />
-        {user?.role === 'Editor' && (
-          <Select value={editorView} onValueChange={(v: 'my-shops'|'all') => setEditorView(v)}>
-            <SelectTrigger className="w-full sm:w-auto min-w-[180px]">
-              <SelectValue placeholder="Mostrar productos..." />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="my-shops">En Mis Tiendas</SelectItem>
-              <SelectItem value="all">Todos los Productos</SelectItem>
-            </SelectContent>
-          </Select>
-        )}
       </div>
 
       <Card>

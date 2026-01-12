@@ -4,11 +4,11 @@
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Search, Filter } from 'lucide-react';
-import type { Shop } from '@/lib/data';
+import type { Shop, AppUser } from '@/lib/data';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { Button } from './ui/button';
 
@@ -23,8 +23,9 @@ interface ProductFiltersProps {
     setPriceRange: (value: number[]) => void;
     maxPrice: number;
     shops?: Shop[];
-    selectedShop?: string;
-    setSelectedShop?: (value: string) => void;
+    viewFilter: string;
+    setViewFilter: (value: string) => void;
+    user: AppUser | null;
 }
 
 export function ProductFilters({
@@ -33,7 +34,7 @@ export function ProductFilters({
     hideOutOfStock, setHideOutOfStock,
     priceRange, setPriceRange,
     maxPrice,
-    shops, selectedShop, setSelectedShop
+    shops, viewFilter, setViewFilter, user
 }: ProductFiltersProps) {
 
     const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
@@ -55,21 +56,33 @@ export function ProductFilters({
                 />
             </div>
 
-            {shops && selectedShop && setSelectedShop && (
-                <Select value={selectedShop} onValueChange={setSelectedShop}>
-                    <SelectTrigger className="w-full sm:w-auto min-w-[180px]">
-                        <SelectValue placeholder="Filtrar por tienda" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">Todas las tiendas</SelectItem>
-                        {shops.map(shop => (
-                            <SelectItem key={shop.id} value={shop.id}>
-                                {shop.name}
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            )}
+            <Select value={viewFilter} onValueChange={setViewFilter}>
+                <SelectTrigger className="w-full sm:w-auto min-w-[180px]">
+                    <SelectValue placeholder="Filtrar por vista..." />
+                </SelectTrigger>
+                <SelectContent>
+                    {user?.role === 'Editor' && (
+                        <SelectGroup>
+                            <SelectLabel>Vistas de Catálogo</SelectLabel>
+                            <SelectItem value="all-products">Todos los Productos</SelectItem>
+                            <SelectItem value="my-org-shops">Todas Mis Tiendas</SelectItem>
+                        </SelectGroup>
+                    )}
+                     {user?.role === 'Admin' && (
+                         <SelectItem value="all-shops">Todas las Tiendas</SelectItem>
+                    )}
+                    {shops && shops.length > 0 && (
+                        <SelectGroup>
+                            <SelectLabel>Tiendas Específicas</SelectLabel>
+                             {shops.map(shop => (
+                                <SelectItem key={shop.id} value={shop.id}>
+                                    {shop.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    )}
+                </SelectContent>
+            </Select>
 
             <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as any)}>
                 <SelectTrigger className="w-full sm:w-auto min-w-[160px]">
