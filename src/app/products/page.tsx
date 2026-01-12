@@ -108,7 +108,7 @@ export default function ProductsPage() {
     const shop = shops.find(s => s.id === shopId);
     return shop ? shop.name : 'N/A';
   }
-
+  
   const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -118,6 +118,7 @@ export default function ProductsPage() {
     setCurrentPage(1);
     
     let initialProductPool = products;
+
     if (user?.role === 'Editor' && editorView === 'my-shops') {
         const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
         initialProductPool = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
@@ -126,13 +127,18 @@ export default function ProductsPage() {
     return initialProductPool.filter(product => {
       const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       
-      let relevantLocations = product.locations;
-      if (user?.role === 'Editor') {
-          const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-          relevantLocations = product.locations.filter(loc => editorOrgShops.includes(loc.shopId));
+      // For Editors in "all" view, some products might not have relevant locations yet.
+      // We still want to show them if they match the search term.
+      if (user?.role === 'Editor' && editorView === 'all') {
+        const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+        const relevantLocations = product.locations.filter(loc => editorOrgShops.includes(loc.shopId));
+
+        if(relevantLocations.length === 0) {
+            return matchesSearchTerm; // Show if it matches search, ignore other filters
+        }
       }
 
-      const hasMatchingLocation = relevantLocations.some(loc => {
+      const hasMatchingLocation = product.locations.some(loc => {
           const matchesShop = selectedShop === 'all' || loc.shopId === selectedShop;
           const matchesPrice = loc.price >= priceRange[0] && loc.price <= priceRange[1];
           const matchesStatus = statusFilter === 'all' || loc.status === statusFilter;
@@ -140,8 +146,7 @@ export default function ProductsPage() {
           return matchesShop && matchesPrice && matchesStatus && matchesStock;
       });
       
-      // If there are no locations for this user's scope, we check master product info
-      if (relevantLocations.length === 0) {
+      if (product.locations.length === 0) {
         return matchesSearchTerm;
       }
       
@@ -185,7 +190,7 @@ export default function ProductsPage() {
             statusSummary,
         }
     });
-  }, [filteredProducts, currentPage, user, shops]);
+  }, [filteredProducts, currentPage, user, shops, formatPrice]);
 
   const canAddProduct = user?.role === 'Admin';
 
