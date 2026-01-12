@@ -51,6 +51,9 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState([0, 100]);
   const { user } = useAuth();
   
+  // New state for editor's view filter
+  const [editorView, setEditorView] = useState<'my-shops' | 'all'>('my-shops');
+
   const maxPrice = useMemo(() => {
     if (!products || products.length === 0) {
       return 100;
@@ -113,20 +116,38 @@ export default function ProductsPage() {
 
   const filteredProducts = useMemo(() => {
     setCurrentPage(1);
-    return products.filter(product => {
+    
+    let initialProductPool = products;
+    if (user?.role === 'Editor' && editorView === 'my-shops') {
+        const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+        initialProductPool = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
+    }
+
+    return initialProductPool.filter(product => {
       const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       
-      const hasMatchingLocation = product.locations.some(loc => {
+      let relevantLocations = product.locations;
+      if (user?.role === 'Editor') {
+          const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+          relevantLocations = product.locations.filter(loc => editorOrgShops.includes(loc.shopId));
+      }
+
+      const hasMatchingLocation = relevantLocations.some(loc => {
           const matchesShop = selectedShop === 'all' || loc.shopId === selectedShop;
           const matchesPrice = loc.price >= priceRange[0] && loc.price <= priceRange[1];
           const matchesStatus = statusFilter === 'all' || loc.status === statusFilter;
           const matchesStock = !hideOutOfStock || loc.stock > 0;
           return matchesShop && matchesPrice && matchesStatus && matchesStock;
       });
-
-      return matchesSearchTerm && (hasMatchingLocation || product.locations.length === 0);
+      
+      // If there are no locations for this user's scope, we check master product info
+      if (relevantLocations.length === 0) {
+        return matchesSearchTerm;
+      }
+      
+      return matchesSearchTerm && hasMatchingLocation;
     });
-  }, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock]);
+  }, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock, user, editorView, shops]);
   
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
 
@@ -134,20 +155,28 @@ export default function ProductsPage() {
     const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
     const endIndex = startIndex + PRODUCTS_PER_PAGE;
     return filteredProducts.slice(startIndex, endIndex).map(p => {
-        const stockSum = p.locations.reduce((acc, loc) => acc + loc.stock, 0);
-        const prices = p.locations.map(l => l.price);
+        let relevantLocations = p.locations;
+        if (user?.role === 'Editor') {
+            const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+            relevantLocations = p.locations.filter(loc => editorOrgShops.includes(loc.shopId));
+        }
+
+        const stockSum = relevantLocations.reduce((acc, loc) => acc + loc.stock, 0);
+        const prices = relevantLocations.map(l => l.price);
         const minPrice = Math.min(...prices);
         const maxPrice = Math.max(...prices);
         const priceRange = prices.length > 1 && minPrice !== maxPrice 
             ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` 
             : prices.length > 0 ? formatPrice(minPrice) : 'N/A';
 
-        const activeCount = p.locations.filter(l => l.status === 'activo').length;
-        const inactiveCount = p.locations.filter(l => l.status === 'inactivo').length;
+        const activeCount = relevantLocations.filter(l => l.status === 'activo').length;
+        const inactiveCount = relevantLocations.filter(l => l.status === 'inactivo').length;
         let statusSummary = 'No asignado';
-        if (activeCount > 0 && inactiveCount > 0) statusSummary = 'Mixto';
-        else if (activeCount > 0) statusSummary = 'Activo';
-        else if (inactiveCount > 0) statusSummary = 'Inactivo';
+        if (relevantLocations.length > 0) {
+            if (activeCount > 0 && inactiveCount > 0) statusSummary = 'Mixto';
+            else if (activeCount > 0) statusSummary = 'Activo';
+            else if (inactiveCount > 0) statusSummary = 'Inactivo';
+        }
         
         return {
             ...p,
@@ -156,9 +185,20 @@ export default function ProductsPage() {
             statusSummary,
         }
     });
-  }, [filteredProducts, currentPage]);
+  }, [filteredProducts, currentPage, user, shops]);
 
   const canAddProduct = user?.role === 'Admin';
+
+  const productFiltersProps = {
+    searchTerm, setSearchTerm,
+    statusFilter, setStatusFilter,
+    hideOutOfStock, setHideOutOfStock,
+    priceRange, setPriceRange,
+    maxPrice,
+    // Pass shops based on user role
+    shops: user?.role === 'Admin' ? shops : shops.filter(s => s.organizationId === user?.organizationId),
+    selectedShop, setSelectedShop
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -166,7 +206,10 @@ export default function ProductsPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Productos Globales</h1>
           <p className="text-muted-foreground">
-            Listado maestro de todos los productos. Desde aquí se asignan a las tiendas.
+            {user?.role === 'Admin' 
+              ? "Listado maestro de todos los productos. Desde aquí se asignan a las tiendas."
+              : "Catálogo de productos. Asigna productos a las tiendas de tu organización."
+            }
           </p>
         </div>
         {canAddProduct && (
@@ -179,20 +222,20 @@ export default function ProductsPage() {
         )}
       </header>
       
-      <ProductFilters
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
-        hideOutOfStock={hideOutOfStock}
-        setHideOutOfStock={setHideOutOfStock}
-        priceRange={priceRange}
-        setPriceRange={setPriceRange}
-        maxPrice={maxPrice}
-        shops={shops}
-        selectedShop={selectedShop}
-        setSelectedShop={setSelectedShop}
-      />
+      <div className="flex flex-col sm:flex-row gap-4 items-center">
+        <ProductFilters {...productFiltersProps} />
+        {user?.role === 'Editor' && (
+          <Select value={editorView} onValueChange={(v: 'my-shops'|'all') => setEditorView(v)}>
+            <SelectTrigger className="w-full sm:w-auto min-w-[180px]">
+              <SelectValue placeholder="Mostrar productos..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="my-shops">En Mis Tiendas</SelectItem>
+              <SelectItem value="all">Todos los Productos</SelectItem>
+            </SelectContent>
+          </Select>
+        )}
+      </div>
 
       <Card>
           <CardHeader>
@@ -247,12 +290,12 @@ export default function ProductsPage() {
                                 </div>
                             </TableCell>
                             <TableCell>
-                            <Badge variant={product.statusSummary === 'Activo' ? 'secondary' : (product.statusSummary === 'Mixto' ? 'outline' : 'destructive')} className="capitalize">
+                            <Badge variant={product.statusSummary === 'Activo' ? 'secondary' : (product.statusSummary === 'Mixto' ? 'outline' : (product.statusSummary === 'No asignado' ? 'default' : 'destructive'))} className="capitalize">
                                 {product.statusSummary}
                             </Badge>
                             </TableCell>
-                            <TableCell className={cn("text-right font-semibold", product.stockSum === 0 ? "text-destructive" : "")}>
-                            {product.stockSum}
+                            <TableCell className={cn("text-right font-semibold", product.stockSum === 0 && product.statusSummary !== 'No asignado' ? "text-destructive" : "")}>
+                            {product.statusSummary !== 'No asignado' ? product.stockSum : '-'}
                             </TableCell>
                             <TableCell className="text-right font-semibold text-primary/80">
                             {product.priceRange}
