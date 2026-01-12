@@ -116,43 +116,44 @@ export default function ProductsPage() {
 
   const filteredProducts = useMemo(() => {
     setCurrentPage(1);
-    
-    let initialProductPool = products;
+
+    let baseProducts = products;
 
     if (user?.role === 'Editor' && editorView === 'my-shops') {
-        const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-        initialProductPool = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
+      const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+      baseProducts = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
     }
 
-    return initialProductPool.filter(product => {
+    return baseProducts.filter(product => {
+      // 1. Filter by search term (always applies)
       const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      // For Editors in "all" view, some products might not have relevant locations yet.
-      // We still want to show them if they match the search term.
-      if (user?.role === 'Editor' && editorView === 'all') {
+      if (!matchesSearchTerm) {
+        return false;
+      }
+
+      // Determine which locations are relevant for filtering
+      let relevantLocations = product.locations;
+      if (user?.role === 'Editor') {
         const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-        const relevantLocations = product.locations.filter(loc => editorOrgShops.includes(loc.shopId));
-
-        if(relevantLocations.length === 0) {
-            return matchesSearchTerm; // Show if it matches search, ignore other filters
-        }
+        relevantLocations = product.locations.filter(loc => editorOrgShops.includes(loc.shopId));
       }
 
-      const hasMatchingLocation = product.locations.some(loc => {
-          const matchesShop = selectedShop === 'all' || loc.shopId === selectedShop;
-          const matchesPrice = loc.price >= priceRange[0] && loc.price <= priceRange[1];
-          const matchesStatus = statusFilter === 'all' || loc.status === statusFilter;
-          const matchesStock = !hideOutOfStock || loc.stock > 0;
-          return matchesShop && matchesPrice && matchesStatus && matchesStock;
+      // If in Editor's "all" view and product has no locations in their org, show it if it matched search
+      if (user?.role === 'Editor' && editorView === 'all' && relevantLocations.length === 0) {
+        return true;
+      }
+
+      // 2. Apply location-based filters
+      return relevantLocations.some(loc => {
+        const matchesShop = selectedShop === 'all' || loc.shopId === selectedShop;
+        const matchesPrice = loc.price >= priceRange[0] && loc.price <= priceRange[1];
+        const matchesStatus = statusFilter === 'all' || loc.status === statusFilter;
+        const matchesStock = !hideOutOfStock || loc.stock > 0;
+        return matchesShop && matchesPrice && matchesStatus && matchesStock;
       });
-      
-      if (product.locations.length === 0) {
-        return matchesSearchTerm;
-      }
-      
-      return matchesSearchTerm && hasMatchingLocation;
     });
-  }, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock, user, editorView, shops]);
+}, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock, user, editorView, shops]);
+
   
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
 
@@ -168,10 +169,11 @@ export default function ProductsPage() {
 
         const stockSum = relevantLocations.reduce((acc, loc) => acc + loc.stock, 0);
         const prices = relevantLocations.map(l => l.price);
-        const minPrice = Math.min(...prices);
-        const maxPrice = Math.max(...prices);
-        const priceRange = prices.length > 1 && minPrice !== maxPrice 
-            ? `${formatPrice(minPrice)} - ${formatPrice(maxPrice)}` 
+        const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+        const maxPriceVal = prices.length > 0 ? Math.max(...prices) : 0;
+
+        const priceRange = prices.length > 1 && minPrice !== maxPriceVal 
+            ? `${formatPrice(minPrice)} - ${formatPrice(maxPriceVal)}` 
             : prices.length > 0 ? formatPrice(minPrice) : 'N/A';
 
         const activeCount = relevantLocations.filter(l => l.status === 'activo').length;
