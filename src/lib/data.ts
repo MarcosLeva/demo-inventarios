@@ -213,6 +213,30 @@ const shops: Shop[] = [
   }
 ];
 
+const initialUsers: AppUser[] = [
+  { id: 'user-admin', name: 'Admin General', email: 'admin@shopspot.com', role: 'Admin', status: 'activo', shopIds: [] },
+  { id: 'user-editor-1', name: 'Ana Torres', email: 'ana.torres@modacentral.com', role: 'Editor', status: 'activo', shopIds: ['1', '6'], organizationId: 'org-1' },
+  { id: 'user-editor-2', name: 'Carlos Gomez', email: 'carlos.gomez@techmore.com', role: 'Editor', status: 'activo', shopIds: ['2', '5', '7'], organizationId: 'org-2' },
+  { id: 'user-editor-3', name: 'Beatriz Soler', email: 'beatriz.soler@delicias.com', role: 'Editor', status: 'activo', shopIds: ['3', '9', '10'], organizationId: 'org-3' },
+  { id: 'user-editor-4', name: 'David Peña', email: 'david.peña@libros.com', role: 'Editor', status: 'activo', shopIds: ['4', '8', '11'], organizationId: 'org-4' },
+  { id: 'user-3', name: 'Luisa Martinez', email: 'luisa.martinez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
+  { id: 'user-4', name: 'Javier Fernandez', email: 'javier.fernandez@example.com', role: 'Vendedor', status: 'inactivo', shopIds: [], organizationId: 'org-1' },
+  { id: 'user-5', name: 'Sofia Rodriguez', email: 'sofia.rodriguez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['2'], organizationId: 'org-2' },
+  { id: 'user-6', name: 'Miguel Angel', email: 'miguel.angel@example.com', role: 'Vendedor', status: 'activo', shopIds: ['4'], organizationId: 'org-4' },
+  { id: 'user-7', name: 'Elena Perez', email: 'elena.perez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['6'], organizationId: 'org-1' },
+  { id: 'user-8', name: 'Pedro Sanchez', email: 'pedro.sanchez@example.com', role: 'Vendedor', status: 'inactivo', shopIds: [], organizationId: 'org-2' },
+  { id: 'user-vendedor1', name: 'Carmen Garcia', email: 'carmen.garcia@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
+  { id: 'user-vendedor2', name: 'Jorge Ruiz', email: 'jorge.ruiz@example.com', role: 'Vendedor', status: 'activo', shopIds: ['2', '5'], organizationId: 'org-2' },
+  { id: 'user-vendedor3', name: 'Raquel Alonso', email: 'raquel.alonso@example.com', role: 'Vendedor', status: 'activo', shopIds: ['3', '10'], organizationId: 'org-3' },
+  { id: 'user-vendedor4', name: 'Marcos Vazquez', email: 'marcos.vazquez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['4', '11'], organizationId: 'org-4' },
+  { id: 'user-vendedor5', name: 'Laura Jimenez', email: 'laura.jimenez@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1', '6'], organizationId: 'org-1' },
+  { id: 'user-vendedor6', name: 'Alberto Moreno', email: 'alberto.moreno@example.com', role: 'Vendedor', status: 'activo', shopIds: ['2', '7'], organizationId: 'org-2' },
+  { id: 'user-vendedor7', name: 'Isabel Diez', email: 'isabel.diez@example.com', role: 'Vendedor', status: 'inactivo', shopIds: [], organizationId: 'org-1' },
+  { id: 'user-vendedor8', name: 'Francisco Romero', email: 'francisco.romero@example.com', role: 'Vendedor', status: 'activo', shopIds: ['5'], organizationId: 'org-2' },
+  { id: 'user-vendedor9', name: 'Nuria Prieto', email: 'nuria.prieto@example.com', role: 'Vendedor', status: 'activo', shopIds: ['6'], organizationId: 'org-1' },
+  { id: 'user-vendedor10', name: 'Sergio Santos', email: 'sergio.santos@example.com', role: 'Vendedor', status: 'activo', shopIds: ['1'], organizationId: 'org-1' },
+];
+
 const initialProducts: Omit<Product, 'id'>[] = [
   // Hilos Urbanos (org-1)
   { name: 'Camiseta Clásica de Algodón', properties: [{key: 'Descripción', value: 'Una camiseta cómoda y elegante para el día a día.'}, {key: 'Talla', value: 'M'}, {key: 'Color', value: 'Blanco'}], imageSrc: 'https://picsum.photos/seed/prod1/400/300', imageHint: 'camiseta', locations: [{shopId: '1', price: 24.99, stock: 50, status: 'activo'}]},
@@ -240,7 +264,7 @@ const initialProducts: Omit<Product, 'id'>[] = [
 ];
 
 let productsStore: Product[] = initialProducts.map((p, i) => ({...p, id: `p${i+1}`}));
-let usersStore: AppUser[] = JSON.parse(JSON.stringify(users));
+let usersStore: AppUser[] = JSON.parse(JSON.stringify(initialUsers));
 let organizationsStore: Organization[] = JSON.parse(JSON.stringify(organizations));
 
 // --- Organizations ---
@@ -460,15 +484,17 @@ export function updateShop(updatedShop: Shop) {
     }
 }
 
-export function addProduct(product: Omit<Product, 'id'>) {
+export function addProductToData(newProductData: Omit<Product, 'id' | 'locations'>) {
     const newProduct: Product = {
-        ...product,
+        ...newProductData,
         id: `p${Date.now()}`,
-        imageSrc: product.imageSrc || `https://picsum.photos/seed/new${Date.now()}/400/300`,
+        imageSrc: newProductData.imageSrc || `https://picsum.photos/seed/new${Date.now()}/400/300`,
         imageHint: 'nuevo producto',
+        locations: [],
     };
     productsStore.unshift(newProduct);
 }
+
 
 export function updateProduct(updatedProduct: Product) {
     const index = productsStore.findIndex(p => p.id === updatedProduct.id);
@@ -477,9 +503,10 @@ export function updateProduct(updatedProduct: Product) {
     }
 }
 
-export function deleteProduct(productId: string) {
+export function deleteProductFromData(productId: string) {
     productsStore = productsStore.filter(p => p.id !== productId);
 }
+
 
 export function addShopAndAssignUsers(shopData: Omit<Shop, 'id'|'organizationId'> & { organizationId: string }, assignedUserIds: string[], currentUser: AppUser) {
     const newShop: Shop = {
@@ -551,6 +578,5 @@ export function assignUsersToShop(shopId: string, assignedUserIds: string[]) {
         }
     });
 }
-
 
     
