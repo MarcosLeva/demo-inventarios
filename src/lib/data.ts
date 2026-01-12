@@ -489,7 +489,7 @@ export function addProductToData(newProductData: Omit<Product, 'id' | 'locations
         ...newProductData,
         id: `p${Date.now()}`,
         imageSrc: newProductData.imageSrc || `https://picsum.photos/seed/new${Date.now()}/400/300`,
-        imageHint: 'nuevo producto',
+        imageHint: newProductData.name || 'nuevo producto',
         locations: [],
     };
     productsStore.unshift(newProduct);
@@ -562,19 +562,19 @@ export function assignUsersToShop(shopId: string, assignedUserIds: string[]) {
     const shop = shops.find(s => s.id === shopId);
     if (!shop) return;
 
-    // Get all vendors from the same organization
-    const orgVendors = usersStore.filter(u => u.organizationId === shop.organizationId && u.role === 'Vendedor');
+    // Get all users from the same organization who are vendors or editors
+    const orgUsers = usersStore.filter(u => u.organizationId === shop.organizationId && (u.role === 'Vendedor' || u.role === 'Editor'));
 
-    orgVendors.forEach(vendor => {
-        const isAssigned = assignedUserIds.includes(vendor.id);
-        const hasShop = vendor.shopIds.includes(shopId);
+    orgUsers.forEach(user => {
+        const isAssigned = assignedUserIds.includes(user.id);
+        const hasShop = user.shopIds.includes(shopId);
 
         if (isAssigned && !hasShop) {
             // Add shop to user
-            vendor.shopIds.push(shopId);
+            user.shopIds.push(shopId);
         } else if (!isAssigned && hasShop) {
             // Remove shop from user
-            vendor.shopIds = vendor.shopIds.filter(id => id !== shopId);
+            user.shopIds = user.shopIds.filter(id => id !== shopId);
         }
     });
 }

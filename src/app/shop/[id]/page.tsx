@@ -9,7 +9,7 @@ import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, PlusCircle, ChevronLeft, ChevronRight, Edit, Building, Users } from 'lucide-react';
+import { ArrowLeft, Tag, Search, Package, PackageCheck, PackageX, PlusCircle, ChevronLeft, ChevronRight, Edit, Building, Users, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Table,
@@ -22,6 +22,17 @@ import {
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   Dialog,
   DialogContent,
@@ -475,7 +486,6 @@ function ProductRow({ product, canEdit, onLocationUpdate, onLocationDelete, inde
           </div>
       </TableCell>
       <TableCell className="text-right">
-        { /* Pass location-specific update/delete handlers */ }
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
@@ -705,7 +715,7 @@ function EditShopModal({ shop, members, organizationUsers, onShopUpdate, childre
                         </div>
                     </div>
                      <div className="grid grid-cols-4 items-start gap-4 pt-2">
-                        <Label className="text-right pt-2">Vendedores Asignados</Label>
+                        <Label className="text-right pt-2">Miembros Asignados</Label>
                          <div className="col-span-3">
                             <UserSelector 
                               allUsers={organizationUsers}
@@ -741,7 +751,7 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
             <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full justify-start text-left font-normal">
                     <Users className="mr-2 h-4 w-4" />
-                    {selectedUserIds.length > 0 ? `${selectedUserIds.length} usuario(s) seleccionado(s)`: 'Seleccionar vendedores'}
+                    {selectedUserIds.length > 0 ? `${selectedUserIds.length} usuario(s) seleccionado(s)`: 'Seleccionar miembros'}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
@@ -757,11 +767,9 @@ function UserSelector({allUsers, selectedUserIds, onChange}: {allUsers: AppUser[
                             <Label htmlFor={`user-selector-edit-${user.id}`} className="flex-1 cursor-pointer">{user.name}</Label>
                         </DropdownMenuItem>
                     ))}
-                    {allUsers.length === 0 && <DropdownMenuItem disabled>No hay vendedores en la organización.</DropdownMenuItem>}
+                    {allUsers.length === 0 && <DropdownMenuItem disabled>No hay miembros en la organización.</DropdownMenuItem>}
                 </ScrollArea>
             </DropdownMenuContent>
         </DropdownMenu>
     );
 }
-
-

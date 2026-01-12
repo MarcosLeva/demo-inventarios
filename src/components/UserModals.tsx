@@ -123,7 +123,7 @@ export function AddUserModal({ onUserAdd, allShops, allOrganizations, currentUse
             return;
         }
 
-        onUserAdd({ name, email, role, status, shopIds: role === 'Vendedor' ? selectedShopIds : [], organizationId: role !== 'Admin' ? organizationId : undefined });
+        onUserAdd({ name, email, role, status, shopIds: (role === 'Vendedor' || role === 'Editor') ? selectedShopIds : [], organizationId: role !== 'Admin' ? organizationId : undefined });
         setIsOpen(false);
     };
 
@@ -170,7 +170,7 @@ export function AddUserModal({ onUserAdd, allShops, allOrganizations, currentUse
                          </div>
                     )}
 
-                     {(role === 'Vendedor') && (
+                     {(role === 'Vendedor' || role === 'Editor') && (
                        <div className="grid grid-cols-4 items-start gap-4">
                           <Label className="text-right pt-2">Tiendas</Label>
                           <ShopSelector allShops={assignableShops} selectedShopIds={selectedShopIds} onChange={setSelectedShopIds} disabled={!organizationId && currentUser?.role !== 'Editor'} />
@@ -212,15 +212,15 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
     const availableRoles = currentUser?.role === 'Admin' ? ['Admin', 'Editor', 'Vendedor'] : ['Editor', 'Vendedor'];
 
     const assignableShops = useMemo(() => {
-        if (currentUser?.role === 'Admin') {
-            if (!organizationId) return [];
-            return allShops.filter(s => s.organizationId === organizationId);
-        }
-        if (currentUser?.role === 'Editor') {
-            if (!currentUser.organizationId) return [];
-            return allShops.filter(s => s.organizationId === currentUser.organizationId);
-        }
-        return [];
+      let orgIdToFilter: string | undefined;
+      if (currentUser?.role === 'Admin') {
+        orgIdToFilter = organizationId;
+      } else if (currentUser?.role === 'Editor') {
+        orgIdToFilter = currentUser.organizationId;
+      }
+      
+      if (!orgIdToFilter) return [];
+      return allShops.filter(s => s.organizationId === orgIdToFilter);
     }, [allShops, organizationId, currentUser]);
 
 
@@ -236,8 +236,6 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
     }, [isOpen, user]);
 
     useEffect(() => {
-      // If organization changes while modal is open, reset shop selections if the new org is different.
-      // This is primarily for Admins changing a user's organization.
       if (organizationId !== user.organizationId) {
         setSelectedShopIds([]);
       }
@@ -308,7 +306,7 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
                      {(role === 'Vendedor' || role === 'Editor') && (
                        <div className="grid grid-cols-4 items-start gap-4">
                           <Label className="text-right pt-2">Tiendas</Label>
-                          <ShopSelector allShops={assignableShops} selectedShopIds={selectedShopIds} onChange={setSelectedShopIds} disabled={currentUser?.role !== 'Admin' && currentUser?.role !== 'Editor'} />
+                          <ShopSelector allShops={assignableShops} selectedShopIds={selectedShopIds} onChange={setSelectedShopIds} disabled={!organizationId} />
                         </div>
                     )}
                      <div className="grid grid-cols-4 items-center gap-4">
@@ -395,5 +393,3 @@ function DeleteUserAlert({ userId, onUserDelete, children }: { userId: string, o
         </AlertDialog>
     );
 }
-
-    
