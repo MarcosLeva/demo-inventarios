@@ -20,8 +20,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog"
 import {
   AlertDialog,
@@ -44,36 +42,39 @@ import { MoreHorizontal, Edit, Trash2, Store } from 'lucide-react';
 
 
 export function UserActionsCell({ user, allShops, allOrganizations, onUserUpdate, onUserDelete, currentUser }: { user: AppUser, allShops: Shop[], allOrganizations: Organization[], onUserUpdate: (user: AppUser) => void, onUserDelete: (userId: string) => void, currentUser?: AppUser | null }) {
+  const [isEditOpen, setIsEditOpen] = useState(false);
+
   if (!currentUser) return null;
   if (currentUser.id === user.id) return null;
   if (currentUser.role === 'Editor' && user.role === 'Admin') return null;
   if (currentUser.role === 'Editor' && user.organizationId !== currentUser.organizationId) return null;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Abrir menú</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <EditUserModal user={user} allShops={allShops} allOrganizations={allOrganizations} onUserUpdate={onUserUpdate} currentUser={currentUser}>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Edit className="mr-2 h-4 w-4" />
-                <span>Editar</span>
-            </DropdownMenuItem>
-        </EditUserModal>
-        <DeleteUserAlert userId={user.id} onUserDelete={onUserDelete}>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                <Trash2 className="mr-2 h-4 w-4" />
-                <span>Eliminar</span>
-            </DropdownMenuItem>
-        </DeleteUserAlert>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Abrir menú</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={() => setIsEditOpen(true)}>
+              <Edit className="mr-2 h-4 w-4" />
+              <span>Editar</span>
+          </DropdownMenuItem>
+          <DeleteUserAlert userId={user.id} onUserDelete={onUserDelete}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  <span>Eliminar</span>
+              </DropdownMenuItem>
+          </DeleteUserAlert>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <EditUserModal user={user} allShops={allShops} allOrganizations={allOrganizations} onUserUpdate={onUserUpdate} currentUser={currentUser} isOpen={isEditOpen} onOpenChange={setIsEditOpen} />
+    </>
   );
 }
 
@@ -190,9 +191,7 @@ export function AddUserModal({ onUserAdd, allShops, allOrganizations, currentUse
                     </div>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="outline">Cancelar</Button>
-                    </DialogClose>
+                    <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
                     <Button onClick={handleSave}>Guardar Usuario</Button>
                 </DialogFooter>
             </DialogContent>
@@ -200,8 +199,7 @@ export function AddUserModal({ onUserAdd, allShops, allOrganizations, currentUse
     );
 }
 
-function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, currentUser, children }: { user: AppUser, allShops: Shop[], allOrganizations: Organization[], onUserUpdate: (user: AppUser) => void, currentUser: AppUser | null, children: React.ReactNode }) {
-    const [isOpen, setIsOpen] = useState(false);
+function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, currentUser, isOpen, onOpenChange }: { user: AppUser, allShops: Shop[], allOrganizations: Organization[], onUserUpdate: (user: AppUser) => void, currentUser: AppUser | null, isOpen: boolean, onOpenChange: (open: boolean) => void }) {
     const [name, setName] = useState(user.name);
     const [email, setEmail] = useState(user.email);
     const [role, setRole] = useState<AppUser['role']>(user.role);
@@ -257,12 +255,11 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
             organizationId: role !== 'Admin' ? organizationId : undefined
         };
         onUserUpdate(updatedUser);
-        setIsOpen(false);
+        onOpenChange(false);
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-2xl">
                 <DialogHeader>
                     <DialogTitle>Editar Usuario</DialogTitle>
@@ -323,9 +320,7 @@ function EditUserModal({ user, allShops, allOrganizations, onUserUpdate, current
                     </div>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="outline">Cancelar</Button>
-                    </DialogClose>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
                     <Button onClick={handleSave}>Guardar Cambios</Button>
                 </DialogFooter>
             </DialogContent>

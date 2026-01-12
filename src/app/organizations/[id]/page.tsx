@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -16,7 +17,7 @@ import { ArrowLeft, Building, Users, Store, ChevronLeft, ChevronRight, Search, U
 import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -278,6 +279,7 @@ function UsersTable({ members, getInitials, organizationId, allUsers, onMembersU
 function ShopsTable({ shops, members, onAssignShop, canManage, onShopAdd, allUsers, allOrganizations, currentUser, organizationId }: { shops: Shop[], members: AppUser[], onAssignShop: (shopId: string, userIds: string[]) => void, canManage: boolean, onShopAdd: (newShopData: Omit<Shop, 'id' | 'inventory'>, assignedUserIds: string[]) => void, allUsers: AppUser[], allOrganizations: Organization[], currentUser: AppUser | null, organizationId: string }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
+    const [assignModalState, setAssignModalState] = useState<{ isOpen: boolean; shop: Shop | null }>({ isOpen: false, shop: null });
 
     const filteredShops = useMemo(() => {
         return shops.filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -294,6 +296,7 @@ function ShopsTable({ shops, members, onAssignShop, canManage, onShopAdd, allUse
     }
 
     return (
+        <>
          <Card>
             <CardHeader>
                 <div className="flex items-center justify-between">
@@ -340,11 +343,9 @@ function ShopsTable({ shops, members, onAssignShop, canManage, onShopAdd, allUse
                                 </TableCell>
                                 <TableCell className="text-right">
                                      {canManage && (
-                                        <AssignUsersToShopModal shop={shop} members={members} onAssign={onAssignShop}>
-                                            <Button variant="ghost" size="icon">
-                                                <LinkIcon className="h-4 w-4" />
-                                            </Button>
-                                        </AssignUsersToShopModal>
+                                        <Button variant="ghost" size="icon" onClick={() => setAssignModalState({ isOpen: true, shop: shop })}>
+                                            <LinkIcon className="h-4 w-4" />
+                                        </Button>
                                      )}
                                 </TableCell>
                             </TableRow>
@@ -364,6 +365,16 @@ function ShopsTable({ shops, members, onAssignShop, canManage, onShopAdd, allUse
                 </div>
             )}
         </Card>
+        {assignModalState.shop && (
+             <AssignUsersToShopModal 
+                isOpen={assignModalState.isOpen}
+                onOpenChange={(isOpen) => setAssignModalState({ isOpen, shop: isOpen ? assignModalState.shop : null })}
+                shop={assignModalState.shop} 
+                members={members} 
+                onAssign={onAssignShop}
+            />
+        )}
+        </>
     );
 }
 
@@ -416,7 +427,7 @@ function ManageMembersModal({ organizationId, allUsers, currentMemberIds, onUpda
                     </ScrollArea>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                    <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
                     <Button onClick={handleSave}>Guardar Cambios</Button>
                 </DialogFooter>
             </DialogContent>
@@ -424,8 +435,7 @@ function ManageMembersModal({ organizationId, allUsers, currentMemberIds, onUpda
     )
 }
 
-function AssignUsersToShopModal({ shop, members, onAssign, children }: { shop: Shop, members: AppUser[], onAssign: (shopId: string, userIds: string[]) => void, children: React.ReactNode }) {
-    const [isOpen, setIsOpen] = useState(false);
+function AssignUsersToShopModal({ shop, members, onAssign, isOpen, onOpenChange }: { shop: Shop, members: AppUser[], onAssign: (shopId: string, userIds: string[]) => void, isOpen: boolean, onOpenChange: (open: boolean) => void }) {
     const vendors = useMemo(() => members.filter(m => m.role === 'Vendedor'), [members]);
     const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
     
@@ -438,7 +448,7 @@ function AssignUsersToShopModal({ shop, members, onAssign, children }: { shop: S
 
     const handleSave = () => {
         onAssign(shop.id, selectedUserIds);
-        setIsOpen(false);
+        onOpenChange(false);
     }
     
     const handleUserToggle = (userId: string) => {
@@ -450,8 +460,7 @@ function AssignUsersToShopModal({ shop, members, onAssign, children }: { shop: S
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                     <DialogTitle>Asignar Vendedores a {shop.name}</DialogTitle>
@@ -476,7 +485,7 @@ function AssignUsersToShopModal({ shop, members, onAssign, children }: { shop: S
                     </ScrollArea>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
                     <Button onClick={handleSave}>Guardar Asignaciones</Button>
                 </DialogFooter>
             </DialogContent>

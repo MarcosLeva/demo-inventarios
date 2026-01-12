@@ -40,8 +40,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog"
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -437,6 +435,8 @@ function ShopPageSkeleton() {
 }
 
 function ProductRow({ product, canEdit, onLocationUpdate, onLocationDelete, index }: { product: ShopDisplayProduct, canEdit: boolean, onLocationUpdate: (productId: string, details: Omit<ShopProductDetails, 'shopId'>) => void, onLocationDelete: (productId: string) => void, index: number }) {
+  const [isEditLocationOpen, setIsEditLocationOpen] = useState(false);
+  
   const formatPrice = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -446,97 +446,94 @@ function ProductRow({ product, canEdit, onLocationUpdate, onLocationDelete, inde
   const description = product.properties.find(p => p.key?.toLowerCase() === 'descripción')?.value || 'Sin descripción';
 
   return (
-    <TableRow 
-      className={cn(
-        isOutOfStock && product.status === 'activo' ? 'bg-destructive/5' : '',
-        "animate-in fade-in-0"
-      )}
-      style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}
-    >
-      <TableCell>
-        <div className="relative h-16 w-16 rounded-md overflow-hidden">
-          <Image
-            src={product.imageSrc}
-            alt={product.name}
-            fill
-            className="object-cover"
-            data-ai-hint={product.imageHint}
-            sizes="64px"
-          />
-        </div>
-      </TableCell>
-      <TableCell className="font-medium">{product.name}</TableCell>
-      <TableCell className="text-muted-foreground truncate max-w-xs">{description}</TableCell>
-      <TableCell className="text-center">
-        <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
-            {product.status === 'activo' ? <PackageCheck className="mr-1.5" /> : <PackageX className="mr-1.5" />}
-            {product.status}
-        </Badge>
-      </TableCell>
-      <TableCell className="text-right font-semibold">
-          <div className={`flex items-center justify-end gap-1.5 ${isOutOfStock ? 'text-destructive' : ''}`}>
-             <Package className="text-inherit/80" />
-             {isOutOfStock ? 'Agotado' : product.stock}
+    <>
+      <TableRow 
+        className={cn(
+          isOutOfStock && product.status === 'activo' ? 'bg-destructive/5' : '',
+          "animate-in fade-in-0"
+        )}
+        style={{ animationDelay: `${index * 30}ms`, animationFillMode: 'backwards' }}
+      >
+        <TableCell>
+          <div className="relative h-16 w-16 rounded-md overflow-hidden">
+            <Image
+              src={product.imageSrc}
+              alt={product.name}
+              fill
+              className="object-cover"
+              data-ai-hint={product.imageHint}
+              sizes="64px"
+            />
           </div>
-      </TableCell>
-      <TableCell className="text-right font-semibold text-primary">
-          <div className='flex items-center justify-end gap-1.5'>
-             <Tag className="h-4 w-4 text-primary/80" />
-             {formatPrice}
-          </div>
-      </TableCell>
-      <TableCell className="text-right">
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                    <MoreHorizontal />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-                {canEdit && (
-                    <>
-                        <EditLocationModal 
-                            product={product}
-                            onUpdate={onLocationUpdate}
-                        >
-                            <DropdownMenuItem onSelect={e => e.preventDefault()}>
-                                <Edit className="mr-2"/> Editar Precio/Stock
-                            </DropdownMenuItem>
-                        </EditLocationModal>
+        </TableCell>
+        <TableCell className="font-medium">{product.name}</TableCell>
+        <TableCell className="text-muted-foreground truncate max-w-xs">{description}</TableCell>
+        <TableCell className="text-center">
+          <Badge variant={product.status === 'activo' ? 'secondary' : 'destructive'} className="capitalize">
+              {product.status === 'activo' ? <PackageCheck className="mr-1.5" /> : <PackageX className="mr-1.5" />}
+              {product.status}
+          </Badge>
+        </TableCell>
+        <TableCell className="text-right font-semibold">
+            <div className={`flex items-center justify-end gap-1.5 ${isOutOfStock ? 'text-destructive' : ''}`}>
+               <Package className="text-inherit/80" />
+               {isOutOfStock ? 'Agotado' : product.stock}
+            </div>
+        </TableCell>
+        <TableCell className="text-right font-semibold text-primary">
+            <div className='flex items-center justify-end gap-1.5'>
+               <Tag className="h-4 w-4 text-primary/80" />
+               {formatPrice}
+            </div>
+        </TableCell>
+        <TableCell className="text-right">
+          <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                      <MoreHorizontal />
+                  </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                  {canEdit && (
+                      <>
+                          <DropdownMenuItem onSelect={() => setIsEditLocationOpen(true)}>
+                              <Edit className="mr-2"/> Editar Precio/Stock
+                          </DropdownMenuItem>
 
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={e => e.preventDefault()} className="text-destructive focus:text-destructive">
-                                    <Trash2 className="mr-2"/> Quitar de la Tienda
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                    <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        Esta acción quitará el producto de esta tienda, pero no lo eliminará del catálogo global.
-                                    </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => onLocationDelete(product.id)}>
-                                        Quitar
-                                    </AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
+                          <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={e => e.preventDefault()} className="text-destructive focus:text-destructive">
+                                      <Trash2 className="mr-2"/> Quitar de la Tienda
+                                  </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                      <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                          Esta acción quitará el producto de esta tienda, pero no lo eliminará del catálogo global.
+                                      </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => onLocationDelete(product.id)}>
+                                          Quitar
+                                      </AlertDialogAction>
+                                  </AlertDialogFooter>
+                              </AlertDialogContent>
+                          </AlertDialog>
 
-                    </>
-                )}
-            </DropdownMenuContent>
-        </DropdownMenu>
-      </TableCell>
-    </TableRow>
+                      </>
+                  )}
+              </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+      {canEdit && <EditLocationModal product={product} onUpdate={onLocationUpdate} isOpen={isEditLocationOpen} onOpenChange={setIsEditLocationOpen} />}
+    </>
   );
 }
 
-function EditLocationModal({ product, onUpdate, children }: { product: ShopDisplayProduct, onUpdate: (productId: string, details: Omit<ShopProductDetails, 'shopId'>) => void, children: React.ReactNode}) {
-    const [isOpen, setIsOpen] = useState(false);
+function EditLocationModal({ product, onUpdate, isOpen, onOpenChange }: { product: ShopDisplayProduct, onUpdate: (productId: string, details: Omit<ShopProductDetails, 'shopId'>) => void, isOpen: boolean, onOpenChange: (open: boolean) => void }) {
     const [price, setPrice] = useState(0);
     const [stock, setStock] = useState(0);
     const [status, setStatus] = useState<'activo'|'inactivo'>('activo');
@@ -551,12 +548,11 @@ function EditLocationModal({ product, onUpdate, children }: { product: ShopDispl
 
     const handleSave = () => {
         onUpdate(product.id, { price, stock, status });
-        setIsOpen(false);
+        onOpenChange(false);
     }
     
     return (
-         <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Editar Detalles en Tienda</DialogTitle>
@@ -585,7 +581,7 @@ function EditLocationModal({ product, onUpdate, children }: { product: ShopDispl
                     </div>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild><Button variant="outline">Cancelar</Button></DialogClose>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
                     <Button onClick={handleSave}>Guardar Cambios</Button>
                 </DialogFooter>
             </DialogContent>
@@ -726,9 +722,7 @@ function EditShopModal({ shop, members, organizationUsers, onShopUpdate, childre
                     </div>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="outline">Cancelar</Button>
-                    </DialogClose>
+                    <Button variant="outline" onClick={() => setIsOpen(false)}>Cancelar</Button>
                     <Button onClick={handleSave}>Guardar Cambios</Button>
                 </DialogFooter>
             </DialogContent>

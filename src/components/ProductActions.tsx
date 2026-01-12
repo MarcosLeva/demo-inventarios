@@ -20,8 +20,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog"
 import {
   AlertDialog,
@@ -54,6 +52,9 @@ export function ProductActionsCell({ product, onProductUpdate, onProductDelete }
   const { user } = useAuth();
   const [allShops, setAllShops] = useState<Shop[]>([]);
   const [allOrganizations, setAllOrganizations] = useState<Organization[]>([]);
+  const [isViewOpen, setIsViewOpen] = useState(false);
+  const [isManageOpen, setIsManageOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -65,61 +66,55 @@ export function ProductActionsCell({ product, onProductUpdate, onProductDelete }
   const canEdit = user?.role === 'Admin' || user?.role === 'Editor';
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Abrir menú</span>
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-        <ViewProductModal product={product} allShops={allShops}>
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <Eye className="mr-2 h-4 w-4" />
-                <span>Ver Detalles</span>
-            </DropdownMenuItem>
-        </ViewProductModal>
-        {canEdit && (
-            <>
-                <DropdownMenuSeparator />
-                 <ManageLocationsModal 
-                    product={product} 
-                    onProductUpdate={onProductUpdate}
-                    allShops={allShops}
-                    allOrganizations={allOrganizations}
-                    currentUser={user}
-                >
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <MapPin className="mr-2 h-4 w-4" />
-                        <span>Gestionar Ubicaciones</span>
-                    </DropdownMenuItem>
-                </ManageLocationsModal>
-                {user?.role === 'Admin' && (
-                  <>
-                    <EditProductModal product={product} onProductUpdate={onProductUpdate}>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            <span>Editar Producto Maestro</span>
-                        </DropdownMenuItem>
-                    </EditProductModal>
-                    <DropdownMenuSeparator />
-                    <DeleteProductAlert productId={product.id} onProductDelete={onProductDelete}>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            <span>Eliminar</span>
-                        </DropdownMenuItem>
-                    </DeleteProductAlert>
-                  </>
-                )}
-            </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Abrir menú</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+          <DropdownMenuItem onSelect={() => setIsViewOpen(true)}>
+              <Eye className="mr-2 h-4 w-4" />
+              <span>Ver Detalles</span>
+          </DropdownMenuItem>
+          {canEdit && (
+              <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onSelect={() => setIsManageOpen(true)}>
+                      <MapPin className="mr-2 h-4 w-4" />
+                      <span>Gestionar Ubicaciones</span>
+                  </DropdownMenuItem>
+                  {user?.role === 'Admin' && (
+                    <>
+                      <DropdownMenuItem onSelect={() => setIsEditOpen(true)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Editar Producto Maestro</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DeleteProductAlert productId={product.id} onProductDelete={onProductDelete}>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              <span>Eliminar</span>
+                          </DropdownMenuItem>
+                      </DeleteProductAlert>
+                    </>
+                  )}
+              </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ViewProductModal product={product} allShops={allShops} isOpen={isViewOpen} onOpenChange={setIsViewOpen} />
+      {canEdit && <ManageLocationsModal product={product} onProductUpdate={onProductUpdate} allShops={allShops} allOrganizations={allOrganizations} currentUser={user} isOpen={isManageOpen} onOpenChange={setIsManageOpen} />}
+      {user?.role === 'Admin' && <EditProductModal product={product} onProductUpdate={onProductUpdate} isOpen={isEditOpen} onOpenChange={setIsEditOpen} />}
+    </>
   );
 }
 
-function ViewProductModal({ product, allShops, children }: { product: Product, allShops: Shop[], children: React.ReactNode }) {
+function ViewProductModal({ product, allShops, isOpen, onOpenChange }: { product: Product, allShops: Shop[], isOpen: boolean, onOpenChange: (open: boolean) => void }) {
     const getShopName = (shopId: string) => allShops.find(s => s.id === shopId)?.name || 'Tienda Desconocida';
     
     const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
@@ -128,8 +123,7 @@ function ViewProductModal({ product, allShops, children }: { product: Product, a
     }).format(price);
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>{product.name}</DialogTitle>
@@ -196,8 +190,7 @@ function ViewProductModal({ product, allShops, children }: { product: Product, a
     )
 }
 
-function EditProductModal({ product, onProductUpdate, children }: { product: Product, onProductUpdate: (product: Product) => void, children: React.ReactNode }) {
-    const [isOpen, setIsOpen] = useState(false);
+function EditProductModal({ product, onProductUpdate, isOpen, onOpenChange }: { product: Product, onProductUpdate: (product: Product) => void, isOpen: boolean, onOpenChange: (open: boolean) => void }) {
     const [name, setName] = useState(product.name);
     const [properties, setProperties] = useState<ProductProperty[]>(product.properties);
     const [imageSrc, setImageSrc] = useState(product.imageSrc);
@@ -217,12 +210,11 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
             properties,
             imageSrc,
         });
-        setIsOpen(false);
+        onOpenChange(false);
     }
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-3xl">
                 <DialogHeader>
                     <DialogTitle>Editar Producto Maestro</DialogTitle>
@@ -252,9 +244,7 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
                     </div>
                 </div>
                 <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="outline">Cancelar</Button>
-                    </DialogClose>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
                     <Button onClick={handleSave}>Guardar Cambios</Button>
                 </DialogFooter>
             </DialogContent>
@@ -262,17 +252,21 @@ function EditProductModal({ product, onProductUpdate, children }: { product: Pro
     );
 }
 
-function ManageLocationsModal({ product, onProductUpdate, allShops, allOrganizations, currentUser, children }: { product: Product, onProductUpdate: (product: Product) => void, allShops: Shop[], allOrganizations: Organization[], currentUser: AppUser | null, children: React.ReactNode }) {
-    const [isOpen, setIsOpen] = useState(false);
+function ManageLocationsModal({ product, onProductUpdate, allShops, allOrganizations, currentUser, isOpen, onOpenChange }: { product: Product, onProductUpdate: (product: Product) => void, allShops: Shop[], allOrganizations: Organization[], currentUser: AppUser | null, isOpen: boolean, onOpenChange: (open: boolean) => void }) {
     const [locations, setLocations] = useState<ShopProductDetails[]>([]);
     const [selectedOrgId, setSelectedOrgId] = useState<string>('');
 
     const availableShops = useMemo(() => {
         if (!currentUser) return [];
-        if (currentUser.role === 'Admin') {
-            return allShops.filter(s => s.organizationId === selectedOrgId);
+        let orgIdToFilter: string | undefined = selectedOrgId;
+
+        if (currentUser.role === 'Editor') {
+            orgIdToFilter = currentUser.organizationId;
         }
-        return allShops.filter(s => s.organizationId === currentUser.organizationId);
+        
+        if (!orgIdToFilter) return [];
+        
+        return allShops.filter(s => s.organizationId === orgIdToFilter);
     }, [allShops, selectedOrgId, currentUser]);
 
 
@@ -289,7 +283,7 @@ function ManageLocationsModal({ product, onProductUpdate, allShops, allOrganizat
 
     const handleSave = () => {
         onProductUpdate({ ...product, locations });
-        setIsOpen(false);
+        onOpenChange(false);
     }
 
     const handleLocationChange = (shopId: string, field: keyof ShopProductDetails, value: string | number) => {
@@ -315,8 +309,7 @@ function ManageLocationsModal({ product, onProductUpdate, allShops, allOrganizat
 
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>{children}</DialogTrigger>
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-4xl">
                 <DialogHeader>
                     <DialogTitle>Gestionar Ubicaciones para "{product.name}"</DialogTitle>
@@ -397,9 +390,7 @@ function ManageLocationsModal({ product, onProductUpdate, allShops, allOrganizat
                 </div>
 
                  <DialogFooter>
-                    <DialogClose asChild>
-                        <Button variant="outline">Cancelar</Button>
-                    </DialogClose>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
                     <Button onClick={handleSave}>Guardar Ubicaciones</Button>
                 </DialogFooter>
             </DialogContent>
