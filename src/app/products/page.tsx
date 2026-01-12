@@ -114,43 +114,49 @@ export default function ProductsPage() {
     currency: 'EUR',
   }).format(price);
 
-  const filteredProducts = useMemo(() => {
+ const filteredProducts = useMemo(() => {
     setCurrentPage(1);
 
-    let baseProducts = products;
+    if (user?.role === 'Editor' && editorView === 'all') {
+        // For editors in "All Products" view, only filter by search term on the entire product list
+        return products.filter(product =>
+            product.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    
+    let productsToFilter = products;
 
     if (user?.role === 'Editor' && editorView === 'my-shops') {
-      const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-      baseProducts = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
-    }
-
-    return baseProducts.filter(product => {
-      // 1. Filter by search term (always applies)
-      const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
-      if (!matchesSearchTerm) {
-        return false;
-      }
-
-      // Determine which locations are relevant for filtering
-      let relevantLocations = product.locations;
-      if (user?.role === 'Editor') {
         const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
-        relevantLocations = product.locations.filter(loc => editorOrgShops.includes(loc.shopId));
-      }
+        productsToFilter = products.filter(p => p.locations.some(loc => editorOrgShops.includes(loc.shopId)));
+    }
+    
+    return productsToFilter.filter(product => {
+        const matchesSearchTerm = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const relevantLocations = product.locations.filter(loc => {
+            if (user?.role === 'Editor') {
+                const editorOrgShops = shops.filter(s => s.organizationId === user.organizationId).map(s => s.id);
+                return editorOrgShops.includes(loc.shopId);
+            }
+            return true; // For admin, all locations are relevant initially
+        });
 
-      // If in Editor's "all" view and product has no locations in their org, show it if it matched search
-      if (user?.role === 'Editor' && editorView === 'all' && relevantLocations.length === 0) {
-        return true;
-      }
+        // If there are no relevant locations, the product shouldn't be in the filtered list
+        // (unless it's an admin viewing an unassigned product, or editor in 'all' view which is handled above)
+        if (relevantLocations.length === 0) {
+            return user?.role === 'Admin' && matchesSearchTerm && selectedShop === 'all';
+        }
 
-      // 2. Apply location-based filters
-      return relevantLocations.some(loc => {
-        const matchesShop = selectedShop === 'all' || loc.shopId === selectedShop;
-        const matchesPrice = loc.price >= priceRange[0] && loc.price <= priceRange[1];
-        const matchesStatus = statusFilter === 'all' || loc.status === statusFilter;
-        const matchesStock = !hideOutOfStock || loc.stock > 0;
-        return matchesShop && matchesPrice && matchesStatus && matchesStock;
-      });
+        const passesLocationFilters = relevantLocations.some(loc => {
+            const matchesShop = selectedShop === 'all' || loc.shopId === selectedShop;
+            const matchesPrice = loc.price >= priceRange[0] && loc.price <= priceRange[1];
+            const matchesStatus = statusFilter === 'all' || loc.status === statusFilter;
+            const matchesStock = !hideOutOfStock || loc.stock > 0;
+            return matchesShop && matchesPrice && matchesStatus && matchesStock;
+        });
+
+        return matchesSearchTerm && passesLocationFilters;
     });
 }, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock, user, editorView, shops]);
 
@@ -183,6 +189,8 @@ export default function ProductsPage() {
             if (activeCount > 0 && inactiveCount > 0) statusSummary = 'Mixto';
             else if (activeCount > 0) statusSummary = 'Activo';
             else if (inactiveCount > 0) statusSummary = 'Inactivo';
+        } else if (p.locations.length > 0 && user?.role === 'Editor' && editorView === 'all') {
+            statusSummary = "Otras Orgs";
         }
         
         return {
@@ -192,7 +200,7 @@ export default function ProductsPage() {
             statusSummary,
         }
     });
-  }, [filteredProducts, currentPage, user, shops, formatPrice]);
+  }, [filteredProducts, currentPage, user, shops, editorView]);
 
   const canAddProduct = user?.role === 'Admin';
 
@@ -297,15 +305,15 @@ export default function ProductsPage() {
                                 </div>
                             </TableCell>
                             <TableCell>
-                            <Badge variant={product.statusSummary === 'Activo' ? 'secondary' : (product.statusSummary === 'Mixto' ? 'outline' : (product.statusSummary === 'No asignado' ? 'default' : 'destructive'))} className="capitalize">
+                            <Badge variant={product.statusSummary === 'Activo' ? 'secondary' : (product.statusSummary === 'Mixto' ? 'outline' : (product.statusSummary === 'No asignado' ? 'default' : (product.statusSummary === 'Otras Orgs' ? 'outline' : 'destructive')))} className="capitalize">
                                 {product.statusSummary}
                             </Badge>
                             </TableCell>
-                            <TableCell className={cn("text-right font-semibold", product.stockSum === 0 && product.statusSummary !== 'No asignado' ? "text-destructive" : "")}>
-                            {product.statusSummary !== 'No asignado' ? product.stockSum : '-'}
+                            <TableCell className={cn("text-right font-semibold", product.stockSum === 0 && product.statusSummary !== 'No asignado' && product.statusSummary !== 'Otras Orgs' ? "text-destructive" : "")}>
+                            {product.statusSummary !== 'No asignado' && product.statusSummary !== 'Otras Orgs' ? product.stockSum : '-'}
                             </TableCell>
                             <TableCell className="text-right font-semibold text-primary/80">
-                            {product.priceRange}
+                            {product.statusSummary !== 'Otras Orgs' ? product.priceRange : 'N/A'}
                             </TableCell>
                             <TableCell className="text-center">
                                 <ProductActionsCell
