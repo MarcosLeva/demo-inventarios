@@ -95,19 +95,23 @@ export function ProductActionsCell({ product, onProductUpdate, onProductDelete }
                         <span>Gestionar Ubicaciones</span>
                     </DropdownMenuItem>
                 </ManageLocationsModal>
-                <EditProductModal product={product} onProductUpdate={onProductUpdate}>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        <span>Editar Producto Maestro</span>
-                    </DropdownMenuItem>
-                </EditProductModal>
-                <DropdownMenuSeparator />
-                <DeleteProductAlert productId={product.id} onProductDelete={onProductDelete}>
-                    <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        <span>Eliminar</span>
-                    </DropdownMenuItem>
-                </DeleteProductAlert>
+                {user?.role === 'Admin' && (
+                  <>
+                    <EditProductModal product={product} onProductUpdate={onProductUpdate}>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            <span>Editar Producto Maestro</span>
+                        </DropdownMenuItem>
+                    </EditProductModal>
+                    <DropdownMenuSeparator />
+                    <DeleteProductAlert productId={product.id} onProductDelete={onProductDelete}>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            <span>Eliminar</span>
+                        </DropdownMenuItem>
+                    </DeleteProductAlert>
+                  </>
+                )}
             </>
         )}
       </DropdownMenuContent>
@@ -425,5 +429,3 @@ function DeleteProductAlert({ productId, onProductDelete, children }: { productI
         </AlertDialog>
     );
 }
-
-    

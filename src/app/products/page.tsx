@@ -106,6 +106,11 @@ export default function ProductsPage() {
     return shop ? shop.name : 'N/A';
   }
 
+  const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
+  }).format(price);
+
   const filteredProducts = useMemo(() => {
     setCurrentPage(1);
     return products.filter(product => {
@@ -119,16 +124,11 @@ export default function ProductsPage() {
           return matchesShop && matchesPrice && matchesStatus && matchesStock;
       });
 
-      return matchesSearchTerm && hasMatchingLocation;
+      return matchesSearchTerm && (hasMatchingLocation || product.locations.length === 0);
     });
   }, [products, searchTerm, selectedShop, priceRange, statusFilter, hideOutOfStock]);
   
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
-
-  const formatPrice = (price: number) => new Intl.NumberFormat('es-ES', {
-    style: 'currency',
-    currency: 'EUR',
-  }).format(price);
 
   const paginatedProducts: DisplayProduct[] = useMemo(() => {
     const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
@@ -158,7 +158,7 @@ export default function ProductsPage() {
     });
   }, [filteredProducts, currentPage]);
 
-  const canAddProduct = user?.role === 'Admin' || user?.role === 'Editor';
+  const canAddProduct = user?.role === 'Admin';
 
   return (
     <div className="flex flex-col gap-6">
